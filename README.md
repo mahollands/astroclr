@@ -57,15 +57,15 @@ To calculate the luminance of the Sun assuming a perfect radiator
 ```
 
 But to get the luminous flux Φ in lm, you must do some integration:
-dΦ = L cosθ dΩ dA
-where cosθ accounts for the projection of a small area element dA.
+$\mathrm{d}\Phi = L\,\cos\theta\,\mathrm{d}\Omega\,\mathrm{d}A$
+where $\cos\theta$ accounts for the projection of a small area element $\mathrm{d}A$.
 This is equivalent to 
-dΦ = L cosθ sinθ dθ dφ dA
-The integral over θ runs from 0 to π/2, since we only care about the
+$\mathrm{d}\Phi = L\,\cos\theta\,\sin\theta\,\mathrm{d}\theta\,\mathrm{d}\phi\,\mathrm{d}A$
+The integral over $\theta$ runs from $0$ to $\pi/2$, since we only care about the
 outward radiated flux. So
-Φ = L \int dA \int_0^2π dφ \int_0^π/2 cosθ sinθ dθ
-  = L {4piRsun^2}{2pi}{1/2}
-  = 4 pi^2 sr Rsun^2 L
+$\Phi = L \int \mathrm{d}A \int_0^{2\pi} \mathrm{d}\phi \int_0^{\pi/2} \cos\theta\,\sin\theta\,\mathrm{d}\theta$
+  = L (4\pi R_\odot^2)(2\pi \mathrm{sr})(1/2)
+  = 4\pi^2 \mathrm{sr} R_\odot^2 L$
 ```python
 >>> A_sun = 4 * np.pi * u.Rsun**2
 >>> Ω = 2 * np.pi * u.sr
