@@ -56,14 +56,14 @@ To calculate the luminance of the Sun assuming a perfect radiator
 <Quantity 1.8451589e+09 cd / m2> #luminance
 ```
 
-But to get the luminous flux Φ in lm, you must do some integration:
-$\mathrm{d}\Phi = L\,\cos\theta\,\mathrm{d}\Omega\,\mathrm{d}A$
+But to get the luminous flux $\Phi$ in lm, you must do some integration:
+$\mathrm{d}\Phi = L \cos\theta \mathrm{d}\Omega \mathrm{d}A$
 where $\cos\theta$ accounts for the projection of a small area element $\mathrm{d}A$.
 This is equivalent to 
-$\mathrm{d}\Phi = L\,\cos\theta\,\sin\theta\,\mathrm{d}\theta\,\mathrm{d}\phi\,\mathrm{d}A$
+$\mathrm{d}\Phi = L \cos\theta \sin\theta \mathrm{d}\theta \mathrm{d}\phi \mathrm{d}A$
 The integral over $\theta$ runs from $0$ to $\pi/2$, since we only care about the
 outward radiated flux. So
-$\Phi = L \int \mathrm{d}A \int_0^{2\pi} \mathrm{d}\phi \int_0^{\pi/2} \cos\theta\,\sin\theta\,\mathrm{d}\theta$
+$\Phi = L \int \mathrm{d}A \int_0^{2\pi} \mathrm{d}\phi \int_0^{\pi/2} \cos\theta \sin\theta \mathrm{d}\theta
   = L (4\pi R_\odot^2)(2\pi \mathrm{sr})(1/2)
   = 4\pi^2 \mathrm{sr} R_\odot^2 L$
 ```python
