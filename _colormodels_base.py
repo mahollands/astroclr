@@ -82,6 +82,13 @@ class XYZ_Color(LinearColor):
         if any(val < 0 for val in (x, y, z)):
             raise ValueError("XYZ values must be positive")
         super().__init__((x, y, z))
+    
+    def __repr__(self):
+        rpr = super().__repr__()
+        if np.isclose(self._values.sum(), 1):
+            parts = rpr.split(', ')
+            rpr = ', '.join(parts[:2]) + ')'
+        return rpr
 
     x = property(fget=LinearColor._1.fget, fset=LinearColor._1.fset)
     y = property(fget=LinearColor._2.fget, fset=LinearColor._2.fset)
