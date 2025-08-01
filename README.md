@@ -45,6 +45,84 @@ PYTHONPATH environment variable at it.
 
 ## Usage
 
+Calculating colours with Colorpy2 has been made as easy as possible. The recipe
+for doing so looks basically like:
+* create a Spectrum object
+* convert to the CIE 1931 XYZ colour space
+* convert from XYZ to a linear RGB colour space (sRGB by default)
+* convert linear RGB to the non-linear display RGB (IRGB) space by applying a transfer function
+
+Lets say we want to determine the colour of a 10,000 K black body -- something
+like the A-type star Sirius A. In Colorpy2 we can do
+
+```python
+>>> from colorpy2 import Spectrum, RGB_Color
+>>> from astropy import units as u
+
+>>> lam = np.arange(300, 900, 0.1) * u.nm
+>>> S = Spectrum.BlackBody(temperature=10000*u.K, wavelength=lam)
+>>> XYZ = S.to_XYZ()
+>>> RGB = RGB_Color.from_XYZ(XYZ)
+>>> IRGB = RGB.to_IRGB()
+>>> print(IRGB.to_string())
+'#CDD9FF'
+```
+
+It's that simple! You may have noticed that most of the conversion methods are
+prefixed with 'to', but to convert to RGB we need to use a 'from' method. There
+is good reason for this: By default RGB colours are in the sRGB space, but
+optionally can use another space e.g. `RGB.from_XYZ(XYZ, color_space=Rec2020)`.
+Lets inspect the sRGB object:
+
+```python
+>>> from colorpy2 import sRGB
+>>> print(sRGB)
+RGB_ColorSpace(name='sRGB', R=XYZ_Color(0.64, 0.33), G=XYZ_Color(0.3, 0.6), ...)
+```
+
+Crucially we can see that these colour spaces are defined in terms of RGB
+primaries and a white point, which are all of type `XYZ_Color`. This means that
+`RGB_Color` (and all other color models), are built on the more fundamental
+`XYZ_Color`. Going back to our previous example, lets print all the
+intermediate steps
+
+```python
+>>> print(S)
+Spectrum(wavelength[6000] * nm, flux[6000] * W / (nm sr m2))
+>>> print(XYZ)
+XYZ_Color(18899521.886203796, 19415029.182752594, 29031295.252976917)
+>>> print(RGB)
+RGB_Color(16929126.8935794, 19310119.61155575, 27776415.403297085)
+>>> print(IRGB)
+IRGB_Color(205, 217, 255)
+```
+
+Firstly, we can see that the spectrum wavelengths and fluxes have units. The
+XYZ and linear RGB values drop their units but the numbers are still very large
+(a 10000K black body is bright!). However when we convert to IRGB, these overly
+large values are rescaled so that the brightest channel is 255. If the RGB_values
+were all below 1.0, then no rescaling would be performed. We have a few different
+options if we want to rescale the linear colours. Going back to example
+
+```python
+>>> XYZ.normalize()
+XYZ_Color(0.2806338166107294, 0.28828844306065954)
+```
+
+This method scales an `XYZ_Color` so all components add to 1. In this form the
+Z component (now written z) is redundant, and the x and y components
+define the chromacity.
+
+```python
+>>> XYZ.normalize_Y1()
+XYZ_Color(0.9734480287566731, 1.0, 1.4953001089880908)
+```
+
+This method scales the Y component (the luminance) 1.
+
+
+### Luminance
+
 If you want to convert the luminance to luminous flux / exitance /
 illuminance you must take care to account for factors π, 2, 4π etc.
 To calculate the luminance of the Sun assuming a perfect radiator
