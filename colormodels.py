@@ -195,10 +195,11 @@ class RGB_Color(LinearColor):
         return self / self._values.max()
 
     @classmethod
-    def from_XYZ(cls, XYZ, brightest=False, color_space=sRGB):
+    def from_XYZ(cls, XYZ, color_space=sRGB, brightest=False):
         """
-        Convert an XYZ color to RGB. 'brightest' keyword argument scales
-        this so the brightest RGB channel is at 1.0.
+        Create an RGB color from an XYZ color and color space (sRGB by
+        default). 'brightest' keyword argument scales this so the brightest RGB
+        channel is at 1.0.
         """
         rgb = color_space.rgb_from_xyz_matrix @ XYZ._values
         RGB = cls(*rgb, color_space=color_space)
@@ -232,7 +233,8 @@ class RGB_Color(LinearColor):
 
         # clip intensity if needed (rgb values > 1.0) by scaling
         rgb_max = max(rgb)
-        # we actually don't overflow until 255.0 * intensity > 255.5, so instead of 1.0 use ...
+        # we actually don't overflow until 255.0 * intensity > 255.5, so
+        # instead of 1.0 use ...
         intensity_cutoff = 1.0 + (0.5 / 255.0)
         if rgb_max > intensity_cutoff:
             # must scale intensity, so max value is intensity_cutoff
@@ -263,11 +265,18 @@ class IRGB_Color(LinearColor):
     b = property(fget=LinearColor._3.fget, fset=LinearColor._3.fset)
 
     def to_string(self):
-        """Convert a displayable irgb color (0-255) into a hex string."""
+        """
+        Convert a displayable 8-bit irgb color (0-255) into a hex string.
+        """
+        if self.color_space.bit_depth != 8:
+            raise ValueError("Can only make hexcodes for bit depths of 8")
         return f"#{self.r:02X}{self.g:02X}{self.b:02X}"
 
     @classmethod
     def from_hex_string(cls, irgb_string, colorspace=sRGB):
+        """
+        Create a IRGB value (range 0 - 255) from a corresponding hex_string
+        """
         if not isinstance(irgb_string, str):
             raise TypeError
         if len(irgb_string) != 7 or not irgb_string.startswith("#"):
@@ -277,8 +286,10 @@ class IRGB_Color(LinearColor):
         return cls(ir, ig, ib, colorspace)
 
     def to_RGB(self, to_luminance=False):
-        """Convert a displayable (gamma corrected) irgb value (range 0 - 255)
-        into a linear rgb value (range 0.0 - 1.0)."""
+        """
+        Convert a displayable (gamma corrected) IRGB value (range 0 - 255)
+        into a linear rgb value (range 0.0 - 1.0).
+        """
         max_val = 2**self.color_space.bit_depth
         rgb = [self.color_space.EOTF(val / max_val) for val in self._values]
         RGB = RGB_Color(*rgb)
@@ -310,6 +321,8 @@ class LUV_Color(Lpq_Color):
 
     @staticmethod
     def uv_primes_inverse(u_prime, v_prime, y):
+        """
+        Converts a luminance Y and (u', v') chromacity to an XYZ colour"""
         if v_prime == 0.0:
             return XYZ_Color(0.0, 0.0, 0.0)
         w_denom = (9.0 * y) / v_prime
@@ -320,7 +333,7 @@ class LUV_Color(Lpq_Color):
     @classmethod
     def from_XYZ(cls, XYZ, white_point=sRGB.W):
         """
-        Converts an XYZ color to an LUV color.
+        Create an LUV color from an XYZ color and white point (D65 by default).
         """
         y_p = XYZ.y / white_point.y
         L = L_luminance(y_p)
@@ -331,6 +344,9 @@ class LUV_Color(Lpq_Color):
         return LUV_Color(L, u, v, white_point=white_point)
 
     def to_XYZ(self):
+        """
+        Converts an LUV color to an XYZ color.
+        """
         if self.L == 0.0:
             return XYZ_Color(0.0, 0.0, 0.0)
         y = L_luminance_inverse(self.L)
@@ -353,7 +369,7 @@ class LAB_Color(Lpq_Color):
     @classmethod
     def from_XYZ(cls, XYZ, white_point=sRGB.W):
         """
-        Converts an XYZ color to an LAB color.
+        Create an LAB color from an XYZ color and white point (D65 by default).
         """
         x_p, y_p, z_p = xyz_p = XYZ._values / white_point._values
         f_x, f_y, f_z = map(Lab_f, xyz_p)
@@ -364,6 +380,9 @@ class LAB_Color(Lpq_Color):
         return cls(L, a, b)
 
     def to_XYZ(self):
+        """
+        Converts an LUV color to an XYZ color.
+        """
         y_p = L_luminance_inverse(self.L)
         f_y = Lab_f(y_p)
         f_x = f_y + (self.a / 500.0)
