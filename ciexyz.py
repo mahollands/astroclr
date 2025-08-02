@@ -233,7 +233,7 @@ class Spectrum:
     def to_XYZ(self):
         """
         Calculate the XYZ color of the spectrum. Units are dropped but
-        converted to SI  W/m^2 or W/m^2/sr first (depending on the flux units).
+        converted to SI W/m^2 or W/m^2/sr first (depending on the flux units).
         """
         XYZ = self._XYZ_integrals()
         return XYZ_Color(*XYZ.si.value)
