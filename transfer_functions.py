@@ -75,7 +75,7 @@ class PQ_EOTF:
     https://www.color.org/chardata/rgb/BT2100.xalter
     """
     def __init__(self):
-        self.m1, self.m2 = 1305/8192, 
+        self.m1, self.m2 = 1305/8192, 2523/32
         self.c1, self.c2, self.c3 = 107/128, 2413/128, 2392/128
 
     def __repr__(self):
