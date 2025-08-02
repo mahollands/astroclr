@@ -150,12 +150,13 @@ class Spectrum:
     quantities, wavelengths must be of type length, and fluxes must be in units
     equivalent to W/m2/sr/nm or W/m2/nm.
 
-    Methods:
-
-    Blackbody - Class method for generating a black body spectrum
-    >>> BB = Spectrum.BlackBody(temperature, wavelengths)
-
-    to_XYZ - 
+    wavelengths -
+        wavelength array/Quantity. If an array is given nm is assumed for the
+        units. If a Quantity is given, it must have dimensions of length.
+    flux -
+        flux array/Quantity. If an array is given W/m^2/sr/nm is assumed for
+        the units. If a Quanitity is given, it must have dimensions of flux per
+        unit wavelength or flux per unit wavelength per solid_angle.
     """
 
     __slots__ = ["_x", "_y"]
@@ -205,6 +206,12 @@ class Spectrum:
 
     @classmethod
     def BlackBody(cls, temperature, wavelength):
+        """
+        Class method for generating a black body spectrum. For
+        a given temperature and wavelength array/Quantity.
+        >>> BB = Spectrum.BlackBody(temperature, wavelengths)
+        """
+
         if not isinstance(temperature, u.Quantity):
             temperature <<= u.K
         if not temperature.isscalar:
@@ -213,30 +220,33 @@ class Spectrum:
         flux = BB(wavelength)
         return cls(wavelength, flux)
 
-    def to_XYZ(self):
+    def _XYZ_integrals(self):
         """
-        Calculate the XYZ color of the spectrum. Units are dropped but
-        converted W/m^2 or W/m^2/sr first (depending on the flux units).
+        Integrate spectrum over CIE1931 X/Y/Z color-matching functions.
+        The result is a 3-valued astropy quantity with units included.
         """
         xyz_intp = interpolate_xyz_curves(self.wavelength)
         integrand = self.flux[np.newaxis,:] * xyz_intp
-        XYZ = np.trapz(integrand, self.wavelength, axis=1)
-        XYZ = XYZ.to(self.flux.unit * self.wavelength.unit)
-        return XYZ_Color(*XYZ.value)
+        I_XYZ = np.trapz(integrand, self.wavelength, axis=1)
+        return I_XYZ
 
-    #TODO move luminance stuff to README.md
+    def to_XYZ(self):
+        """
+        Calculate the XYZ color of the spectrum. Units are dropped but
+        converted to SI  W/m^2 or W/m^2/sr first (depending on the flux units).
+        """
+        XYZ = self._XYZ_integrals()
+        return XYZ_Color(*XYZ.si.value)
+
     def to_luminance(self):
         """
-        If fluxes are in units equivalent to W/m2/sr/nm this result is the
-        luminance in cd/m^2 (nits).
-
-        If fluxes are in units equivalent to W/m2/nm the result is either
-        the illuminance (luminous flux density arriving at a surface from a
+        If flux units are equivalent to W/m2/sr/nm calculate the luminance in
+        cd/m^2 (nits). If flux units are equivalent to W/m2/nm calculate the
+        illuminance (luminous flux density arriving at a surface from a distant
         light source) in lm/m^2 (lux), or the luminous exitance (luminous flux
         density radiating from a surface) also in lm/m^2 (lux not used).
         """
-        XYZ = self.to_XYZ()
-        Y = XYZ.y * self.flux.unit * self.wavelength.unit
+        X, Y, Z = self._XYZ_integrals()
         L = 683 * u.lm/u.W * Y
 
         if self.flux.unit.is_equivalent(_flux_unit2):
@@ -245,7 +255,10 @@ class Spectrum:
 
 
 def XYZ_from_wavelength(wavelength):
-    """Given a wavelength (nm), return the corresponding xyz color, for unit intensity."""
+    """
+    Given a wavelength (nm), return the corresponding XYZ_Color, for unit
+    intensity.
+    """
     if not isinstance(wavelength, u.Quantity):
         wavelength <<= u.nm
     if not wavelength.isscalar:
@@ -258,7 +271,7 @@ def get_normalized_spectral_line_colors(
     brightness=1.0, num_purples=0, dwl=1.0 * u.nm, annotate=False
 ):
     """
-    Get a list of xyz colors covering the visible spectrum. Optionally add
+    Get a list of XYZ colors covering the visible spectrum. Optionally add
     a number of 'purples', which are colors interpolated between the color of
     the lowest wavelength (violet) and the highest (red).
 
@@ -281,7 +294,8 @@ def get_normalized_spectral_line_colors(
     xyz_purples = [first_xyz * f + last_xyz * (1 - f) for f in fs]
     xyzs.extend(xyz_purples)
 
-    # scale each color to have the max rgb component equal to the desired brightness
+    # scale each color to have the max rgb component equal to the desired
+    # brightness
     RGBs = [brightness * RGB_Color.from_XYZ(xyz, brightest=True) for xyz in xyzs]
     XYZs = [rgb.to_XYZ() for rgb in RGBs]
 
