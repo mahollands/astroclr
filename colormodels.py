@@ -126,8 +126,8 @@ LAB_F = {"A": (29 / 6) ** 2 / 3, "B": 4 / 29}
 
 
 class ClipMethod(StrEnum):
-    CLAMP = "Clamp"
-    ADD_WHITE = "Add white"
+    CLAMP = "clamp"
+    ADD_WHITE = "add white"
 
 
 def Lab_f(t):
@@ -217,7 +217,7 @@ class RGB_Color(LinearColor):
         displayable integer irgb value (range 0 - 255), clipping as
         necessary
         """
-        if clip_method is ClipMethod.ADD_WHITE:
+        if clip_method == ClipMethod.ADD_WHITE:
             rgb = self._values
             rgb_min = min(0.0, rgb.min())
             rgb_max = rgb.max()
@@ -225,7 +225,7 @@ class RGB_Color(LinearColor):
             # add enough white to cancel this out, maintaining the maximum of rgb
             if rgb_min < 0.0:
                 rgb = scaling * (rgb - rgb_min)
-        elif clip_method is ClipMethod.CLAMP:
+        elif clip_method == ClipMethod.CLAMP:
             rgb = np.clip(self._values, 0, np.inf)
         else:
             raise ValueError(f"Invalid color clipping method {clip_method}")
