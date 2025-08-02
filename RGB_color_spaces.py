@@ -38,6 +38,7 @@ class RGB_ColorSpace:
     B: chromacity of the blue channel as an XYZ_Color
     W: chromacity of the white point as an XYZ_Color
     EOTF: Electro-Optical Transfer Function
+    bit depth: integer bit depth (default 8)
     peak_luminance: Physical luminance in cd/m^2 (nits)
     """
 
@@ -70,7 +71,7 @@ class RGB_ColorSpace:
         return np.linalg.inv(self.xyz_from_rgb_matrix)
 
 
-# sRGB (ITU-R BT.709) standard phosphor chromaticities
+# https://www.color.org/chardata/rgb/srgb.xalter
 sRGB = RGB_ColorSpace(
     name="sRGB",
     R=XYZ_Color(0.640, 0.330),
@@ -91,6 +92,16 @@ HDTV = RGB_ColorSpace(
     B=XYZ_Color(0.150, 0.060),
     W=Whites["D65"],
     EOTF=gamma_EOTF(gamma=2.2),
+)
+
+# https://www.color.org/chardata/rgb/BT709.xalter
+Rec709 = RGB_ColorSpace(
+    name="Rec. 709",
+    R=XYZ_Color(0.640, 0.330),
+    G=XYZ_Color(0.300, 0.600),
+    B=XYZ_Color(0.150, 0.060),
+    W=Whites["D65"],
+    EOTF=gamma_EOTF(gamma=2.4),
 )
 
 # SMPTE phosphors
@@ -139,23 +150,37 @@ Judd = RGB_ColorSpace(
     B=XYZ_Color(0.15, 0.07),  # Zinc Sulfide
 )
 
-# Rec. 2020 specification https://www.itu.int/rec/R-REC-BT.2020-2-201510-I/en
+
+# https://www.itu.int/rec/R-REC-BT.2020-2-201510-I/en
+# https://www.color.org/chardata/rgb/BT2020.xalter
 Rec2020 = RGB_ColorSpace(
     name="Rec. 2020",
     R=XYZ_Color(0.708, 0.292),
     G=XYZ_Color(0.170, 0.797),
     B=XYZ_Color(0.131, 0.046),
     W=Whites['D65'],
-    EOTF=sRGB_EOTF, #This is currently wrong
+    EOTF=gamma_EOTF(gamma=2.4)
 )
 
-DCI_P3_display = RGB_ColorSpace(
+# https://www.color.org/chardata/rgb/BT2100.xalter
+Rec2100 = RGB_ColorSpace(
+    name="Rec. 2100",
+    R=XYZ_Color(0.708, 0.292),
+    G=XYZ_Color(0.170, 0.797),
+    B=XYZ_Color(0.131, 0.046),
+    W=Whites['D65'],
+    bit_depth = 10,
+    EOTF=PQ_EOTF(),
+    peak_luminance=10000*u.cd/u.m**2,
+)
+
+DCI_P3_SDR = RGB_ColorSpace(
     name="DCI-P3 D65 SDR",
     R=XYZ_Color(0.680, 0.320),
     G=XYZ_Color(0.265, 0.690),
     B=XYZ_Color(0.150, 0.060),
     W=Whites['D65'],
-    EOTF=sRGB_EOTF,
+    EOTF=sRGB_EOTF(),
     bit_depth=10,
 )
 
@@ -165,7 +190,7 @@ DCI_P3_HDR = RGB_ColorSpace(
     G=XYZ_Color(0.265, 0.690),
     B=XYZ_Color(0.150, 0.060),
     W=Whites['D65'],
-    EOTF=PQ_EOTF,
+    EOTF=PQ_EOTF(),
     bit_depth=10,
     peak_luminance=10000*u.cd/u.m**2,
 )
