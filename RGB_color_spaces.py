@@ -70,6 +70,13 @@ class RGB_ColorSpace:
     def rgb_from_xyz_matrix(self):
         return np.linalg.inv(self.xyz_from_rgb_matrix)
 
+    def in_gamut(self, XYZ_Color):
+        """
+        Check whether an XYZ_Color falls within the gamut of a colour space
+        """
+        rgb = self.rgb_from_xyz_matrix @ XYZ_Color._values
+        return np.all(rgb >= 0)
+
 
 # https://www.color.org/chardata/rgb/srgb.xalter
 sRGB = RGB_ColorSpace(
