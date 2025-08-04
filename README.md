@@ -68,6 +68,10 @@ Having lost a degree of freedom (the intensity), $x$ and $y$ now uniquely define
 the colour indepedent of brightness. This quantity is called the chromacity and
 can be represented in the $xy$ plane.
 
+![image](https://github.com/mahollands/colorpy2/images/CIE_xy.png
+"CIE 1931 chromacity diagram")
+
+
 ## Usage
 
 Calculating colours with Colorpy2 has been made as easy as possible. The recipe
