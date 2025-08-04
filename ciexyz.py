@@ -53,34 +53,13 @@ CIE International Commission on Illumination - http://www.cie.co.at/ - (accessed
 
 Charles Poynton - Frequently asked questions about Gamma and Color,
     posted to comp.graphics.algorithms, 25 Jan 1995.
-
-License:
-
-Copyright (C) 2008 Mark Kness
-
-Author - Mark Kness - mkness@alumni.utexas.net
-
-This file is part of ColorPy.
-
-ColorPy is free software: you can redistribute it and/or modify it under the
-terms of the GNU Lesser General Public License as published by the Free
-Software Foundation, either version 3 of the License, or (at your option) any
-later version.
-
-ColorPy is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
-PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
-details.
-
-You should have received a copy of the GNU Lesser General Public License along
-with ColorPy.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import os.path
 import numpy as np
 from astropy import units as u
 from astropy.modeling.physical_models import BlackBody
-from .colormodels import XYZ_Color, RGB_Color
+from .colormodels import XYZ_Color, RGB_Color, IRGB_Color
 
 # table of 1931 CIE XYZ matching functions.
 # data from: http://cvrl.ioo.ucl.ac.uk/database/data/cmfs/ciexyz31_1.txt
@@ -204,6 +183,36 @@ class Spectrum:
         """
         XYZ = self._XYZ_integrals()
         return XYZ_Color(*XYZ.si.value)
+
+    def to_RGB(self, **kwargs):
+        """
+        Calculate the RGB color of the spectrum. Units are dropped but
+        converted to SI W/m^2 or W/m^2/sr first (depending on the flux units).
+        Keyword arguments to be passed to RGB_Color.
+        """
+        XYZ = self.to_XYZ()
+        RGB = RGB_Color.from_XYZ(XYZ, **kwargs)
+        return RGB
+
+    def to_IRGB(self, **kwargs):
+        """
+        Calculate the displayable RGB color (IRGB) of the spectrum. Keyword
+        arguments passed to RGB_Color and RGB_Color.to_IRGB.
+        """
+        irgb_kw = {} 
+        if 'clip_method' in kwargs:
+            irgb_kw['clip_method'] = kwargs.pop('clip_method')
+        RGB = self.to_RGB(**kwargs)
+        IRGB = RGB.to_IRGB(**irgb_kw)
+        return IRGB
+
+    def to_IRGB_string(self, **kwargs):
+        """
+        Calculate the displayable RGB color (IRGB) of the spectrum as a
+        hexcode. Keyword arguments passed to RGB_Color, and RGB_Color.to_IRGB.
+        """
+        IRGB = self.to_IRGB(**kwargs)
+        return IRGB.to_string()
 
     def to_luminance(self):
         """
