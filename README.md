@@ -48,9 +48,9 @@ PYTHONPATH environment variable at it.
 If we have a spectrum $F_\lambda(\lambda)$ and want to calculate its displayable RGB colour.
 Mathematically we do something akin to synthetic photometry in astronomy:
 ```math
-X = \int F_\lambda(\lambda) * \bar{x}(\lambda) \,\mathrm{d}\lambda \\ 
-Y = \int F_\lambda(\lambda) * \bar{y}(\lambda) \,\mathrm{d}\lambda \\
-Z = \int F_\lambda(\lambda) * \bar{z}(\lambda) \,\mathrm{d}\lambda
+X = \int F_\lambda(\lambda) \bar{x}(\lambda) \,\mathrm{d}\lambda \qquad
+Y = \int F_\lambda(\lambda) \bar{y}(\lambda) \,\mathrm{d}\lambda \qquad
+Z = \int F_\lambda(\lambda) \bar{z}(\lambda) \,\mathrm{d}\lambda
 ```
 
 where $\bar{x}(\lambda)$ etc, are the CIE 1931 colour matching functions, and
@@ -59,9 +59,9 @@ to consider the colour independent of its brightness/intensity/luminance? Then
 we can normalise the $X, Y, Z$ by scaling by their sum: 
 
 ```math
-x = \frac{X}/{X+Y+Z} 
-y = \frac{Y}/{X+Y+Z}
-z = \frac{Z}/{X+Y+Z}
+x = \frac{X}{X+Y+Z} \qquad
+y = \frac{Y}{X+Y+Z} \qquad
+z = \frac{Z}{X+Y+Z}
 ```
 
 Having lost a degree of freedom (the intensity), $x$ and $y$ now uniquely define
