@@ -1,12 +1,13 @@
 # Colorpy2
 
 Colorpy2 allows perceived colours of light to be calculated from the physical
-spectra that emit them. This allows spectra radiated from (for example)
-astrophyiscal objects to be converted into colours that can be accurately be
-reproduced on a computer display.
+spectra that emit them, and conversions between various colour spaces. This
+allows spectra radiated from (for example) astrophyiscal objects to be
+converted into colours that can be accurately be reproduced on a computer
+display.
 
 Colorpy2 is an almost complete rewrite of the original
-[colorpy](https://github.com/markkness/ColorPy) by Mark Kness, further
+[Colorpy](https://github.com/markkness/ColorPy) by Mark Kness, further
 documentation for the original package can be found
 [here](https://github.com/markkness/ColorPy). Mark Kness' original colorpy has
 been an invaluable resource for me for calculating colours of stars from their
@@ -35,13 +36,37 @@ Colorpy2 aims to solve several issues with the original:
     - sRGB
     - Rec709
     - Rec2020
-    - DCI_P3 SDR/HDR
+    - DCI P3 SDR/HDR
     - and many more
 
 ## Installation:
 
 At the moment installation is simply cloning this module and pointing your
 PYTHONPATH environment variable at it.
+
+## Colour Science
+If we have a spectrum $F_\lambda(\lambda)$ and want to calculate its displayable RGB colour.
+Mathematically we do something akin to synthetic photometry in astronomy:
+```math
+X = \int F_\lambda(\lambda) * \bar{x}(\lambda) \,\mathrm{d}\lambda \\ 
+Y = \int F_\lambda(\lambda) * \bar{y}(\lambda) \,\mathrm{d}\lambda \\
+Z = \int F_\lambda(\lambda) * \bar{z}(\lambda) \,\mathrm{d}\lambda
+```
+
+where $\bar{x}(\lambda)$ etc, are the CIE 1931 colour matching functions, and
+$X,Y,Z$ are the integrated fluxes in the XYZ colour space. But what if we want
+to consider the colour independent of its brightness/intensity/luminance? Then
+we can normalise the $X, Y, Z$ by scaling by their sum: 
+
+```math
+x = \frac{X}/{X+Y+Z} 
+y = \frac{Y}/{X+Y+Z}
+z = \frac{Z}/{X+Y+Z}
+```
+
+Having lost a degree of freedom (the intensity), $x$ and $y$ now uniquely define
+the colour indepedent of brightness. This quantity is called the chromacity and
+can be represented in the $xy$ plane.
 
 ## Usage
 
@@ -52,19 +77,16 @@ for doing so looks basically like:
 * convert from XYZ to a linear RGB colour space (sRGB by default)
 * convert linear RGB to the non-linear display RGB (IRGB) space by applying a transfer function
 
-Lets say we want to determine the colour of a 10,000 K black body -- something
-like the A-type star Sirius A. In Colorpy2 we can do
+Lets say we want to determine the sRGB colour of a 10,000 K black body (something
+like the A-type star Sirius A) as a hexstring. In Colorpy2 we can do
 
 ```python
->>> from colorpy2 import Spectrum, RGB_Color
 >>> from astropy import units as u
+>>> from colorpy2 import Spectrum
 
 >>> lam = np.arange(300, 900, 0.1) * u.nm
 >>> S = Spectrum.BlackBody(temperature=10000*u.K, wavelength=lam)
->>> XYZ = S.to_XYZ()
->>> RGB = RGB_Color.from_XYZ(XYZ)
->>> IRGB = RGB.to_IRGB()
->>> print(IRGB.to_string())
+>>> print(S.to_IRGB_string())
 '#CDD9FF'
 ```
 
@@ -147,7 +169,7 @@ This is equivalent to
 The integral over $\theta$ runs from $0$ to $\pi/2$, since we only care about the
 outward radiated flux. So
 ```math
-\Phi = L \int \mathrm{d}A \int_0^{2\pi} \mathrm{d}\phi \int_0^{\pi/2} \cos\theta \sin\theta \,\mathrm{d}\theta
+\Phi = L \oiint \mathrm{d}A \int_0^{2\pi} \mathrm{d}\phi \int_0^{\pi/2} \cos\theta \sin\theta \,\mathrm{d}\theta
   = L (4\pi R_\odot^2)(2\pi \mathrm{sr})(1/2)
   = 4\pi^2 \mathrm{sr} R_\odot^2 L
 ```
