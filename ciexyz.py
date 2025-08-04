@@ -24,39 +24,6 @@ close.
 Ideally, we would like the spectrum of the actual monitor display, at full
 white, which is not independent of wavelength, to sample to Y = 1.0.
 
-Constants and Functions:
-
-start_wl_nm, end_wl_nm - Default starting and ending range of wavelengths, in nm, as integers.
-delta_wl_nm            - Default wavelength spacing, in nm, as a float.
-
-def xyz_from_wavelength (wl_nm) -
-    Given a wavelength (nm), return the corresponding xyz color, for unit
-    intensity.
-
-def xyz_from_spectrum (spectrum) -
-    Determine the xyz color of the spectrum.
-
-    The spectrum is assumed to be a 2D numpy array, with a row for each
-    wavelength, and two columns.  The first column should hold the wavelength
-    (nm), and the second should hold the light intensity.  The set of
-    wavelengths can be arbitrary, it does not have to be the set that
-    empty_spectrum() returns.
-
-def get_normalized_spectral_line_colors (
-    brightness = 1.0,
-    num_purples = 0,
-    dwl_angstroms = 10):
-    Get an array of xyz colors covering the visible spectrum. Optionally add a
-    number of 'purples', which are colors interpolated between the color of the
-    lowest wavelength (violet) and the highest (red).
-
-    brightness - Desired maximum rgb component of each color.  Default 1.0.
-    (Maxiumum displayable brightness)
-    num_purples - Number of colors to interpolate in the 'purple' range.
-    Default 0.  (No purples)
-    dwl_angstroms - Wavelength separation, in angstroms (0.1 nm).  Default 10
-    A. (1 nm spacing)
-
 References:
 
 Wyszecki and Stiles, Color Science: Concepts and Methods, Quantitative Data and Formulae,
