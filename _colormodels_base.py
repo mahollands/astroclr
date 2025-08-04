@@ -14,9 +14,8 @@ class Color:
     def __repr__(self):
         return "{}({}, {}, {})".format(self.__class__.__name__, *self._values)
 
-    def __rmul__(self, value):
-        # However we define __mul__ in subclasses, __rmul__ will do the same
-        return self * value
+    def __rmul__(self, other):
+        return self * other
 
     @property
     def _1(self):
@@ -48,28 +47,28 @@ class LinearColor(Color):
     def __init__(self, values, dtype=float):
         super().__init__(values, dtype=dtype)
 
-    def __add__(self, value):
-        if not isinstance(value, self.__class__):
+    def __add__(self, other):
+        if not isinstance(other, self.__class__):
             raise TypeError
-        new = self._values + value._values
+        new = self._values + other._values
         return self.__class__(*new)
 
-    def __sub__(self, value):
-        if not isinstance(value, self.__class__):
+    def __sub__(self, other):
+        if not isinstance(other, self.__class__):
             raise TypeError
-        new = self._values - value._values
+        new = self._values - other._values
         return self.__class__(*new)
 
-    def __mul__(self, value):
-        if not isinstance(value, (int, float)):
+    def __mul__(self, other):
+        if not isinstance(other, (int, float)):
             raise TypeError
-        new = self._values * value
+        new = self._values * other
         return self.__class__(*new)
 
-    def __truediv__(self, value):
-        if not isinstance(value, (int, float)):
+    def __truediv__(self, other):
+        if not isinstance(other, (int, float)):
             raise TypeError
-        new = self._values / value
+        new = self._values / other
         return self.__class__(*new)
 
 
