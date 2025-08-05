@@ -7,10 +7,6 @@ Functions to draw various types of plots for light spectra.
 
 Functions:
 
-log_interpolate (y0, y1, num_values) -
-    Return a list of values, num_values in size, logarithmically interpolated
-    between y0 and y1. The first value will be y0, the last y1.
-
 tighten_x_axis (x_list) -
     Tighten the x axis (only) of the current plot to match the given range of x values.
     The y axis limits are not affected.
@@ -121,8 +117,6 @@ GNU Lesser General Public License for more details.
 You should have received a copy of the GNU Lesser General Public License
 along with ColorPy.  If not, see <http://www.gnu.org/licenses/>.
 '''
-from __future__ import print_function
-
 import math
 import numpy, pylab
 
@@ -130,24 +124,6 @@ from . import colormodels
 from . import ciexyz
 
 # Miscellaneous utilities for plots
-
-def log_interpolate (y0, y1, num_values):
-    '''Return a list of values, num_values in size, logarithmically interpolated
-    between y0 and y1. The first value will be y0, the last y1.'''
-    rtn = []
-    if num_values <= 0:
-        raise ValueError('Invalid number of divisions %s in log_interpolate' % (str (num_values)))
-    if num_values == 1:
-        # can't use both endpoints, too constrained
-        yi = math.sqrt (y0 * y1)
-        rtn.append (yi)
-    else:
-        # normal case
-        beta = math.log (y1 / y0) / float (num_values - 1)
-        for i in range (0, num_values):
-            yi = y0 * math.exp (beta * float (i))
-            rtn.append (yi)
-    return rtn
 
 def tighten_x_axis (x_list):
     '''Tighten the x axis (only) of the current plot to match the given range of x values.
