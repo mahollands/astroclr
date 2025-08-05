@@ -60,8 +60,8 @@ class sRGB_EOTF:
         return linear if x <= break_point else gamma
 
     def inv(self, x):
-        #break_point = 0.0304 #old value
-        break_point = 0.031308
+        #break_point = 0.00304 #old value
+        break_point = 0.0031308
         linear = 12.92 * x 
         gamma = 1.055 * x ** (1 / 2.4) - 0.055
         return linear if x <= break_point else gamma
