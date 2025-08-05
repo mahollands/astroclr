@@ -45,6 +45,8 @@ class LinearColor(Color):
     """
 
     def __init__(self, values, dtype=float):
+        if np.isnan(values).any():
+            values = np.zeros(3) 
         super().__init__(values, dtype=dtype)
 
     def __add__(self, other):
