@@ -1,4 +1,4 @@
-'''
+"""
 illuminants.py - Definitions of some standard illuminants.
 
 Description:
@@ -87,8 +87,12 @@ GNU Lesser General Public License for more details.
 
 You should have received a copy of the GNU Lesser General Public License
 along with ColorPy.  If not, see <http://www.gnu.org/licenses/>.
-'''
+"""
+
+import os
 import functools
+import numpy as np
+from astropy import units as u
 from .ciexyz import Spectrum
 from . import plots
 
@@ -104,20 +108,24 @@ __all__ = [
 # ColorPy does not currently provide D55 or D75.
 #
 
-_wavelengths = np.arange(360, 830+0.5, 1.0) * u.nm
+_wavelengths = np.arange(360, 830 + 0.5, 1.0) * u.nm
+
 
 def scale_illuminant():
     """
     Scale the illuminant intensity to Y=1.0
     """
+
     def _decorator(get_illuminant):
-        @wraps
+        @functools.wraps
         def _wrapper():
             illuminant = get_illuminant()
             XYZ = illuminant.to_XYZ()
             illuminant.flux /= XYZ.y
             return illuminant
+
         return _wrapper
+
     return _decorator
 
 
@@ -148,10 +156,10 @@ def get_illuminant_D65():
 
 @scale_illuminant
 def get_blackbody_illuminant(T_K):
-    """ 
+    """
     Get the spectrum of a blackbody at the given temperature, normalized to Y = 1.0.o
     """
-    return Spectrum.Blackbody(T_K, _wavelength)
+    return Spectrum.Blackbody(T_K, _wavelengths)
 
 
 def get_illuminant_A():
@@ -167,7 +175,7 @@ def get_constant_illuminant():
     """
     Get an illuminant, with spectrum constant over wavelength, normalized to Y = 1.0.
     """
-    return Spectrum(_wavelength, 1)
+    return Spectrum(_wavelengths, 1)
 
 
 def figures():
@@ -175,14 +183,14 @@ def figures():
     Plot spectra for several illuminants.
     """
     # D65
-    plots.spectrum_plot(
-        get_illuminant_D65(), 'CIE Illuminant D65', 'Illuminant-D65')
+    plots.spectrum_plot(get_illuminant_D65(), "CIE Illuminant D65", "Illuminant-D65")
     # A
-    plots.spectrum_plot (
-        get_illuminant_A(), 'CIE Illuminant A', 'Illuminant-A')
+    plots.spectrum_plot(get_illuminant_A(), "CIE Illuminant A", "Illuminant-A")
     # Constant
-    plots.spectrum_plot (
-        get_constant_illuminant(), 'Constant Illuminant', 'Illuminant-Const')
+    plots.spectrum_plot(
+        get_constant_illuminant(), "Constant Illuminant", "Illuminant-Const"
+    )
     # Blackbody (5778)
-    plots.spectrum_plot (
-        get_blackbody_illuminant (5778.0), '5778 K Illuminant', 'Illuminant-5778')
+    plots.spectrum_plot(
+        get_blackbody_illuminant(5778.0), "5778 K Illuminant", "Illuminant-5778"
+    )
