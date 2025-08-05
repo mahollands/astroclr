@@ -59,7 +59,7 @@ import os.path
 import numpy as np
 from astropy import units as u
 from astropy.modeling.physical_models import BlackBody
-from .colormodels import XYZ_Color, RGB_Color, IRGB_Color
+from .colormodels import XYZ_Color, RGB_Color
 
 # table of 1931 CIE XYZ matching functions.
 # data from: http://cvrl.ioo.ucl.ac.uk/database/data/cmfs/ciexyz31_1.txt
