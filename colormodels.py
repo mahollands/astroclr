@@ -191,6 +191,10 @@ class RGB_Color(LinearColor):
     g = property(fget=LinearColor._2.fget, fset=LinearColor._2.fset)
     b = property(fget=LinearColor._3.fget, fset=LinearColor._3.fset)
 
+    @property
+    def _kwargs(self):
+        return {'color_space': self.color_space} 
+
     def normalize_brightest(self):
         return self / self._values.max()
 
@@ -292,7 +296,7 @@ class IRGB_Color(LinearColor):
         """
         max_val = 2**self.color_space.bit_depth
         rgb = [self.color_space.EOTF(val / max_val) for val in self._values]
-        RGB = RGB_Color(*rgb)
+        RGB = RGB_Color(*rgb, color_space=self.color_space)
 
         if to_luminance:
             RGB *= self.color_space.peak_luminance.to_value(u.cd/u.m**2)

@@ -49,29 +49,33 @@ class LinearColor(Color):
             values = np.zeros(3) 
         super().__init__(values, dtype=dtype)
 
+    @property
+    def _kwargs(self):
+        return {}
+
     def __add__(self, other):
         if not isinstance(other, self.__class__):
             raise TypeError
         new = self._values + other._values
-        return self.__class__(*new)
+        return self.__class__(*new, **self._kwargs)
 
     def __sub__(self, other):
         if not isinstance(other, self.__class__):
             raise TypeError
         new = self._values - other._values
-        return self.__class__(*new)
+        return self.__class__(*new, **self._kwargs)
 
     def __mul__(self, other):
         if not isinstance(other, (int, float)):
             raise TypeError
         new = self._values * other
-        return self.__class__(*new)
+        return self.__class__(*new, **self._kwargs)
 
     def __truediv__(self, other):
         if not isinstance(other, (int, float)):
             raise TypeError
         new = self._values / other
-        return self.__class__(*new)
+        return self.__class__(*new, **self._kwargs)
 
 
 class XYZ_Color(LinearColor):
