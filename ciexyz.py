@@ -105,7 +105,7 @@ class Spectrum:
         unit wavelength or flux per unit wavelength per solid_angle.
     """
 
-    __slots__ = ["_x", "_y"]
+    __slots__ = ["_x", "_y", "_y_unit_option"]
 
     def __init__(self, wavelength, flux):
         self.wavelength = wavelength
@@ -135,7 +135,11 @@ class Spectrum:
             value = value * np.ones(self.wavelength.size)
         elif len(value) != len(self.wavelength):
             raise ValueError("Fluxes must be the same length as wavelengths")
-        if not value.unit.is_equivalent(_valid_flux_units):
+        for flux_unit in _valid_flux_units:
+            if value.unit.is_equivalent(_valid_flux_units):
+                self._y_unit_option = flux_unit
+                break
+        else:
             raise ValueError("Flux units must be equivalent to W/m2/sr/nm or W/m2/nm")
         self._y = value
 
@@ -166,13 +170,16 @@ class Spectrum:
         flux = BB(wavelength)
         return cls(wavelength, flux)
 
-    def _XYZ_integrals(self):
+    def XYZ_integrals(self):
         """
         Integrate spectrum over CIE1931 X/Y/Z color-matching functions.
-        The result is a 3-valued astropy quantity with units included.
+        The result is a 3-valued astropy quantity with units of W/m^2
+        or W/m^2/sr.
         """
-        xyz_intp = interpolate_xyz_curves(self.wavelength)
-        integrand = self.flux[np.newaxis,:] * xyz_intp
+        wavelength = self.wavelength.to(u.m)
+        flux = self.flux.to(self._y_unit_option)
+        xyz_intp = interpolate_xyz_curves(wavelength)
+        integrand = flux[np.newaxis,:] * xyz_intp
         I_XYZ = np.trapz(integrand, self.wavelength, axis=1)
         return I_XYZ
 
@@ -181,8 +188,8 @@ class Spectrum:
         Calculate the XYZ color of the spectrum. Units are dropped but
         converted to SI W/m^2 or W/m^2/sr first (depending on the flux units).
         """
-        XYZ = self._XYZ_integrals()
-        return XYZ_Color(*XYZ.si.value)
+        XYZ = self.XYZ_integrals()
+        return XYZ_Color(*XYZ.value)
 
     def to_RGB(self, **kwargs):
         """
@@ -222,7 +229,7 @@ class Spectrum:
         light source) in lm/m^2 (lux), or the luminous exitance (luminous flux
         density radiating from a surface) also in lm/m^2 (lux not used).
         """
-        X, Y, Z = self._XYZ_integrals()
+        X, Y, Z = self.XYZ_integrals()
         L = 683 * u.lm/u.W * Y
 
         if self.flux.unit.is_equivalent(_flux_unit2):
