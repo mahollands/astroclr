@@ -155,7 +155,7 @@ class Spectrum:
         return f"Spectrum({wavelength_str}, {flux_str})"
 
     @classmethod
-    def BlackBody(cls, temperature, wavelength):
+    def BlackBody(cls, temperature, wavelength=_wavelengths):
         """
         Class method for generating a black body spectrum. For
         a given temperature and wavelength array/Quantity.
