@@ -216,11 +216,11 @@ class RGB_Color(LinearColor):
         xyz = self.color_space.xyz_from_rgb_matrix @ self._values
         return XYZ_Color(*xyz)
 
-    def to_IRGB(self, clip_method=ClipMethod.ADD_WHITE):
+    def clip_to_gamut(self, clip_method=ClipMethod.ADD_WHITE):
         """
-        Convert a (linear) rgb value (range 0.0 - 1.0) into a 0-255
-        displayable integer irgb value (range 0 - 255), clipping as
-        necessary
+        Clip an RGB colour to within its colour space, either by mixing with
+        the white point, or clamp any negative channels to zero. Both methods
+        move the colour to the edge of the RGB gamut.
         """
         if clip_method == ClipMethod.ADD_WHITE:
             rgb = self._values
@@ -234,7 +234,15 @@ class RGB_Color(LinearColor):
             rgb = np.clip(self._values, 0, np.inf)
         else:
             raise ValueError(f"Invalid color clipping method {clip_method}")
+        return RGB_Color(*rgb)
 
+    def to_IRGB(self, clip_method=ClipMethod.ADD_WHITE):
+        """
+        Convert a (linear) rgb value (range 0.0 - 1.0) into a 0-255
+        displayable integer irgb value (range 0 - 255), clipping as
+        necessary
+        """
+        rgb = self.clip_to_gamut(clip_method)._values
         # clip intensity if needed (rgb values > 1.0) by scaling
         rgb_max = max(rgb)
         # we actually don't overflow until 255.0 * intensity > 255.5, so
