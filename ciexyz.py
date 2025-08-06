@@ -265,7 +265,8 @@ def get_normalized_spectral_line_colors(
     dwl - wavelength separation, Default 1nm
     annotate - additionally return string labels for each color
     """
-    wavelengths = np.arange(_wavelengths[0], _wavelengths[-1] + dwl / 2, dwl)
+    xl0, xl1, dwl = [x.to_value(u.nm) for x in (_wavelengths[0], _wavelengths[-1], dwl)]
+    wavelengths = np.arange(xl0, xl1 + dwl/2, dwl) * u.nm
 
     # build list of normalized color x,y values proceeding along each wavelength
     XYZs = [XYZ_from_wavelength(wavelength) for wavelength in wavelengths]
@@ -280,7 +281,7 @@ def get_normalized_spectral_line_colors(
     # scale each color to have the max rgb component equal to the desired
     # brightness
     RGBs = [brightness * RGB_Color.from_XYZ(xyz, brightest=True) for xyz in xyzs]
-    XYZs = [rgb.to_XYZ() for rgb in RGBs]
+    XYZs = [RGB.to_XYZ() for RGB in RGBs]
 
     if not annotate:
         return XYZs
