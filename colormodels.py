@@ -403,3 +403,31 @@ class LAB_Color(Lpq_Color):
         z_p = Lab_f_inverse(f_z)
         xyz_p = XYZ_Color(x_p, y_p, z_p)
         return xyz_p * self.white_point
+
+
+class ColorList(list):
+    """
+    Class for a list of colours (all of the same type). This allows attributes
+    and methods to be mapped across elements.
+    """
+    def __init__(self, values):
+        color_types = {
+            XYZ_Color,
+            RGB_Color,
+            IRGB_Color,
+            LUV_Color,
+            LAB_Color,
+        }
+        if (first_type := type(values[0])) not in color_types:
+            raise TypeError("Not one of the supported colors")
+        if not all(isinstance(element, first_type) for element in values):
+            raise TypeError("All Colors must be of the same type")
+        super().__init__(values) 
+
+    def __getattr__(self, attr):
+        if not callable(getattr(self[0], attr)):
+            return [getattr(item, attr) for item in self]
+        # Return a function that maps this method over all items
+        def method(*args, **kwargs):
+            return [getattr(item, attr)(*args, **kwargs) for item in self]
+        return method
