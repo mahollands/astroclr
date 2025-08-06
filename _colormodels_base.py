@@ -82,8 +82,8 @@ class XYZ_Color(LinearColor):
     def __init__(self, x, y, z=None):
         if z is None:
             z = 1 - x - y
-            if np.isclose(z, 0):
-                z = 0
+        if np.isclose(z, 0):
+            z = 0
         if any(val < 0 for val in (x, y, z)):
             raise ValueError("XYZ values must be positive")
         super().__init__((x, y, z))
