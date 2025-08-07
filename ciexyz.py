@@ -65,22 +65,40 @@ from .colormodels import XYZ_Color, RGB_Color
 # data from: http://cvrl.ioo.ucl.ac.uk/database/data/cmfs/ciexyz31_1.txt
 # massaged into this format.
 
+__all__ = [
+    "CMFs", 
+    "Spectrum",
+    "XYZ_from_wavelength",
+    "get_normalized_spectral_line_colors",
+]
+
+DATA_DIR = f"{os.path.dirname(__file__)}/data"
+CMFs = {}
+
 _CIEXYZ_1931_table = np.loadtxt(
-    f"{os.path.dirname(__file__)}/data/ciexyz31_1.txt",
+    f"{DATA_DIR}/ciexyz31_1.txt",
     delimiter=",",
     unpack=True,
 )
-
-# Private - tables of spectral curves
 _wavelengths, *_xyz_table = _CIEXYZ_1931_table
-_wavelengths <<= u.nm
+CMFs['1931'] = _wavelengths * u.nm, _xyz_table
+
+_CIEXYZ_1964_table = np.loadtxt(
+    f"{DATA_DIR}/CIE_xyz_1964_10deg.csv",
+    delimiter=",",
+    unpack=True,
+)
+_wavelengths, *_xyz_table = _CIEXYZ_1964_table
+_xyz_table = np.where(np.isnan(_xyz_table), 0, _xyz_table)
+CMFs['1964_10deg'] = _wavelengths * u.nm, _xyz_table
 
 _flux_unit1 = u.W/u.m**2/u.sr/u.nm
 _flux_unit2 = _flux_unit1 * u.sr
 _valid_flux_units = _flux_unit1, _flux_unit2
 
 
-def interpolate_xyz_curves(wavelength):
+def interpolate_xyz_curves(wavelength, CMF='1931'):
+    _wavelengths, _xyz_table = CMFs[CMF]
     xyz_curves_interpolated = [
         np.interp(wavelength, _wavelengths, xyz_curve, left=0, right=0)
         for xyz_curve in _xyz_table
@@ -170,7 +188,7 @@ class Spectrum:
         flux = BB(wavelength)
         return cls(wavelength, flux)
 
-    def XYZ_integrals(self):
+    def XYZ_integrals(self, CMF='1931'):
         """
         Integrate spectrum over CIE1931 X/Y/Z color-matching functions.
         The result is a 3-valued astropy quantity with units of W/m^2
@@ -178,7 +196,7 @@ class Spectrum:
         """
         wavelength = self.wavelength.to(u.m)
         flux = self.flux.to(self._y_unit_option)
-        xyz_intp = interpolate_xyz_curves(wavelength)
+        xyz_intp = interpolate_xyz_curves(wavelength, CMF=CMF)
         integrand = flux[np.newaxis,:] * xyz_intp
         I_XYZ = np.trapz(integrand, self.wavelength, axis=1)
         return I_XYZ
@@ -237,7 +255,7 @@ class Spectrum:
         return L.to(u.cd/u.m**2)
 
 
-def XYZ_from_wavelength(wavelength):
+def XYZ_from_wavelength(wavelength, CMF='1931'):
     """
     Given a wavelength (nm), return the corresponding XYZ_Color, for unit
     intensity.
@@ -246,12 +264,12 @@ def XYZ_from_wavelength(wavelength):
         wavelength <<= u.nm
     if not wavelength.isscalar:
         raise ValueError("Wavlength must be scalar")
-    xyz = interpolate_xyz_curves(wavelength)
+    xyz = interpolate_xyz_curves(wavelength, CMF=CMF)
     return XYZ_Color(*xyz)
 
 
 def get_normalized_spectral_line_colors(
-    brightness=1.0, num_purples=0, dwl=1.0 * u.nm, annotate=False
+    brightness=1.0, num_purples=0, dwl=1.0 * u.nm, annotate=False, CMF='1931'
 ):
     """
     Get a list of XYZ colors covering the visible spectrum. Optionally add
@@ -265,11 +283,12 @@ def get_normalized_spectral_line_colors(
     dwl - wavelength separation, Default 1nm
     annotate - additionally return string labels for each color
     """
+    _wavelengths, _ = CMFs[CMF]
     xl0, xl1, dwl = [x.to_value(u.nm) for x in (_wavelengths[0], _wavelengths[-1], dwl)]
     wavelengths = np.arange(xl0, xl1 + dwl/2, dwl) * u.nm
 
     # build list of normalized color x,y values proceeding along each wavelength
-    XYZs = [XYZ_from_wavelength(wavelength) for wavelength in wavelengths]
+    XYZs = [XYZ_from_wavelength(wavelength, CMF=CMF) for wavelength in wavelengths]
     xyzs = [XYZ.normalize() for XYZ in XYZs]
 
     # interpolate from start point to end point (filling in the purples)

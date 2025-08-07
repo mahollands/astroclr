@@ -11,9 +11,8 @@ import math
 import matplotlib.pyplot as plt
 from astropy import units as u
 
-from .colormodels import RGB_Color
-from .ciexyz import (Spectrum, XYZ_from_wavelength, _wavelengths, _xyz_table,
-    get_normalized_spectral_line_colors)
+from .colormodels import RGB_Color, ColorList
+from .ciexyz import *
 from .RGB_color_spaces import sRGB
 
 
@@ -173,11 +172,12 @@ def color_vs_param_plot(
     plt.show()
 
 
-def visible_spectrum_plot():
+def visible_spectrum_plot(CMF='1931'):
     """
     Plot the visible spectrum, as a plot vs wavelength.
     """
-    XYZs = (XYZ_from_wavelength(lam) for lam in _wavelengths)
+    _wavelengths, _ = CMFs[CMF]
+    XYZs = (XYZ_from_wavelength(lam, CMF=CMF) for lam in _wavelengths)
     RGBs = [RGB_Color.from_XYZ(XYZ) for XYZ in XYZs]
     # scale to make brightest rgb value = 1.0
     rgb_max = max(RGB._values.max() for RGB in RGBs)
@@ -191,12 +191,12 @@ def visible_spectrum_plot():
         xlabel=r"Wavelength (nm)",
         ylabel=r"RGB Color",
     )
-    print("This shouldnt happen")
 
-def cie_matching_functions_plot():
+def cie_matching_functions_plot(CMF='1931'):
     """
     Plot the CIE XYZ matching functions, as three spectral subplots.
     """
+    _wavelengths, _xyz_table = CMFs[CMF]
     cie_x, cie_y, cie_z = [Spectrum(_wavelengths, cie) for cie in _xyz_table]
     
     plt.figure()
@@ -220,13 +220,14 @@ def cie_matching_functions_plot():
     plt.show()
 
 
-def scattered_visual_brightness():
+def scattered_visual_brightness(CMF='1931'):
     """
     Plot the perceptual brightness of Rayleigh scattered light.
     """
+    _wavelengths, _xyz_table = CMFs[CMF]
+    CIE_Y = _xyz_table[1]
     # get 'spectra' for y matching functions and multiply by 1/wl^4
     rayleigh = (550.0 / _wavelengths.value)**4
-    CIE_Y = _xyz_table[1]
     S = Spectrum(_wavelengths, rayleigh*CIE_Y)
 
     plt.figure()
@@ -238,14 +239,16 @@ def scattered_visual_brightness():
     plt.show()
 
 
-def shark_fin_plot(color_space=sRGB):
+def shark_fin_plot(CMF='1931', color_space=sRGB,):
     """
     Draw the 'shark fin' CIE chromaticity diagram of the pure spectral lines
     (plus purples) in xy space.
     """
     cs = color_space
     # get array of (approximate) colors for the boundary of the fin
-    XYZs = get_normalized_spectral_line_colors(num_purples=200, dwl=2*u.AA)
+    XYZs = get_normalized_spectral_line_colors(
+        num_purples=200, dwl=2*u.AA, CMF=CMF
+    )
     # get normalized colors
     xys = [XYZ.normalize() for XYZ in XYZs]
 
@@ -327,13 +330,9 @@ def shark_fin_plot(color_space=sRGB):
     plt.show()
 
 
-def figures():
+def figures(CMF='1931'):
     """Draw specific figures not used anywhere else."""
-    visible_spectrum_plot()
-    cie_matching_functions_plot()
-    shark_fin_plot()
-    scattered_visual_brightness()
-
-
-if __name__ == "__main__":
-    figures()
+    visible_spectrum_plot(CMF=CMF)
+    cie_matching_functions_plot(CMF=CMF)
+    shark_fin_plot(CMF=CMF)
+    scattered_visual_brightness(CMF=CMF)
