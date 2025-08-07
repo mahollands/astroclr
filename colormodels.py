@@ -410,15 +410,16 @@ class ColorList(list):
     Class for a list of colours (all of the same type). This allows attributes
     and methods to be mapped across elements.
     """
+    color_types = {
+        XYZ_Color,
+        RGB_Color,
+        IRGB_Color,
+        LUV_Color,
+        LAB_Color,
+    }
+
     def __init__(self, values):
-        color_types = {
-            XYZ_Color,
-            RGB_Color,
-            IRGB_Color,
-            LUV_Color,
-            LAB_Color,
-        }
-        if (first_type := type(values[0])) not in color_types:
+        if (first_type := type(values[0])) not in ColorList.color_types:
             raise TypeError("Not one of the supported colors")
         if not all(isinstance(element, first_type) for element in values):
             raise TypeError("All Colors must be of the same type")
@@ -429,5 +430,8 @@ class ColorList(list):
             return [getattr(item, attr) for item in self]
         # Return a function that maps this method over all items
         def method(*args, **kwargs):
-            return [getattr(item, attr)(*args, **kwargs) for item in self]
+            ret = [getattr(item, attr)(*args, **kwargs) for item in self]
+            if type(ret[0]) in ColorList.color_types:
+                ret = ColorList(ret)
+            return ret
         return method
