@@ -59,14 +59,14 @@ import os.path
 import numpy as np
 from astropy import units as u
 from astropy.modeling.physical_models import BlackBody
-from .colormodels import XYZ_Color, RGB_Color
+from .colormodels import XYZ_Color, RGB_Color, ColorList
 
 # table of 1931 CIE XYZ matching functions.
 # data from: http://cvrl.ioo.ucl.ac.uk/database/data/cmfs/ciexyz31_1.txt
 # massaged into this format.
 
 __all__ = [
-    "CMFs", 
+    "CMFs",
     "Spectrum",
     "XYZ_from_wavelength",
     "get_normalized_spectral_line_colors",
@@ -81,7 +81,7 @@ _CIEXYZ_1931_table = np.loadtxt(
     unpack=True,
 )
 _wavelengths, *_xyz_table = _CIEXYZ_1931_table
-CMFs['1931'] = _wavelengths * u.nm, _xyz_table
+CMFs["1931"] = _wavelengths * u.nm, _xyz_table
 
 _CIEXYZ_1964_table = np.loadtxt(
     f"{DATA_DIR}/CIE_xyz_1964_10deg.csv",
@@ -90,14 +90,14 @@ _CIEXYZ_1964_table = np.loadtxt(
 )
 _wavelengths, *_xyz_table = _CIEXYZ_1964_table
 _xyz_table = np.where(np.isnan(_xyz_table), 0, _xyz_table)
-CMFs['1964_10deg'] = _wavelengths * u.nm, _xyz_table
+CMFs["1964_10deg"] = _wavelengths * u.nm, _xyz_table
 
-_flux_unit1 = u.W/u.m**2/u.sr/u.nm
+_flux_unit1 = u.W / u.m**2 / u.sr / u.nm
 _flux_unit2 = _flux_unit1 * u.sr
 _valid_flux_units = _flux_unit1, _flux_unit2
 
 
-def interpolate_xyz_curves(wavelength, CMF='1931'):
+def interpolate_xyz_curves(wavelength, CMF="1931"):
     _wavelengths, _xyz_table = CMFs[CMF]
     xyz_curves_interpolated = [
         np.interp(wavelength, _wavelengths, xyz_curve, left=0, right=0)
@@ -132,6 +132,7 @@ class Spectrum:
     @property
     def wavelength(self):
         return self._x
+
     @wavelength.setter
     def wavelength(self, value):
         if not isinstance(value, u.Quantity):
@@ -145,6 +146,7 @@ class Spectrum:
     @property
     def flux(self):
         return self._y
+
     @flux.setter
     def flux(self, value):
         if not isinstance(value, u.Quantity):
@@ -165,7 +167,7 @@ class Spectrum:
         return len(self._x)
 
     def __repr__(self):
-        n_spec =  len(self)
+        n_spec = len(self)
         x_unit = self.wavelength.unit.to_string()
         y_unit = self.flux.unit.to_string()
         wavelength_str = f"wavelength[{n_spec}] * {x_unit}"
@@ -184,11 +186,11 @@ class Spectrum:
             temperature <<= u.K
         if not temperature.isscalar:
             raise ValueError("temperature should be a scalar")
-        BB = BlackBody(temperature, scale=1*_flux_unit1)
+        BB = BlackBody(temperature, scale=1 * _flux_unit1)
         flux = BB(wavelength)
         return cls(wavelength, flux)
 
-    def XYZ_integrals(self, CMF='1931'):
+    def XYZ_integrals(self, CMF="1931"):
         """
         Integrate spectrum over CIE1931 X/Y/Z color-matching functions.
         The result is a 3-valued astropy quantity with units of W/m^2
@@ -197,7 +199,7 @@ class Spectrum:
         wavelength = self.wavelength.to(u.m)
         flux = self.flux.to(self._y_unit_option)
         xyz_intp = interpolate_xyz_curves(wavelength, CMF=CMF)
-        integrand = flux[np.newaxis,:] * xyz_intp
+        integrand = flux[np.newaxis, :] * xyz_intp
         I_XYZ = np.trapz(integrand, self.wavelength, axis=1)
         return I_XYZ
 
@@ -224,9 +226,9 @@ class Spectrum:
         Calculate the displayable RGB color (IRGB) of the spectrum. Keyword
         arguments passed to RGB_Color and RGB_Color.to_IRGB.
         """
-        irgb_kw = {} 
-        if 'clip_method' in kwargs:
-            irgb_kw['clip_method'] = kwargs.pop('clip_method')
+        irgb_kw = {}
+        if "clip_method" in kwargs:
+            irgb_kw["clip_method"] = kwargs.pop("clip_method")
         RGB = self.to_RGB(**kwargs)
         IRGB = RGB.to_IRGB(**irgb_kw)
         return IRGB
@@ -248,14 +250,14 @@ class Spectrum:
         density radiating from a surface) also in lm/m^2 (lux not used).
         """
         X, Y, Z = self.XYZ_integrals()
-        L = 683 * u.lm/u.W * Y
+        L = 683 * u.lm / u.W * Y
 
         if self.flux.unit.is_equivalent(_flux_unit2):
-            return L.to(u.lm/u.m**2)
-        return L.to(u.cd/u.m**2)
+            return L.to(u.lm / u.m**2)
+        return L.to(u.cd / u.m**2)
 
 
-def XYZ_from_wavelength(wavelength, CMF='1931'):
+def XYZ_from_wavelength(wavelength, CMF="1931"):
     """
     Given a wavelength (nm), return the corresponding XYZ_Color, for unit
     intensity.
@@ -263,13 +265,13 @@ def XYZ_from_wavelength(wavelength, CMF='1931'):
     if not isinstance(wavelength, u.Quantity):
         wavelength <<= u.nm
     if not wavelength.isscalar:
-        raise ValueError("Wavlength must be scalar")
+        return ColorList([XYZ_from_wavelength(wl, CMF=CMF) for wl in wavelength])
     xyz = interpolate_xyz_curves(wavelength, CMF=CMF)
     return XYZ_Color(*xyz)
 
 
 def get_normalized_spectral_line_colors(
-    brightness=1.0, num_purples=0, dwl=1.0 * u.nm, annotate=False, CMF='1931'
+    brightness=1.0, num_purples=0, dwl=1.0 * u.nm, annotate=False, CMF="1931"
 ):
     """
     Get a list of XYZ colors covering the visible spectrum. Optionally add
@@ -285,11 +287,11 @@ def get_normalized_spectral_line_colors(
     """
     _wavelengths, _ = CMFs[CMF]
     xl0, xl1, dwl = [x.to_value(u.nm) for x in (_wavelengths[0], _wavelengths[-1], dwl)]
-    wavelengths = np.arange(xl0, xl1 + dwl/2, dwl) * u.nm
+    wavelengths = np.arange(xl0, xl1 + dwl / 2, dwl) * u.nm
 
     # build list of normalized color x,y values proceeding along each wavelength
-    XYZs = [XYZ_from_wavelength(wavelength, CMF=CMF) for wavelength in wavelengths]
-    xyzs = [XYZ.normalize() for XYZ in XYZs]
+    XYZs = XYZ_from_wavelength(wavelengths, CMF=CMF)
+    xyzs = XYZs.normalize()
 
     # interpolate from start point to end point (filling in the purples)
     first_xyz, last_xyz = xyzs[0], xyzs[-1]
@@ -299,8 +301,10 @@ def get_normalized_spectral_line_colors(
 
     # scale each color to have the max rgb component equal to the desired
     # brightness
-    RGBs = [brightness * RGB_Color.from_XYZ(xyz, brightest=True) for xyz in xyzs]
-    XYZs = [RGB.to_XYZ() for RGB in RGBs]
+    RGBs = ColorList(
+        [brightness * RGB_Color.from_XYZ(xyz, brightest=True) for xyz in xyzs]
+    )
+    XYZs = RGBs.to_XYZ()
 
     if not annotate:
         return XYZs
