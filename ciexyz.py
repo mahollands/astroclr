@@ -203,12 +203,12 @@ class Spectrum:
         I_XYZ = np.trapz(integrand, self.wavelength, axis=1)
         return I_XYZ
 
-    def to_XYZ(self):
+    def to_XYZ(self, CMF="1931"):
         """
         Calculate the XYZ color of the spectrum. Units are dropped but
         converted to SI W/m^2 or W/m^2/sr first (depending on the flux units).
         """
-        XYZ = self.XYZ_integrals()
+        XYZ = self.XYZ_integrals(CMF=CMF)
         return XYZ_Color(*XYZ.value)
 
     def to_RGB(self, **kwargs):
