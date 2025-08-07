@@ -109,6 +109,7 @@ __all__ = [
     "IRGB_Color",
     "LUV_Color",
     "LAB_Color",
+    "ColorList",
     "ClipMethod",
 ]
 
