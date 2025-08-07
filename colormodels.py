@@ -436,3 +436,10 @@ class ColorList(list):
                 ret = ColorList(ret)
             return ret
         return method
+
+    def rescale(self, value):
+        """
+        List multiplication already has a function, so this is used
+        for rescaling all elements by a constant.
+        """
+        return ColorList([item * value for item in self])
