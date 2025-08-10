@@ -66,6 +66,43 @@ class sRGB_EOTF:
         gamma = 1.055 * x ** (1 / 2.4) - 0.055
         return linear if x <= break_point else gamma
 
+
+class BT1886_EOTF:
+    """
+    BTU 1886 is a essentially a gamma function, with specificed black luminance
+    relative to white. This EOTF is done on a scale of 0-1 rather than in
+    physical luminance.
+    """
+    def __init__(self, gamma=2.4, Lb_Lw=0):
+        self.gamma = gamma
+        self.Lb_Lw = 0
+
+    @property
+    def igamma(self):
+        return 1/self.gamma
+
+    @property
+    def a(self):
+        gamma, igamma  = self.gamma, self.igamma
+        return (1 - self.Lb_Lw**igamma)**gamma
+
+    @property
+    def b(self):
+        gamma, igamma  = self.gamma, self.igamma
+        Lb_igamma = self.Lb_Lw**igamma
+        return Lb_igamma / (1 - Lb_igamma)
+
+    def __call__(self, x):
+        a, b, gamma = self.a, self.b, self.gamma
+        return a * np.maximum(x+b, 0)**gamma
+
+    #TODO check this
+    def inv(self, x):
+        a, b, igamma = self.a, self.b, self.igamma
+        scaled = (x/a)**self.igamma
+        return np.maximum(scaled-b, 0)
+
+
 class PQ_EOTF:
     """
     Perceptual Quantizer transfer function. Unlike the SDR EOTFs which map to
