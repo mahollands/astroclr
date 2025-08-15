@@ -271,7 +271,7 @@ def XYZ_from_wavelength(wavelength, CMF="1931"):
 
 
 def get_normalized_spectral_line_colors(
-    brightness=1.0, num_purples=0, dwl=1.0 * u.nm, annotate=False, CMF="1931"
+    brightness=1.0, num_purples=0, annotate=False, CMF="1931"
 ):
     """
     Get a list of XYZ colors covering the visible spectrum. Optionally add
@@ -282,15 +282,12 @@ def get_normalized_spectral_line_colors(
     (Maximum displayable brightness)
     num_purples - Number of colors to interpolate in the 'purple' range.
     Default 0. (No purples)
-    dwl - wavelength separation, Default 1nm
     annotate - additionally return string labels for each color
     """
     _wavelengths, _ = CMFs[CMF]
-    xl0, xl1, dwl = [x.to_value(u.nm) for x in (_wavelengths[0], _wavelengths[-1], dwl)]
-    wavelengths = np.arange(xl0, xl1 + dwl / 2, dwl) * u.nm
 
     # build list of normalized color x,y values proceeding along each wavelength
-    XYZs = XYZ_from_wavelength(wavelengths, CMF=CMF)
+    XYZs = XYZ_from_wavelength(_wavelengths, CMF=CMF)
     xyzs = XYZs.normalize()
 
     # interpolate from start point to end point (filling in the purples)
