@@ -426,6 +426,14 @@ class ColorList(list):
             raise TypeError("All Colors must be of the same type")
         super().__init__(values) 
 
+    def __repr__(self):
+        return f"ColorList({super().__repr__()})"
+
+    def __getitem__(self, key):
+        if isinstance(ret := super().__getitem__(key), list):
+            return ColorList(ret)
+        return ret
+
     def __getattr__(self, attr):
         if not callable(getattr(self[0], attr)):
             return [getattr(item, attr) for item in self]
