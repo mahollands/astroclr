@@ -6,12 +6,13 @@ Description:
 Functions to draw various types of plots for light spectra.
 """
 
-import itertools
+from itertools import pairwise, product
 import math
+import numpy as np
 import matplotlib.pyplot as plt
+from scipy.interpolate import interp1d
 from astropy import units as u
-
-from .colormodels import RGB_Color, ColorList
+from .colormodels import XYZ_Color, RGB_Color, ColorList
 from .ciexyz import *
 from .RGB_color_spaces import sRGB
 
@@ -75,8 +76,8 @@ def spectrum_subplot(S):
     RGBs = [RGB / rgb_max for RGB in RGBs]
     # draw color patches (thin vertical lines matching the spectrum curve) in color
     iterables = (
-        itertools.pairwise(S.wavelength.value),
-        itertools.pairwise(S.flux.value),
+        pairwise(S.wavelength.value),
+        pairwise(S.flux.value),
         RGBs,
     )
     for (x0, x1), (y0, y1), RGB in zip(*iterables):
@@ -151,7 +152,7 @@ def color_vs_param_plot(
     plt.subplot(2, 1, 1)
     plt.title(title)
     # no xlabel, ylabel in upper plot
-    for (x0, x1), RGB in zip(itertools.pairwise(param_list), RGBs):
+    for (x0, x1), RGB in zip(pairwise(param_list), RGBs):
         poly_x = [x0, x1, x1, x0]
         poly_y = [0, 0, 1, 1]
         color_string = RGB.to_IRGB().to_string()
@@ -177,11 +178,11 @@ def visible_spectrum_plot(CMF='1931'):
     Plot the visible spectrum, as a plot vs wavelength.
     """
     _wavelengths, _ = CMFs[CMF]
-    XYZs = (XYZ_from_wavelength(lam, CMF=CMF) for lam in _wavelengths)
-    RGBs = [RGB_Color.from_XYZ(XYZ) for XYZ in XYZs]
+    XYZs = XYZ_from_wavelength(_wavelengths, CMF=CMF)
+    RGBs = ColorList([RGB_Color.from_XYZ(XYZ) for XYZ in XYZs])
     # scale to make brightest rgb value = 1.0
     rgb_max = max(RGB._values.max() for RGB in RGBs)
-    RGBs = [RGB / rgb_max for RGB in RGBs]
+    RGBs = ColorList([RGB / rgb_max for RGB in RGBs])
     # plot colors and rgb values vs wavelength
     color_vs_param_plot(
         _wavelengths.value,
@@ -238,95 +239,100 @@ def scattered_visual_brightness(CMF='1931'):
     plt.xlim(S.wavelength.value[(0,-1),])
     plt.show()
 
+def fill_cie_space(xy_boundary, num_segments, color_space, clip_method):
+    wp = color_space.W
+    xy_boundary.append(xy_boundary[0])
+    f = np.linspace(0, 1, num_segments+1)
+    for (xy1, xy2), (f1, f2) in product(pairwise(xy_boundary), pairwise(f)):
+        xy11 = xy1*f1 + wp*(1-f1)
+        xy12 = xy1*f2 + wp*(1-f2)
+        xy21 = xy2*f1 + wp*(1-f1)
+        xy22 = xy2*f2 + wp*(1-f2)
+        corners = ColorList([xy11, xy12, xy22, xy21])
+        xyc = sum(corners, start=XYZ_Color(0, 0, 0))/4
+        RGBc = RGB_Color.from_XYZ(xyc, brightest=True)
+        IRGBc = RGBc.to_IRGB(clip_method=clip_method)
+        color_string = IRGBc.to_string()
+        plt.fill(corners.x, corners.y, color_string, edgecolor=color_string, rasterized=True)
 
-def shark_fin_plot(CMF='1931', color_space=sRGB,):
-    """
-    Draw the 'shark fin' CIE chromaticity diagram of the pure spectral lines
-    (plus purples) in xy space.
-    """
-    cs = color_space
-    # get array of (approximate) colors for the boundary of the fin
-    XYZs = get_normalized_spectral_line_colors(
-        num_purples=200, dwl=2*u.AA, CMF=CMF
-    )
-    # get normalized colors
-    xys = [XYZ.normalize() for XYZ in XYZs]
+def RGB_triangle(color_space):
+    primaries = ColorList(color_space.primaries)
+    primaries.append(primaries[0])
+    RGB_hex = ["#FF0000", "#00FF00", "#0000FF"]
+    plt.plot(primaries.x, primaries.y, 'k:')
+    for primary, c in zip(primaries, RGB_hex):
+        plt.plot(primary.x, primary.y, 's', color=c, mec='k')
 
-    def get_direc_to_white(xy, cs):
-        """
-        Get unit vector (xy plane) in direction of the white point.
-        """
-        direc = cs.W - xy
-        mag = math.hypot(direc.x, direc.y)
-        if mag == 0.0:
-            raise ValueError
-        return direc / mag
+def lam_ticks_labels(wavelengths, xy_mono, offsetx=0.03, offsety=0.01):
+    dist = 0.005
+    lams = wavelengths.to_value(u.nm).astype(np.int64)
+    for j, (lam, xyj) in enumerate(zip(lams, xy_mono)):
+        if not 440 <= lam <= 640:
+            continue
+        if lam % 5 == 0:
+            ticklen = 0.01 if lam % 20 == 0 else 0.005
+            xy_grad = xy_mono[j+1] - xy_mono[j-1]
+            dx, dy = xy_grad.x, xy_grad.y
+            ds = np.hypot(dx, dy)
+            dx, dy = dy * ticklen/ds, -dx * ticklen/ds
+            plt.plot([xyj.x, xyj.x+dx], [xyj.y, xyj.y+dy], 'k-', lw=1.5)
+        if lam < 460:
+            continue
+        if lam % 20 == 0:
+            dx *= -dist/ticklen
+            dy *= -dist/ticklen
+            dx += dx/dist * offsetx
+            dy += dy/dist * offsety
+            plt.annotate(str(lam), (xyj.x+dx, xyj.y+dy), fontsize=10, va='center', ha='center') 
 
-    plt.figure()
-    # draw best attempt at pure spectral colors on inner edge of shark fin
-    s = 0.025  # distance in xy plane towards white point
-    for (xy0, xy1), XYZ in zip(itertools.pairwise(xys), XYZs):
-        (x0, y0), (x1, y1) = (xy0.x, xy0.y), (xy1.x, xy1.y)
-        # get unit vectors in direction of white point
-        dir0 = get_direc_to_white(xy0, cs)
-        dir1 = get_direc_to_white(xy1, cs)
-        # polygon vertices
-        poly_x = [x0, x1, x1 + s * dir1.x, x0 + s * dir0.x]
-        poly_y = [y0, y1, y1 + s * dir1.y, y0 + s * dir0.y]
-        # draw (using full color, not normalized value)
-        RGB = RGB_Color.from_XYZ(XYZ)
-        color_string = RGB.to_IRGB().to_string()
-        plt.fill(poly_x, poly_y, color_string, edgecolor=color_string)
+def BB_locus(CMF):
+    T = np.geomspace(1000, 1e5, 100)
+    wavelengths = CMFs[CMF][0]
+    BBs = [Spectrum.BlackBody(Ti*u.K, wavelengths) for Ti in T]
+    flux_inf = wavelengths.value**-4
+    BBs.append(Spectrum(wavelengths, flux_inf / flux_inf[0])) #Tinfinity
+    T_XYZs = ColorList([BB.to_XYZ(CMF=CMF) for BB in BBs])
+    T_xys = T_XYZs.normalize()
+    plt.plot(T_xys.x, T_xys.y, 'k-')
+    plt.plot(T_xys[-1].x, T_xys[-1].y, 'k.')
+    ticklen = 0.005
+    Tmin, Tmax, Tstep = 2000, 10000, 1000
+    Tarr = np.arange(Tmin, Tmax+1, Tstep)
+    for Ttick in Tarr:
+        j = np.argmin(abs(Ttick-T))
+        T_xy, xy_grad = T_xys[j], T_xys[j+1] - T_xys[j-1]
+        dx, dy = xy_grad.x, xy_grad.y
+        ds = np.hypot(dx, dy)
+        dx, dy = dy * ticklen/ds, -dx * ticklen/ds
+        plt.plot([T_xy.x-dx, T_xy.x+dx], [T_xy.y-dy, T_xy.y+dy], 'k-')
 
-    # fill in the monitor gamut with true colors
-    def fill_gamut_slice(v0, v1, v2):
-        """
-        Fill in a slice of the monitor gamut with the correct colors.
-        """
-        num_s, num_t = 50, 50
-        dv10, dv21 = v1 - v0, v2 - v1
-        for i_s, i_t in itertools.product(range(num_s), range(num_t)):
-            s_a = i_s / num_s
-            s_b = (i_s + 1) / num_s
-            t_a = i_t / num_t
-            t_b = (i_t + 1) / num_t
-            # vertex coords
-            v_aa = v0 + t_a * (dv10 + s_a * dv21)
-            v_ab = v0 + t_b * (dv10 + s_a * dv21)
-            v_ba = v0 + t_a * (dv10 + s_b * dv21)
-            v_bb = v0 + t_b * (dv10 + s_b * dv21)
-            # poly coords
-            poly_x = [v_aa.x, v_ba.x, v_bb.x, v_ab.x]
-            poly_y = [v_aa.y, v_ba.y, v_bb.y, v_ab.y]
-            # average color
-            XYZ_avg = 0.25 * (v_aa + v_ab + v_ba + v_bb)
-            # convert to rgb and scale to maximum displayable brightness
-            RGB = RGB_Color.from_XYZ(XYZ_avg, brightest=True)
-            color_string = RGB.to_IRGB().to_string()
-            plt.fill(poly_x, poly_y, color_string, edgecolor=color_string)
-
-    fill_gamut_slice(cs.W, cs.B, cs.G)
-    fill_gamut_slice(cs.W, cs.G, cs.R)
-    fill_gamut_slice(cs.W, cs.R, cs.B)
-
-    # draw the curve of the xy values of the spectral lines and purples
-    plt.plot([xy.x for xy in xys], [xy.y for xy in xys], color="#808080", linewidth=3.0)
-    # draw monitor gamut and white point
-    tri_x = [cs.R.x, cs.G.x, cs.B.x, cs.R.x]
-    tri_y = [cs.R.y, cs.G.y, cs.B.y, cs.R.y]
-    plt.plot(tri_x, tri_y, "o-", color="k")
-    plt.plot(cs.W.x, cs.W.y, "o", color="k")
-    # label phosphors
-    dx = dy = 0.01
-    plt.text(cs.R.x + dx, cs.R.y, "Red", ha="left", va="center")
-    plt.text(cs.G.x, cs.G.y + dy, "Green", ha="center", va="bottom")
-    plt.text(cs.B.x - dx, cs.B.y, "Blue", ha="right", va="center")
-    plt.text(cs.W.x, cs.W.y + dy, "White", ha="center", va="bottom")
-    # titles etc
-    plt.axis([0.0, 0.85, 0.0, 0.85])
-    plt.xlabel(r"CIE $x$")
-    plt.ylabel(r"CIE $y$")
-    plt.title(r"CIE Chromaticity Diagram")
+def chromacity_diagram(
+        CMF="1931",
+        color_space=sRGB,
+        draw_cie_space=True,
+        draw_color_space=True,
+        draw_bb_locus=True,
+        clip_method='add white',
+        num_purples=50,
+        num_segments=50,
+    ):
+    plt.figure(figsize=(5, 4.71))
+    XYZ_boundary = get_normalized_spectral_line_colors(CMF=CMF, num_purples=num_purples)
+    xy_boundary = XYZ_boundary.normalize()
+    xy_mono = xy_boundary[:-num_purples]
+    if draw_cie_space:
+        fill_cie_space(xy_boundary, num_segments, color_space, clip_method)
+    plt.plot(xy_mono.x, xy_mono.y, 'k-', lw=2)
+    if draw_bb_locus:
+        BB_locus(CMF)
+    lam_ticks_labels(CMFs[CMF][0], xy_mono)
+    if draw_color_space:
+        RGB_triangle(color_space)
+    plt.xlim(-0.06, 0.81)
+    plt.ylim(0, 0.87)
+    plt.xlabel("$x$")
+    plt.ylabel("$y$")
+    plt.tight_layout()
     plt.show()
 
 
@@ -334,5 +340,5 @@ def figures(CMF='1931'):
     """Draw specific figures not used anywhere else."""
     visible_spectrum_plot(CMF=CMF)
     cie_matching_functions_plot(CMF=CMF)
-    shark_fin_plot(CMF=CMF)
+    chromacity_diagram(CMF=CMF, color_space=sRGB)
     scattered_visual_brightness(CMF=CMF)
