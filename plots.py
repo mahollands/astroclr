@@ -21,6 +21,7 @@ def rgb_patch_plot(RGBs, color_names, title, patch_gap=0.05, num_across=6):
     """
     Draw a set of color patches, from a list of linear rgb colors.
     """
+
     def draw_patch(x0, y0, color, name, patch_gap):
         """
         Draw a patch of color.
@@ -54,9 +55,7 @@ def xyz_patch_plot(XYZs, color_names, title, patch_gap=0.05, num_across=6):
     Draw a set of color patches specified as xyz colors.
     """
     RGBs = [RGB_Color.from_XYZ(XYZ) for XYZ in XYZs]
-    rgb_patch_plot(
-        RGBs, color_names, title, patch_gap=patch_gap, num_across=num_across
-    )
+    rgb_patch_plot(RGBs, color_names, title, patch_gap=patch_gap, num_across=num_across)
 
 
 def spectrum_subplot(S):
@@ -173,7 +172,7 @@ def color_vs_param_plot(
     plt.show()
 
 
-def visible_spectrum_plot(CMF='1931'):
+def visible_spectrum_plot(CMF="1931"):
     """
     Plot the visible spectrum, as a plot vs wavelength.
     """
@@ -193,75 +192,80 @@ def visible_spectrum_plot(CMF='1931'):
         ylabel=r"RGB Color",
     )
 
-def cie_matching_functions_plot(CMF='1931'):
+
+def cie_matching_functions_plot(CMF="1931"):
     """
     Plot the CIE XYZ matching functions, as three spectral subplots.
     """
     _wavelengths, _xyz_table = CMFs[CMF]
     cie_x, cie_y, cie_z = [Spectrum(_wavelengths, cie) for cie in _xyz_table]
-    
+
     plt.figure()
     # X
     plt.subplot(3, 1, 1)
     plt.title("1931 CIE XYZ Matching Functions")
     plt.ylabel("CIE $X$")
     spectrum_subplot(cie_x)
-    plt.xlim(_wavelengths.value[(0,-1),])
+    plt.xlim(_wavelengths.value[(0, -1),])
     # Y
     plt.subplot(3, 1, 2)
     plt.ylabel("CIE $Y$")
     spectrum_subplot(cie_y)
-    plt.xlim(_wavelengths.value[(0,-1),])
+    plt.xlim(_wavelengths.value[(0, -1),])
     # Z
     plt.subplot(3, 1, 3)
     plt.xlabel("Wavelength [nm]")
     plt.ylabel("CIE $Z$")
     spectrum_subplot(cie_z)
-    plt.xlim(_wavelengths.value[(0,-1),])
+    plt.xlim(_wavelengths.value[(0, -1),])
     plt.show()
 
 
-def scattered_visual_brightness(CMF='1931'):
+def scattered_visual_brightness(CMF="1931"):
     """
     Plot the perceptual brightness of Rayleigh scattered light.
     """
     _wavelengths, _xyz_table = CMFs[CMF]
     CIE_Y = _xyz_table[1]
     # get 'spectra' for y matching functions and multiply by 1/wl^4
-    rayleigh = (550.0 / _wavelengths.value)**4
-    S = Spectrum(_wavelengths, rayleigh*CIE_Y)
+    rayleigh = (550.0 / _wavelengths.value) ** 4
+    S = Spectrum(_wavelengths, rayleigh * CIE_Y)
 
     plt.figure()
     spectrum_subplot(S)
     plt.title("Perceptual Brightness of Rayleigh Scattered Light")
     plt.xlabel("Wavelength (nm)")
     plt.ylabel(r"CIE $Y$ / $\lambda^4$")
-    plt.xlim(S.wavelength.value[(0,-1),])
+    plt.xlim(S.wavelength.value[(0, -1),])
     plt.show()
+
 
 def fill_cie_space(xy_boundary, num_segments, color_space, clip_method):
     wp = color_space.W
     xy_boundary.append(xy_boundary[0])
-    f = np.linspace(0, 1, num_segments+1)
+    f = np.linspace(0, 1, num_segments + 1)
     for (xy1, xy2), (f1, f2) in product(pairwise(xy_boundary), pairwise(f)):
-        xy11 = xy1*f1 + wp*(1-f1)
-        xy12 = xy1*f2 + wp*(1-f2)
-        xy21 = xy2*f1 + wp*(1-f1)
-        xy22 = xy2*f2 + wp*(1-f2)
+        xy11 = xy1 * f1 + wp * (1 - f1)
+        xy12 = xy1 * f2 + wp * (1 - f2)
+        xy21 = xy2 * f1 + wp * (1 - f1)
+        xy22 = xy2 * f2 + wp * (1 - f2)
         corners = ColorList([xy11, xy12, xy22, xy21])
-        xyc = sum(corners, start=XYZ_Color(0, 0, 0))/4
+        xyc = sum(corners, start=XYZ_Color(0, 0, 0)) / 4
         RGBc = RGB_Color.from_XYZ(xyc, brightest=True)
         IRGBc = RGBc.to_IRGB(clip_method=clip_method)
         color_string = IRGBc.to_string()
-        plt.fill(corners.x, corners.y, color_string, edgecolor=color_string, rasterized=True)
+        plt.fill(
+            corners.x, corners.y, color_string, edgecolor=color_string, rasterized=True
+        )
+
 
 def RGB_triangle(color_space):
     primaries = ColorList(color_space.primaries)
     primaries.append(primaries[0])
-    RGB_hex = ["#FF0000", "#00FF00", "#0000FF"]
-    plt.plot(primaries.x, primaries.y, 'k:')
-    for primary, c in zip(primaries, RGB_hex):
-        plt.plot(primary.x, primary.y, 's', color=c, mec='k')
+    plt.plot(primaries.x, primaries.y, "k:")
+    for primary, c in zip(primaries, ["#FF0000", "#00FF00", "#0000FF"]):
+        plt.plot(primary.x, primary.y, "s", color=c, mec="k")
+
 
 def lam_ticks_labels(wavelengths, xy_mono, offsetx=0.03, offsety=0.01):
     dist = 0.005
@@ -271,58 +275,66 @@ def lam_ticks_labels(wavelengths, xy_mono, offsetx=0.03, offsety=0.01):
             continue
         if lam % 5 == 0:
             ticklen = 0.01 if lam % 20 == 0 else 0.005
-            xy_grad = xy_mono[j+1] - xy_mono[j-1]
+            xy_grad = xy_mono[j + 1] - xy_mono[j - 1]
             dx, dy = xy_grad.x, xy_grad.y
             ds = np.hypot(dx, dy)
-            dx, dy = dy * ticklen/ds, -dx * ticklen/ds
-            plt.plot([xyj.x, xyj.x+dx], [xyj.y, xyj.y+dy], 'k-', lw=1.5)
+            dx, dy = dy * ticklen / ds, -dx * ticklen / ds
+            plt.plot([xyj.x, xyj.x + dx], [xyj.y, xyj.y + dy], "k-", lw=1.5)
         if lam < 460:
             continue
         if lam % 20 == 0:
-            dx *= -dist/ticklen
-            dy *= -dist/ticklen
-            dx += dx/dist * offsetx
-            dy += dy/dist * offsety
-            plt.annotate(str(lam), (xyj.x+dx, xyj.y+dy), fontsize=10, va='center', ha='center') 
+            dx *= -dist / ticklen
+            dy *= -dist / ticklen
+            dx += dx / dist * offsetx
+            dy += dy / dist * offsety
+            plt.annotate(
+                str(lam),
+                (xyj.x + dx, xyj.y + dy),
+                fontsize=10,
+                va="center",
+                ha="center",
+            )
+
 
 def BB_locus(CMF):
     T = np.geomspace(1000, 1e5, 100)
     wavelengths = CMFs[CMF][0]
-    BBs = [Spectrum.BlackBody(Ti*u.K, wavelengths) for Ti in T]
+    BBs = [Spectrum.BlackBody(Ti * u.K, wavelengths) for Ti in T]
     flux_inf = wavelengths.value**-4
-    BBs.append(Spectrum(wavelengths, flux_inf / flux_inf[0])) #Tinfinity
+    BBs.append(Spectrum(wavelengths, flux_inf / flux_inf[0]))  # Tinfinity
     T_XYZs = ColorList([BB.to_XYZ(CMF=CMF) for BB in BBs])
     T_xys = T_XYZs.normalize()
-    plt.plot(T_xys.x, T_xys.y, 'k-')
-    plt.plot(T_xys[-1].x, T_xys[-1].y, 'k.')
+    plt.plot(T_xys.x, T_xys.y, "k-")
+    plt.plot(T_xys[-1].x, T_xys[-1].y, "k.")
     ticklen = 0.005
     Tmin, Tmax, Tstep = 2000, 10000, 1000
-    Tarr = np.arange(Tmin, Tmax+1, Tstep)
+    Tarr = np.arange(Tmin, Tmax + 1, Tstep)
     for Ttick in Tarr:
-        j = np.argmin(abs(Ttick-T))
-        T_xy, xy_grad = T_xys[j], T_xys[j+1] - T_xys[j-1]
+        j = np.argmin(abs(Ttick - T))
+        T_xy, xy_grad = T_xys[j], T_xys[j + 1] - T_xys[j - 1]
         dx, dy = xy_grad.x, xy_grad.y
         ds = np.hypot(dx, dy)
-        dx, dy = dy * ticklen/ds, -dx * ticklen/ds
-        plt.plot([T_xy.x-dx, T_xy.x+dx], [T_xy.y-dy, T_xy.y+dy], 'k-')
+        dx, dy = dy * ticklen / ds, -dx * ticklen / ds
+        plt.plot([T_xy.x - dx, T_xy.x + dx], [T_xy.y - dy, T_xy.y + dy], "k-")
+
 
 def chromacity_diagram(
-        CMF="1931",
-        color_space=sRGB,
-        draw_cie_space=True,
-        draw_color_space=True,
-        draw_bb_locus=True,
-        clip_method='add white',
-        num_purples=50,
-        num_segments=50,
-    ):
+    CMF="1931",
+    color_space=sRGB,
+    draw_cie_space=True,
+    draw_color_space=True,
+    draw_bb_locus=True,
+    clip_method="add white",
+    num_purples=50,
+    num_segments=50,
+):
     plt.figure(figsize=(5, 4.71))
     XYZ_boundary = get_normalized_spectral_line_colors(CMF=CMF, num_purples=num_purples)
     xy_boundary = XYZ_boundary.normalize()
     xy_mono = xy_boundary[:-num_purples]
     if draw_cie_space:
         fill_cie_space(xy_boundary, num_segments, color_space, clip_method)
-    plt.plot(xy_mono.x, xy_mono.y, 'k-', lw=2)
+    plt.plot(xy_mono.x, xy_mono.y, "k-", lw=2)
     if draw_bb_locus:
         BB_locus(CMF)
     lam_ticks_labels(CMFs[CMF][0], xy_mono)
@@ -336,7 +348,7 @@ def chromacity_diagram(
     plt.show()
 
 
-def figures(CMF='1931'):
+def figures(CMF="1931"):
     """Draw specific figures not used anywhere else."""
     visible_spectrum_plot(CMF=CMF)
     cie_matching_functions_plot(CMF=CMF)
