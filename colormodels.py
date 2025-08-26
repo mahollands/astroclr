@@ -373,7 +373,7 @@ class LUV_Color(Lpq_Color):
 
 
 class LAB_Color(Lpq_Color):
-    def __init__(self, L, a, b, white_point=sRGB):
+    def __init__(self, L, a, b, white_point=sRGB.W):
         super().__init__(L, a, b, white_point)
 
     a = property(fget=Lpq_Color._2.fget, fset=Lpq_Color._2.fset)
