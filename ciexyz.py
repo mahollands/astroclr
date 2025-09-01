@@ -81,7 +81,8 @@ _CIEXYZ_1931_table = np.loadtxt(
     unpack=True,
 )
 _wavelengths, *_xyz_table = _CIEXYZ_1931_table
-CMFs["1931"] = _wavelengths * u.nm, _xyz_table
+_wavelengths <<= u.nm
+CMFs["1931"] = _wavelengths, _xyz_table
 
 _CIEXYZ_1964_table = np.loadtxt(
     f"{DATA_DIR}/CIE_xyz_1964_10deg.csv",
@@ -89,8 +90,9 @@ _CIEXYZ_1964_table = np.loadtxt(
     unpack=True,
 )
 _wavelengths, *_xyz_table = _CIEXYZ_1964_table
+_wavelengths <<= u.nm
 _xyz_table = np.where(np.isnan(_xyz_table), 0, _xyz_table)
-CMFs["1964_10deg"] = _wavelengths * u.nm, _xyz_table
+CMFs["1964_10deg"] = _wavelengths, _xyz_table
 
 _flux_unit1 = u.W / u.m**2 / u.sr / u.nm
 _flux_unit2 = _flux_unit1 * u.sr
