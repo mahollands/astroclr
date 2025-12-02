@@ -158,7 +158,6 @@ class Spectrum:
         elif len(value) != len(self.wavelength):
             raise ValueError("Fluxes must be the same length as wavelengths")
         for flux_unit in _valid_flux_units:
-            print(flux_unit)
             if value.unit.is_equivalent(flux_unit):
                 self._y_unit_option = flux_unit
                 break
@@ -201,10 +200,8 @@ class Spectrum:
         """
         wavelength = self.wavelength.to(u.nm)
         flux = self.flux.to(self._y_unit_option)
-        print(flux)
         xyz_intp = interpolate_xyz_curves(wavelength, CMF=CMF)
         integrand = flux[np.newaxis, :] * xyz_intp
-        print(integrand)
         I_XYZ = np.trapz(integrand, self.wavelength, axis=1)
         return I_XYZ
 
