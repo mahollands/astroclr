@@ -188,6 +188,12 @@ class Spectrum:
             temperature <<= u.K
         if not temperature.isscalar:
             raise ValueError("temperature should be a scalar")
+        if not isinstance(wavelength, u.Quantity):
+            wavelength <<= u.nm
+        if wavelength.isscalar:
+            raise ValueError("wavelengths must be array-like")
+        if not wavelength.unit.is_equivalent(u.nm):
+            raise ValueError("wavelengths must be a kind of length")
         BB = BlackBody(temperature, scale=1 * _flux_unit1)
         flux = BB(wavelength)
         return cls(wavelength, flux)
