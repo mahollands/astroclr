@@ -292,7 +292,7 @@ def get_normalized_spectral_line_colors(
     Default 0. (No purples)
     annotate - additionally return string labels for each color
     """
-    _wavelengths, _ = CMFs[CMF]
+    wavelengths, _ = CMFs[CMF]
 
     # build list of normalized color x,y values proceeding along each wavelength
     XYZs = XYZ_from_wavelength(_wavelengths, CMF=CMF)
