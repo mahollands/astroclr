@@ -56,14 +56,14 @@ Charles Poynton - Frequently asked questions about Gamma and Color,
 """
 
 import os.path
+from collections import namedtuple
 import numpy as np
+from scipy.interpolate import interp1d
+from scipy.integrate import simpson as integrate
 from astropy import units as u
 from astropy.modeling.physical_models import BlackBody
-from .colormodels import XYZ_Color, RGB_Color, ColorList
+from .colormodels import XYZ_Color, RGB_Color, IRGB_Color, ColorList
 
-# table of 1931 CIE XYZ matching functions.
-# data from: http://cvrl.ioo.ucl.ac.uk/database/data/cmfs/ciexyz31_1.txt
-# massaged into this format.
 
 __all__ = [
     "CMFs",
@@ -73,39 +73,30 @@ __all__ = [
 ]
 
 DATA_DIR = f"{os.path.dirname(__file__)}/data"
-CMFs = {}
 
-_CIEXYZ_1931_table = np.loadtxt(
-    f"{DATA_DIR}/ciexyz31_1.txt",
-    delimiter=",",
-    unpack=True,
-)
-_wavelengths, *_xyz_table = _CIEXYZ_1931_table
-_wavelengths <<= u.nm
-CMFs["1931"] = _wavelengths, _xyz_table
-
-_CIEXYZ_1964_table = np.loadtxt(
-    f"{DATA_DIR}/CIE_xyz_1964_10deg.csv",
-    delimiter=",",
-    unpack=True,
-)
-_wavelengths, *_xyz_table = _CIEXYZ_1964_table
-_wavelengths <<= u.nm
-_xyz_table = np.where(np.isnan(_xyz_table), 0, _xyz_table)
-CMFs["1964_10deg"] = _wavelengths, _xyz_table
-
-_flux_unit1 = u.W / u.m**2 / u.sr / u.nm
-_flux_unit2 = _flux_unit1 * u.sr
-_valid_flux_units = _flux_unit1, _flux_unit2
+CIE_CMF = namedtuple("CIE_CMF", "wavelength xyz_table interp")
 
 
-def interpolate_xyz_curves(wavelength, CMF="1931"):
-    _wavelengths, _xyz_table = CMFs[CMF]
-    xyz_curves_interpolated = [
-        np.interp(wavelength, _wavelengths, xyz_curve, left=0, right=0)
-        for xyz_curve in _xyz_table
-    ]
-    return xyz_curves_interpolated
+def load_CMF(fname: str) -> CIE_CMF:
+    CIEXYZ_table = np.loadtxt(
+        f"{DATA_DIR}/{fname}",
+        delimiter=",",
+        unpack=True,
+    )
+    wavelength, xyz_table = np.split(CIEXYZ_table, [1])
+    wavelength = wavelength.ravel() << u.nm
+    xyz_interpolator = interp1d(wavelength, xyz_table, bounds_error=False, fill_value=0)
+    return CIE_CMF(wavelength, xyz_table, xyz_interpolator)
+
+
+CMFs = {
+    "1931": load_CMF("ciexyz31_1.txt"),
+    "1964_10deg": load_CMF("CIE_xyz_1964_10deg.csv"),
+}
+
+_unit_spec_radiance = u.W / u.m**2 / u.sr / u.nm
+_unit_spec_irradiance = u.W / u.m**2 / u.nm
+_valid_flux_units = _unit_spec_radiance, _unit_spec_irradiance
 
 
 class Spectrum:
@@ -127,16 +118,20 @@ class Spectrum:
 
     __slots__ = ["_x", "_y", "_y_unit_option"]
 
-    def __init__(self, wavelength, flux):
+    def __init__(
+        self,
+        wavelength: np.ndarray | u.Quantity,
+        flux: np.ndarray | u.Quantity,
+    ):
         self.wavelength = wavelength
         self.flux = flux
 
     @property
-    def wavelength(self):
+    def wavelength(self) -> u.Quantity:
         return self._x
 
     @wavelength.setter
-    def wavelength(self, value):
+    def wavelength(self, value: np.ndarray | u.Quantity):
         if not isinstance(value, u.Quantity):
             value <<= u.nm
         if value.isscalar:
@@ -146,13 +141,13 @@ class Spectrum:
         self._x = value
 
     @property
-    def flux(self):
+    def flux(self) -> u.Quantity:
         return self._y
 
     @flux.setter
-    def flux(self, value):
+    def flux(self, value: np.ndarray | u.Quantity):
         if not isinstance(value, u.Quantity):
-            value <<= _flux_unit1
+            value <<= _unit_spec_radiance
         if value.isscalar:
             value = value * np.ones(self.wavelength.size)
         elif len(value) != len(self.wavelength):
@@ -165,10 +160,10 @@ class Spectrum:
             raise ValueError("Flux units must be equivalent to W/m2/sr/nm or W/m2/nm")
         self._y = value
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self._x)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         n_spec = len(self)
         x_unit = self.wavelength.unit.to_string()
         y_unit = self.flux.unit.to_string()
@@ -177,7 +172,11 @@ class Spectrum:
         return f"Spectrum({wavelength_str}, {flux_str})"
 
     @classmethod
-    def BlackBody(cls, temperature, wavelength=_wavelengths):
+    def BlackBody(
+        cls,
+        temperature: int | float | u.Quantity,
+        wavelength: np.ndarray | u.Quantity = CMFs["1931"].wavelength,
+    ):
         """
         Class method for generating a black body spectrum. For
         a given temperature and wavelength array/Quantity.
@@ -194,11 +193,11 @@ class Spectrum:
             raise ValueError("wavelengths must be array-like")
         if not wavelength.unit.is_equivalent(u.nm):
             raise ValueError("wavelengths must be a kind of length")
-        BB = BlackBody(temperature, scale=1 * _flux_unit1)
+        BB = BlackBody(temperature, scale=1 * _unit_spec_radiance)
         flux = BB(wavelength)
         return cls(wavelength, flux)
 
-    def XYZ_integrals(self, CMF="1931"):
+    def XYZ_integrals(self, CMFname: str = "1931") -> u.Quantity:
         """
         Integrate spectrum over CIE1931 X/Y/Z color-matching functions.
         The result is a 3-valued astropy quantity with units of W/m^2
@@ -206,20 +205,21 @@ class Spectrum:
         """
         wavelength = self.wavelength.to(u.nm)
         flux = self.flux.to(self._y_unit_option)
-        xyz_intp = interpolate_xyz_curves(wavelength, CMF=CMF)
-        integrand = flux[np.newaxis, :] * xyz_intp
-        I_XYZ = np.trapz(integrand, self.wavelength, axis=1)
+        CMF = CMFs[CMFname]
+        integral_unit = flux.unit * u.nm
+        integrand = flux[np.newaxis, :] * CMF.interp(wavelength)
+        I_XYZ = integrate(integrand, self.wavelength, axis=1) * integral_unit
         return I_XYZ
 
-    def to_XYZ(self, CMF="1931"):
+    def to_XYZ(self, CMFname: str = "1931") -> XYZ_Color:
         """
         Calculate the XYZ color of the spectrum. Units are dropped but
         converted to SI W/m^2 or W/m^2/sr first (depending on the flux units).
         """
-        XYZ = self.XYZ_integrals(CMF=CMF)
+        XYZ = self.XYZ_integrals(CMFname=CMFname)
         return XYZ_Color(*XYZ.value)
 
-    def to_RGB(self, **kwargs):
+    def to_RGB(self, **kwargs) -> RGB_Color:
         """
         Calculate the RGB color of the spectrum. Units are dropped but
         converted to SI W/m^2 or W/m^2/sr first (depending on the flux units).
@@ -229,7 +229,7 @@ class Spectrum:
         RGB = RGB_Color.from_XYZ(XYZ, **kwargs)
         return RGB
 
-    def to_IRGB(self, **kwargs):
+    def to_IRGB(self, **kwargs) -> IRGB_Color:
         """
         Calculate the displayable RGB color (IRGB) of the spectrum. Keyword
         arguments passed to RGB_Color and RGB_Color.to_IRGB.
@@ -241,7 +241,7 @@ class Spectrum:
         IRGB = RGB.to_IRGB(**irgb_kw)
         return IRGB
 
-    def to_IRGB_string(self, **kwargs):
+    def to_IRGB_string(self, **kwargs) -> str:
         """
         Calculate the displayable RGB color (IRGB) of the spectrum as a
         hexcode. Keyword arguments passed to RGB_Color, and RGB_Color.to_IRGB.
@@ -249,7 +249,7 @@ class Spectrum:
         IRGB = self.to_IRGB(**kwargs)
         return IRGB.to_string()
 
-    def to_luminance(self):
+    def to_luminance(self) -> u.Quantity:
         """
         If flux units are equivalent to W/m2/sr/nm calculate the luminance in
         cd/m^2 (nits). If flux units are equivalent to W/m2/nm calculate the
@@ -257,30 +257,39 @@ class Spectrum:
         light source) in lm/m^2 (lux), or the luminous exitance (luminous flux
         density radiating from a surface) also in lm/m^2 (lux not used).
         """
-        X, Y, Z = self.XYZ_integrals()
+        Y = self.XYZ_integrals()
         L = 683 * u.lm / u.W * Y
 
-        if self.flux.unit.is_equivalent(_flux_unit2):
+        if self.flux.unit.is_equivalent(_unit_spec_irradiance):
             return L.to(u.lm / u.m**2)
         return L.to(u.cd / u.m**2)
 
 
-def XYZ_from_wavelength(wavelength, CMF="1931"):
+def XYZ_from_wavelength(
+    wavelength: int | float | np.ndarray | u.Quantity,
+    CMFname: str = "1931",
+) -> XYZ_Color | ColorList:
     """
     Given a wavelength (nm), return the corresponding XYZ_Color, for unit
     intensity.
     """
-    if not isinstance(wavelength, u.Quantity):
+    CMF = CMFs[CMFname]
+    if isinstance(wavelength, u.Quantity):
+        wavelength = wavelength.to(u.nm)
+    else:
         wavelength <<= u.nm
-    if not wavelength.isscalar:
-        return ColorList([XYZ_from_wavelength(wl, CMF=CMF) for wl in wavelength])
-    xyz = interpolate_xyz_curves(wavelength, CMF=CMF)
-    return XYZ_Color(*xyz)
+    xyz = CMF.interp(wavelength)
+    if wavelength.isscalar:
+        return XYZ_Color(*xyz)
+    return ColorList([XYZ_Color(*_xyz) for _xyz in xyz.T])
 
 
 def get_normalized_spectral_line_colors(
-    brightness=1.0, num_purples=0, annotate=False, CMF="1931"
-):
+    brightness: float = 1.0,
+    num_purples: int = 0,
+    annotate: bool = False,
+    CMFname: str = "1931",
+) -> ColorList:
     """
     Get a list of XYZ colors covering the visible spectrum. Optionally add
     a number of 'purples', which are colors interpolated between the color of
@@ -292,10 +301,10 @@ def get_normalized_spectral_line_colors(
     Default 0. (No purples)
     annotate - additionally return string labels for each color
     """
-    wavelengths, _ = CMFs[CMF]
+    wavelength, xyz_table, _ = CMFs[CMFname]
 
     # build list of normalized color x,y values proceeding along each wavelength
-    XYZs = XYZ_from_wavelength(_wavelengths, CMF=CMF)
+    XYZs = ColorList([XYZ_Color(*xyz) for xyz in np.array(xyz_table).T])
     xyzs = XYZs.normalize()
 
     # interpolate from start point to end point (filling in the purples)
@@ -314,7 +323,7 @@ def get_normalized_spectral_line_colors(
     if not annotate:
         return XYZs
 
-    annotation_monochromatic = [lam.to_string() for lam in wavelengths]
+    annotation_monochromatic = [lam.to_string() for lam in wavelength]
     annotation_purples = [f"{f:.3f} purples" for f in fs]
     annotation = annotation_monochromatic + annotation_purples
 
