@@ -155,7 +155,7 @@ def get_blackbody_illuminant(T_K):
     """
     Get the spectrum of a blackbody at the given temperature, normalized to Y = 1.0.o
     """
-    return Spectrum.Blackbody(T_K, _wavelengths)
+    return Spectrum.BlackBody(T_K, _wavelengths)
 
 
 def get_illuminant_A():
