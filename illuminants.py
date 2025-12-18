@@ -178,15 +178,7 @@ def figures():
     """
     Plot spectra for several illuminants.
     """
-    # D65
     plots.spectrum_plot(get_illuminant_D65(), "CIE Illuminant D65", "Illuminant-D65")
-    # A
     plots.spectrum_plot(get_illuminant_A(), "CIE Illuminant A", "Illuminant-A")
-    # Constant
-    plots.spectrum_plot(
-        get_constant_illuminant(), "Constant Illuminant", "Illuminant-Const"
-    )
-    # Blackbody (5778)
-    plots.spectrum_plot(
-        get_blackbody_illuminant(5778.0), "5778 K Illuminant", "Illuminant-5778"
-    )
+    plots.spectrum_plot(get_constant_illuminant(), "Constant Illuminant", "Illuminant-Const")
+    plots.spectrum_plot(get_blackbody_illuminant(5778.0), "5778 K Illuminant", "Illuminant-5778")
