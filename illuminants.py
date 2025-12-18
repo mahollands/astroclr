@@ -111,22 +111,18 @@ __all__ = [
 _wavelengths = np.arange(360, 830 + 0.5, 1.0) * u.nm
 
 
-def scale_illuminant():
+def scale_illuminant(get_illuminant):
     """
     Scale the illuminant intensity to Y=1.0
     """
+    @functools.wraps(get_illuminant)
+    def _wrapper(*args, **kwargs):
+        illuminant = get_illuminant(*args, **kwargs)
+        XYZ = illuminant.to_XYZ()
+        illuminant.flux /= XYZ.y
+        return illuminant
 
-    def _decorator(get_illuminant):
-        @functools.wraps
-        def _wrapper():
-            illuminant = get_illuminant()
-            XYZ = illuminant.to_XYZ()
-            illuminant.flux /= XYZ.y
-            return illuminant
-
-        return _wrapper
-
-    return _decorator
+    return _wrapper
 
 
 @scale_illuminant
