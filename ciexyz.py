@@ -85,6 +85,7 @@ def load_CMF(fname: str) -> CIE_CMF:
     )
     wavelength, xyz_table = np.split(CIEXYZ_table, [1])
     wavelength = wavelength.ravel() << u.nm
+    xyz_table[np.isnan(xyz_table)] = 0.0
     xyz_interpolator = interp1d(wavelength, xyz_table, bounds_error=False, fill_value=0)
     return CIE_CMF(wavelength, xyz_table, xyz_interpolator)
 
