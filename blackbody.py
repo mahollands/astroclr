@@ -65,13 +65,12 @@ You should have received a copy of the GNU Lesser General Public License
 along with ColorPy.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import math
 import numpy as np
 import matplotlib.pyplot as plt
 from astropy import units as u
-from astropy.modeling.physical_models import BlackBody
 
-from . import ciexyz
+from .ciexyz import Spectrum, _wavelengths
+from .colormodels import RGB_Color
 from . import plots
 
 # Physical constants in mks units
@@ -93,17 +92,14 @@ def blackbody_patch_plot(T_list, title, filename):
 
 def blackbody_color_vs_temperature_plot(T_list, title, filename):
     """Draw a color vs temperature plot for the given temperature range."""
-    num_T = len(T_list)
-    rgb_list = np.empty((num_T, 3))
-    for i in range(0, num_T):
-        T_i = T_list[i]
-        xyz = blackbody_color(T_i)
-        rgb_list[i] = colormodels.rgb_from_xyz(xyz)
+    BBs = (Spectrum.BlackBody(T, _wavelengths) for T in T_list)
+    XYZs = (BB.to_XYZ() for BB in BBs)
+    RGBs = [RGB_Color.from_XYZ(XYZ) for XYZ in XYZs]
     # Note that b and g become negative for low T.
     # MatPlotLib skips those on the semilog plot.
     plots.color_vs_param_plot(
         T_list,
-        rgb_list,
+        RGBs,
         title,
         filename,
         plotfunc=plt.semilogy,
@@ -114,15 +110,21 @@ def blackbody_color_vs_temperature_plot(T_list, title, filename):
 
 
 def blackbody_spectrum_plot(T_K):
-    """Draw the spectrum of a blackbody at the given temperature."""
-    spectrum = blackbody_spectrum(T_K)
-    title = "Blackbody Spectrum - T %d K" % (round(T_K))
-    filename = "BlackbodySpectrum-%dK" % (round(T_K))
+    """
+    Draw the spectrum of a blackbody at the given temperature.
+    """
+    S = Spectrum.BlackBody(T_K, _wavelengths)
+    title = f"Blackbody Spectrum - T {round(T_K)} K"
+    filename = f"BlackbodySpectrum-{T_K}dK"
+    x_unit = S.wavelength.unit.to_string('latex_inline')
+    y_unit = S.flux.unit.to_string('latex_inline')
     plots.spectrum_plot(
-        spectrum, title, filename, xlabel="Wavelength (nm)", ylabel="Specific Intensity"
+        S,
+        title,
+        filename,
+        xlabel="Wavelength [{x_unit}]",
+        ylabel=r"Specific Intensity [{y_unit}]",
     )
-    # ylabel = 'Intensity ($W/m^2$)')   # with LaTex symbols, the axis text gets too big...
-
 
 # Create sample figures
 
@@ -130,9 +132,9 @@ def blackbody_spectrum_plot(T_K):
 def figures():
     """Create some blackbody plots."""
     # Some patch plots.
-    T_norm = plots.log_interpolate(1200.0, 20000.0, 48)
-    T_hot = plots.log_interpolate(10000.0, 40000.0, 24)
-    T_cool = plots.log_interpolate(950.0, 1200.0, 24)
+    T_norm = np.geomspace(1200.0, 20000.0, 48)
+    T_hot = np.geomspace(10000.0, 40000.0, 24)
+    T_cool = np.geomspace(950.0, 1200.0, 24)
     blackbody_patch_plot(T_norm, "Blackbody Colors", "Blackbody-Patch")
     blackbody_patch_plot(T_hot, "Hot Blackbody Colors", "Blackbody-HotPatch")
     blackbody_patch_plot(T_cool, "Cool Blackbody Colors", "Blackbody-CoolPatch")
