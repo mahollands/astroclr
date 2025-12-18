@@ -390,7 +390,7 @@ class LAB_Color(Lpq_Color):
         L = L_luminance(y_p)
         a = 500.0 * (f_x - f_y)
         b = 200.0 * (f_y - f_z)
-        return cls(L, a, b)
+        return cls(L, a, b, white_point=white_point)
 
     def to_XYZ(self):
         """
@@ -402,8 +402,8 @@ class LAB_Color(Lpq_Color):
         f_z = f_y - (self.b / 200.0)
         x_p = Lab_f_inverse(f_x)
         z_p = Lab_f_inverse(f_z)
-        xyz_p = XYZ_Color(x_p, y_p, z_p)
-        return xyz_p * self.white_point
+        xyz_p = np.array([x_p, y_p, z_p]) * self.white_point._values
+        return XYZ_Color(*xyz_p)
 
 
 class ColorList(list):
