@@ -97,10 +97,11 @@ from .ciexyz import Spectrum
 from . import plots
 
 __all__ = [
-    "get_illuminant_D65",
     "get_blackbody_illuminant",
     "get_illuminant_A",
-    "get_constant_illuminant",
+    "get_illuminant_DXX",
+    "get_illuminant_D65",
+    "get_illuminant_E",
 ]
 
 #
@@ -126,31 +127,6 @@ def scale_illuminant(get_illuminant):
 
 
 @scale_illuminant
-def get_illuminant_D65():
-    """
-    Get CIE Illuminant D65, as a spectrum, normalized to Y = 1.0.
-
-    CIE standard illuminant D65 represents a phase of natural daylight
-    with a correlated color temperature of approximately 6504 K.  (Wyszecki, p. 144)
-
-    In the interest of standardization the CIE recommends that D65 be used
-    whenever possible.  Otherwise, D55 or D75 are recommended.  (Wyszecki, p. 145)
-
-    (ColorPy does not currently provide D55 or D75, however.)
-    """
-    # table of CIE Illuminant D65 spectrum.
-    # data from: http://cvrl.ioo.ucl.ac.uk/database/data/cie/Illuminantd65.txt
-    # massaged into this format.
-
-    wavelength, flux = np.loadtxt(
-        f"{os.path.dirname(__file__)}/data/Illuminantd65.txt",
-        delimiter=",",
-        unpack=True,
-    )
-    return Spectrum(wavelength, flux)
-
-
-@scale_illuminant
 def get_blackbody_illuminant(T_K):
     """
     Get the spectrum of a blackbody at the given temperature, normalized to Y = 1.0.o
@@ -166,11 +142,81 @@ def get_illuminant_A():
     return get_blackbody_illuminant(2856.0 * u.K)
 
 
+@functools.cache
+def _get_illuminant_D_data():
+    wavelength, *S_eig = np.loadtxt(
+        f"{os.path.dirname(__file__)}/data/CIE_illum_Dxx_comp.csv",
+        delimiter=",",
+        unpack=True,
+    )
+    xd_cool = np.polynomial.Polynomial([0.244063, 0.09911, 2.9678, -4.6070])
+    xd_hot = np.polynomial.Polynomial([0.237040, 0.24748, 1.9018, -2.0064])
+    yd_poly = np.polynomial.Polynomial([-0.275, +2.870, -3.000])
+    d_polys = xd_cool, xd_hot, yd_poly
+    M_matrix = np.array([
+        [-1.3515, -1.7703, +5.9114],
+        [+0.0300, -31.4424, +30.0717],
+        [+0.0241, +0.2562, -0.7341],
+    ])
+    return wavelength, S_eig, d_polys, M_matrix
+
+
+@scale_illuminant
+def get_illuminant_DXX(T):
+    """
+    Generate CIE Illuminant D series, as a spectrum, normalized to Y = 1.0.
+
+    The temperature, T [K], is required as an input
+
+    For D65 a separate pre-caculated table from the CIE is loaded instead
+    """
+    T *= 1.438776877/1.4380 #CCT correcetion
+    T_inv = 1000/T
+    wavelength, S_eig, d_polys, M_matrix = _get_illuminant_D_data()
+    xd_cool, xd_hot, yd_poly = d_polys
+    xd = np.select(
+        condlist = [4000 <= T <= 7000, 7000 < T <= 25000],
+        choicelist = [xd_cool(T_inv), xd_hot(T_inv)],
+        default = np.nan
+    )
+    yd = yd_poly(xd)
+    M1, M2, M = M_matrix @ (1, xd, yd)
+    M1 /= M
+    M2 /= M
+    S0, S1, S2 = S_eig
+    S = S0 + M1*S1 + M2*S2
+    return Spectrum(wavelength, S)
+
+
+@scale_illuminant
+def get_illuminant_D65():
+    """
+    Get CIE Illuminant D65, as a spectrum, normalized to Y = 1.0.
+
+    CIE standard illuminant D65 represents a phase of natural daylight
+    with a correlated color temperature of approximately 6504 K.  (Wyszecki, p. 144)
+
+    In the interest of standardization the CIE recommends that D65 be used
+    whenever possible.  Otherwise, D55 or D75 are recommended.  (Wyszecki, p. 145)
+
+    For other D illuminants, use get_illuminant_DXX
+    """
+    # table of CIE Illuminant D65 spectrum.
+    # data from: http://cvrl.ioo.ucl.ac.uk/database/data/cie/Illuminantd65.txt
+
+    wavelength, flux = np.loadtxt(
+        f"{os.path.dirname(__file__)}/data/Illuminantd65.txt",
+        delimiter=",",
+        unpack=True,
+    )
+    return Spectrum(wavelength, flux)
+
+
 @scale_illuminant
 def get_illuminant_E():
     """
-    Get an illuminant, with spectrum constant over wavelength, normalized to Y = 1.0.
-    This is also referred to as illuminant E.
+    Get CIE Illuminant E, as a spectrum, normalized to Y = 1.0.
+    This is a spectrum constant in wavelength
     """
     return Spectrum(_wavelengths, 1)
 
@@ -181,5 +227,7 @@ def figures():
     """
     plots.spectrum_plot(get_illuminant_A(), "CIE Illuminant A", "Illuminant-A")
     plots.spectrum_plot(get_illuminant_D65(), "CIE Illuminant D65", "Illuminant-D65")
+    plots.spectrum_plot(get_illuminant_DXX(5500), "CIE Illuminant D55", "Illuminant-D55")
+    plots.spectrum_plot(get_illuminant_DXX(7500), "CIE Illuminant D75", "Illuminant-D75")
     plots.spectrum_plot(get_illuminant_E(), "Constant Illuminant", "Illuminant-Const")
     plots.spectrum_plot(get_blackbody_illuminant(5778.0), "5778 K Illuminant", "Illuminant-5778")
