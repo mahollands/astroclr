@@ -163,13 +163,14 @@ def get_illuminant_A():
     Get CIE Illuminant A, as a spectrum, normalized to Y = 1.0.
     This is actually a blackbody illuminant for T = 2856 K.  (Wyszecki, p. 143)
     """
-    return get_blackbody_illuminant(2856.0)
+    return get_blackbody_illuminant(2856.0 * u.K)
 
 
 @scale_illuminant
-def get_constant_illuminant():
+def get_illuminant_E():
     """
     Get an illuminant, with spectrum constant over wavelength, normalized to Y = 1.0.
+    This is also referred to as illuminant E.
     """
     return Spectrum(_wavelengths, 1)
 
@@ -178,7 +179,7 @@ def figures():
     """
     Plot spectra for several illuminants.
     """
-    plots.spectrum_plot(get_illuminant_D65(), "CIE Illuminant D65", "Illuminant-D65")
     plots.spectrum_plot(get_illuminant_A(), "CIE Illuminant A", "Illuminant-A")
-    plots.spectrum_plot(get_constant_illuminant(), "Constant Illuminant", "Illuminant-Const")
+    plots.spectrum_plot(get_illuminant_D65(), "CIE Illuminant D65", "Illuminant-D65")
+    plots.spectrum_plot(get_illuminant_E(), "Constant Illuminant", "Illuminant-Const")
     plots.spectrum_plot(get_blackbody_illuminant(5778.0), "5778 K Illuminant", "Illuminant-5778")
