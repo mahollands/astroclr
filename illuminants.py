@@ -127,14 +127,14 @@ def scale_illuminant(get_illuminant):
 
 
 @scale_illuminant
-def get_blackbody_illuminant(T_K):
+def get_blackbody_illuminant(T_K: float | u.Quantity) -> Spectrum:
     """
     Get the spectrum of a blackbody at the given temperature, normalized to Y = 1.0.o
     """
     return Spectrum.BlackBody(T_K, _wavelengths)
 
 
-def get_illuminant_A():
+def get_illuminant_A() -> Spectrum:
     """
     Get CIE Illuminant A, as a spectrum, normalized to Y = 1.0.
     This is actually a blackbody illuminant for T = 2856 K.  (Wyszecki, p. 143)
@@ -143,7 +143,7 @@ def get_illuminant_A():
 
 
 @functools.cache
-def _get_illuminant_D_data():
+def _get_illuminant_D_data() -> tuple:
     wavelength, *S_eig = np.loadtxt(
         f"{os.path.dirname(__file__)}/data/CIE_illum_Dxx_comp.csv",
         delimiter=",",
@@ -162,7 +162,7 @@ def _get_illuminant_D_data():
 
 
 @scale_illuminant
-def get_illuminant_DXX(T):
+def get_illuminant_DXX(T: float | u.Quantity) -> Spectrum:
     """
     Generate CIE Illuminant D series, as a spectrum, normalized to Y = 1.0.
 
@@ -189,7 +189,7 @@ def get_illuminant_DXX(T):
 
 
 @scale_illuminant
-def get_illuminant_D65():
+def get_illuminant_D65() -> Spectrum:
     """
     Get CIE Illuminant D65, as a spectrum, normalized to Y = 1.0.
 
@@ -213,7 +213,7 @@ def get_illuminant_D65():
 
 
 @scale_illuminant
-def get_illuminant_E():
+def get_illuminant_E() -> Spectrum:
     """
     Get CIE Illuminant E, as a spectrum, normalized to Y = 1.0.
     This is a spectrum constant in wavelength
