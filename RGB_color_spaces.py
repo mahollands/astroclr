@@ -52,11 +52,11 @@ class RGB_ColorSpace:
     peak_luminance: u.Quantity = 80 * u.cd/u.m**2
 
     @property
-    def primaries(self):
+    def primaries(self) -> tuple:
         return self.R, self.G, self.B
 
     @functools.cached_property
-    def xyz_from_rgb_matrix(self):
+    def xyz_from_rgb_matrix(self) -> np.ndarray:
         """
         Determine intensities of each phosphor by solving:
         phosphor_matrix * intensity_vector = white_point
@@ -67,14 +67,14 @@ class RGB_ColorSpace:
         return phosphor_matrix * I[np.newaxis, :]
 
     @functools.cached_property
-    def rgb_from_xyz_matrix(self):
+    def rgb_from_xyz_matrix(self) -> np.ndarray:
         return np.linalg.inv(self.xyz_from_rgb_matrix)
 
-    def in_gamut(self, XYZ_Color):
+    def in_gamut(self, XYZ: XYZ_Color) -> bool:
         """
         Check whether an XYZ_Color falls within the gamut of a colour space
         """
-        rgb = self.rgb_from_xyz_matrix @ XYZ_Color._values
+        rgb = self.rgb_from_xyz_matrix @ XYZ._values
         return np.all(rgb >= 0)
 
 
@@ -166,7 +166,7 @@ Rec2020 = RGB_ColorSpace(
     G=XYZ_Color(0.170, 0.797),
     B=XYZ_Color(0.131, 0.046),
     W=Whites['D65'],
-    EOTF=gamma_EOTF(gamma=2.4)
+    EOTF=gamma_EOTF(gamma=2.4) #Actually piecewise gamma!
 )
 
 # https://www.color.org/chardata/rgb/BT2100.xalter

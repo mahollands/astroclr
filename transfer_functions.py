@@ -26,10 +26,10 @@ class gamma_EOTF:
     """
     Simple power law for gamma correction.
     """
-    def __init__(self, gamma):
+    def __init__(self, gamma: float):
         self.gamma = gamma
     
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"gamma_EOTF(gamma={self.gamma})"
 
     def __call__(self, x):
@@ -49,7 +49,7 @@ class sRGB_EOTF:
     def __init__(self):
         pass
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "sRGB_EOTF()"
 
     def __call__(self, x):
@@ -73,7 +73,7 @@ class BT1886_EOTF:
     relative to white. This EOTF is done on a scale of 0-1 rather than in
     physical luminance.
     """
-    def __init__(self, gamma=2.4, Lb_Lw=0):
+    def __init__(self, gamma: float=2.4, Lb_Lw: float=0):
         self.gamma = gamma
         self.Lb_Lw = 0
 
