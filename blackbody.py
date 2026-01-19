@@ -69,12 +69,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 from astropy import units as u
 
-from .ciexyz import Spectrum, _wavelengths
+from .ciexyz import Spectrum, CMFs
 from .colormodels import RGB_Color
 from . import plots
 
 # Physical constants in mks units
 SUN_TEMPERATURE = 5778.0 * u.K
+_wavelengths = CMFs['1931'].wavelength
 
 # Figures
 
