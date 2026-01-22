@@ -82,7 +82,7 @@ class XYZ_Color(LinearColor):
     def __init__(self, x, y, z=None):
         if z is None:
             z = 1 - x - y
-        if np.isclose(z, 0):
+        if z < 0:
             z = 0
         super().__init__((x, y, z))
     
