@@ -229,7 +229,6 @@ class Spectrum:
         converted to SI W/m^2 or W/m^2/sr first (depending on the flux units).
         """
         XYZ = self.XYZ_integrals(CMFname=CMFname)
-        print(XYZ)
         return XYZ_Color(*XYZ.value)
 
     def to_RGB(self, **kwargs) -> RGB_Color:
