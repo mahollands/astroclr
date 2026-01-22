@@ -117,7 +117,7 @@ class Spectrum:
         unit wavelength or flux per unit wavelength per solid_angle.
     """
 
-    __slots__ = ["_x", "_y", "_y_unit_option"]
+    __slots__ = ["_x", "_y", "_y_unit_option", "interp_flux"]
 
     def __init__(
         self,
@@ -126,7 +126,6 @@ class Spectrum:
     ):
         self.wavelength = wavelength
         self.flux = flux
-
     @property
     def wavelength(self) -> u.Quantity:
         return self._x
@@ -160,6 +159,15 @@ class Spectrum:
         else:
             raise ValueError("Flux units must be equivalent to W/m2/sr/nm or W/m2/nm")
         self._y = value
+        self.interp_flux = interp1d(
+            self.wavelength,
+            self.flux,
+            kind='cubic', 
+            copy=False,
+            bounds_error=False,
+            fill_value=0,
+            assume_sorted=True,
+        )
 
     def __len__(self) -> int:
         return len(self._x)
@@ -204,12 +212,17 @@ class Spectrum:
         The result is a 3-valued astropy quantity with units of W/m^2
         or W/m^2/sr.
         """
-        wavelength = self.wavelength.to(u.nm)
-        flux = self.flux.to(self._y_unit_option)
         CMF = CMFs[CMFname]
+        iwavelength = np.hstack([self.wavelength.to(u.nm), CMF.wavelength.to(u.nm)])
+        iwavelength = np.unique(iwavelength)
+        iwavelength = np.sort(iwavelength)
+        flux = self.interp_flux(iwavelength) * self.flux.unit
+        print(flux)
+        flux = flux.to(self._y_unit_option)
         integral_unit = flux.unit * u.nm
-        integrand = flux[np.newaxis, :] * CMF.interp(wavelength)
-        I_XYZ = integrate(integrand, self.wavelength, axis=1) * integral_unit
+        integrand = flux[np.newaxis, :] * CMF.interp(iwavelength)
+        I_XYZ = integrate(integrand, iwavelength, axis=1) * integral_unit
+        print(I_XYZ)
         return I_XYZ
 
     def to_XYZ(self, CMFname: str = "1931") -> XYZ_Color:
@@ -218,6 +231,7 @@ class Spectrum:
         converted to SI W/m^2 or W/m^2/sr first (depending on the flux units).
         """
         XYZ = self.XYZ_integrals(CMFname=CMFname)
+        print(XYZ)
         return XYZ_Color(*XYZ.value)
 
     def to_RGB(self, **kwargs) -> RGB_Color:
