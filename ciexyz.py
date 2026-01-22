@@ -217,12 +217,10 @@ class Spectrum:
         iwavelength = np.unique(iwavelength)
         iwavelength = np.sort(iwavelength)
         flux = self.interp_flux(iwavelength) * self.flux.unit
-        print(flux)
         flux = flux.to(self._y_unit_option)
         integral_unit = flux.unit * u.nm
         integrand = flux[np.newaxis, :] * CMF.interp(iwavelength)
         I_XYZ = integrate(integrand, iwavelength, axis=1) * integral_unit
-        print(I_XYZ)
         return I_XYZ
 
     def to_XYZ(self, CMFname: str = "1931") -> XYZ_Color:
