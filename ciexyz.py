@@ -126,6 +126,7 @@ class Spectrum:
     ):
         self.wavelength = wavelength
         self.flux = flux
+
     @property
     def wavelength(self) -> u.Quantity:
         return self._x
@@ -162,7 +163,7 @@ class Spectrum:
         self.interp_flux = interp1d(
             self.wavelength,
             self.flux,
-            kind='cubic', 
+            kind="cubic",
             copy=False,
             bounds_error=False,
             fill_value=0,
@@ -213,6 +214,7 @@ class Spectrum:
         or W/m^2/sr.
         """
         CMF = CMFs[CMFname]
+        # merge spectrum and CMF wavelength arrays to interpolate for integrals
         iwavelength = np.hstack([self.wavelength.to(u.nm), CMF.wavelength.to(u.nm)])
         iwavelength = np.unique(iwavelength)
         iwavelength = np.sort(iwavelength)
@@ -301,7 +303,7 @@ def get_normalized_spectral_line_colors(
     num_purples: int = 0,
     annotate: bool = False,
     CMFname: str = "1931",
-) -> ColorList:
+) -> ColorList[XYZ_Color] | tuple[ColorList[XYZ_Color], list[str]]:
     """
     Get a list of XYZ colors covering the visible spectrum. Optionally add
     a number of 'purples', which are colors interpolated between the color of
