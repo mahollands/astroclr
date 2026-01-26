@@ -280,15 +280,18 @@ class Spectrum:
 
 
 def XYZ_from_wavelength(
-    wavelength: int | float | np.ndarray | u.Quantity,
+    wavelength: NoneType | int | float | np.ndarray | u.Quantity = None,
     CMFname: str = "1931",
-) -> XYZ_Color | ColorList:
+) -> XYZ_Color | ColorList[XYZ_Color]:
     """
     Given a wavelength (nm), return the corresponding XYZ_Color, for unit
-    intensity.
+    intensity. Wavelengths can be given as arrays returning an array. with or without.
+    If no wavelength is given, the CMF wavelength table is used.
     """
     CMF = CMFs[CMFname]
-    if isinstance(wavelength, u.Quantity):
+    if wavelength is None:
+        wavelength = CMF.wavelength
+    elif isinstance(wavelength, u.Quantity):
         wavelength = wavelength.to(u.nm)
     else:
         wavelength <<= u.nm
