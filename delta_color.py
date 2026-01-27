@@ -15,17 +15,17 @@ __all__ = [
 
 type RealColor = XYZ_Color | RGB_Color | LUV_Color | LAB_Color
 
-def delta_uv(XYZ1: XYZ_Color, XYZ2: XYZ_Color): -> float
+def delta_uv(XYZ1: XYZ_Color, XYZ2: XYZ_Color) -> float:
     """
     Euclidean distance in uv' terms between a pair of XYZ colors
     """
     u1, v1 = LUV_Color.uv_primes(XYZ1)
     u2, v2 = LUV_Color.uv_primes(XYZ2)
-    du, dv = u1-u2, v1-v3
+    du, dv = u1-u2, v1-v2
     return math.sqrt(du**2 + dv**2)
 
 
-def theta_to_T(theta: float): -> float
+def theta_to_T(theta: float) -> float:
     """
     Maps temperature to a Reimann sphere where 0K -> 0, 6500K -> π/2 and
     inf -> π
@@ -33,7 +33,7 @@ def theta_to_T(theta: float): -> float
     return 6500 * math.tan(abs(theta)/2)
 
 
-def CCT(color: RealColor): -> u.Quantity
+def CCT(color: RealColor) -> u.Quantity:
     """
     Correlated Color Temperature from euclidean distance in the uv' plane
     """
@@ -48,7 +48,7 @@ def CCT(color: RealColor): -> u.Quantity
     return theta_to_T(result['x'][0]) * u.K
 
 
-def delta_E(color1: RealColor, color2: RealColor): -> float
+def delta_E(color1: RealColor, color2: RealColor) -> float:
     """
     CIE 1976 method to calculate colour difference ΔE. Most color types
     are accepted where they are internaly converted to CIE LAB space.
