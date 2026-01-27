@@ -42,12 +42,27 @@ def CCT(color: RealColor): -> u.Quantity
 
     result = minimize(
         lambda theta, xyz: delta_uv(Spectrum.BlackBody(theta_to_T(theta)).to_XYZ(), xyz),
-        0.5, # initialise at D65
+        math.pi/2, # initialise at D65
         args=(color,),
     )
     return theta_to_T(result['x'][0]) * u.K
 
 
-#TODO write standard delta E function
-def delta_E(XYZ1, XYZ2):
-    pass
+def delta_E(color1: RealColor, color2: RealColor): -> float
+    """
+    CIE 1976 method to calculate colour difference ΔE. Most color types
+    are accepted where they are internaly converted to CIE LAB space.
+    """
+    if not isinstance(color1, LAB_Color):
+        if not isinstance(color1, XYZ_Color):
+            color1 = color1.to_XYZ()
+        color1 = LAB_Color.from_XYZ(color1)
+    if not isinstance(color2, LAB_Color):
+        if not isinstance(color2, XYZ_Color):
+            color2 = color2.to_XYZ()
+        color2 = LAB_Color.from_XYZ(color2)
+
+    dL = color1.L - color2.L
+    da = color1.a - color2.a
+    db = color1.b - color2.b
+    return math.sqrt(dL**2 + da**2 + db**2)
