@@ -23,7 +23,7 @@ def delta_uv(XYZ1: XYZ_Color, XYZ2: XYZ_Color) -> float:
     u2, v2 = LUV_Color.uv_primes(XYZ2)
     du, dv = u1-u2, v1-v2
     dv *= 2/3 #convert from uv' 1972 to UCS 1960 uv
-    return math.sqrt(du**2 + dv**2)
+    return du**2 + dv**2
 
 
 def theta_to_T(theta: float) -> float:
@@ -36,7 +36,7 @@ def theta_to_T(theta: float) -> float:
 
 def CCT(color: RealColor) -> u.Quantity:
     """
-    Correlated Color Temperature from euclidean distance in the uv' plane
+    Correlated Color Temperature from euclidean distance in the uv plane
     """
     if not isinstance(color, XYZ_Color):
         color = color.to_XYZ()
