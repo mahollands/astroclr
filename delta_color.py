@@ -17,11 +17,12 @@ type RealColor = XYZ_Color | RGB_Color | LUV_Color | LAB_Color
 
 def delta_uv(XYZ1: XYZ_Color, XYZ2: XYZ_Color) -> float:
     """
-    Euclidean distance in uv' terms between a pair of XYZ colors
+    Euclidean distance in UCS 1960 uv terms between a pair of XYZ colors
     """
-    u1, v1 = LUV_Color.uv_primes(XYZ1)
+    u1, v1 = LUV_Color.uv_primes(XYZ1) #uv' 1972
     u2, v2 = LUV_Color.uv_primes(XYZ2)
     du, dv = u1-u2, v1-v2
+    dv *= 2/3 #convert from uv' 1972 to UCS 1960 uv
     return math.sqrt(du**2 + dv**2)
 
 
