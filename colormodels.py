@@ -131,7 +131,7 @@ class ClipMethod(StrEnum):
     ADD_WHITE = "add white"
 
 
-def Lab_f(t):
+def Lab_f(t: float) -> float:
     """
     Lab utility function.
     """
@@ -141,7 +141,7 @@ def Lab_f(t):
     return LAB_F["A"] * t + LAB_F["B"]
 
 
-def Lab_f_inverse(F):
+def Lab_f_inverse(F: float) -> float:
     """
     Inverse of Lab_f().
     """
@@ -151,7 +151,7 @@ def Lab_f_inverse(F):
     return (F - LAB_F["B"]) / LAB_F["A"]
 
 
-def L_luminance(y):
+def L_luminance(y: float) -> float:
     """
     L coefficient for Luv and Lab models.
     """
@@ -160,7 +160,7 @@ def L_luminance(y):
     return L_LUM["C"] * y  # linear range
 
 
-def L_luminance_inverse(L):
+def L_luminance_inverse(L: float) -> float:
     """Inverse of L_luminance()."""
     # Luminance function [of Y value of an XYZ color] used in Luv and Lab.
     # See [Kasson p.399] for details. The linear range coefficient L_LUM['C']
@@ -279,11 +279,18 @@ class IRGB_Color(LinearColor):
 
     def to_string(self):
         """
-        Convert a displayable 8-bit irgb color (0-255) into a hex string.
+        Convert a displayable irgb color into a hex string.
         """
-        if self.color_space.bit_depth != 8:
-            raise ValueError("Can only make hexcodes for bit depths of 8")
-        return f"#{self.r:02X}{self.g:02X}{self.b:02X}"
+        if self.color_space.bit_depth <= 4:
+            return f"#{self.r:01X}{self.g:01X}{self.b:01X}"
+        elif self.color_space.bit_depth <= 8:
+            return f"#{self.r:02X}{self.g:02X}{self.b:02X}"
+        elif self.color_space.bit_depth <= 12:
+            return f"#{self.r:03X}{self.g:03X}{self.b:03X}"
+        elif self.color_space.bit_depth <= 16:
+            return f"#{self.r:04X}{self.g:04X}{self.b:04X}"
+        else:
+            raise ValueError("Bit depths above 16 are not supported")
 
     @classmethod
     def from_hex_string(cls, irgb_string, colorspace=sRGB):
@@ -330,12 +337,13 @@ class LUV_Color(Lpq_Color):
             return (0.0, 0.0)
         u_prime = 4.0 * XYZ.x / w_denom
         v_prime = 9.0 * XYZ.y / w_denom
-        return (u_prime, v_prime)
+        return (float(u_prime), float(v_prime))
 
     @staticmethod
     def uv_primes_inverse(u_prime, v_prime, y):
         """
-        Converts a luminance Y and (u', v') chromacity to an XYZ colour"""
+        Converts a luminance Y and (u', v') chromacity to an XYZ colour
+        """
         if v_prime == 0.0:
             return XYZ_Color(0.0, 0.0, 0.0)
         w_denom = (9.0 * y) / v_prime
