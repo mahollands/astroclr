@@ -280,7 +280,7 @@ class Spectrum:
 
 
 def XYZ_from_wavelength(
-    wavelength: NoneType | int | float | np.ndarray | u.Quantity = None,
+    wavelength: None | int | float | np.ndarray | u.Quantity = None,
     CMFname: str = "1931",
 ) -> XYZ_Color | ColorList[XYZ_Color]:
     """
