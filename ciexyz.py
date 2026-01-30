@@ -312,6 +312,21 @@ def XYZ_from_wavelength(
     return ColorList([XYZ_Color(*_xyz) for _xyz in xyz.T])
 
 
+def RGB_from_wavelength(
+    wavelength: None | int | float | np.ndarray | u.Quantity = None,
+    CMFname: str = "1931",
+) -> XYZ_Color | ColorList[XYZ_Color]:
+    """
+    Given a wavelength (nm), return the corresponding XYZ_Color, for unit
+    intensity. Wavelengths can be given as arrays returning an array. with or without.
+    If no wavelength is given, the CMF wavelength table is used.
+    """
+    XYZ = XYZ_from_wavelength(wavelength, CMFname)
+    if wavelength.isscalar:
+        return RGB_Color.from_XYZ(XYZ)
+    return ColorList([RGB_Color.from_XYZ(xyz) for xyz in XYZ])
+
+
 def get_normalized_spectral_line_colors(
     brightness: float = 1.0,
     num_purples: int = 0,
