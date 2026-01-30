@@ -46,9 +46,6 @@ class sRGB_EOTF:
     consistency with the gamma 2.2 legacy images and the video industry.
     https://www.color.org/chardata/rgb/srgb.xalter
     """
-    def __init__(self):
-        pass
-
     def __repr__(self) -> str:
         return "sRGB_EOTF()"
 
