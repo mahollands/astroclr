@@ -25,14 +25,14 @@ wavelengths = CMFs["1931"].wavelength.value
 XYZs = XYZ_from_wavelength(wavelengths)
 RGBs = [RGB_Color.from_XYZ(XYZ, color_space=CSPACE) for XYZ in XYZs]
 
-min_flux = min(RGB._values.min() for RGB in RGBs)
+min_flux = min(RGB.values.min() for RGB in RGBs)
 for RGB in RGBs:
-    RGB._values -= min_flux
+    RGB.values -= min_flux
 
-norm = max(RGB._values.max() for RGB in RGBs)
+norm = max(RGB.values.max() for RGB in RGBs)
 RGBs = [RGB / norm for RGB in RGBs]
 IRGBs = [RGB.to_IRGB() for RGB in RGBs]
-IRGBs = [IRGB_Color(*IRGB._values) for IRGB in IRGBs]
+IRGBs = [IRGB_Color(*IRGB.values) for IRGB in IRGBs]
 print(IRGBs[-1])
 
 rect_x = np.array([-0.5, 0.5, 0.5, -0.5])
@@ -44,19 +44,17 @@ plt.ylim(0, 1)
 plt.savefig("rainbow.png")
 plt.show()
 
-plt.plot(wavelengths, [RGB.r for RGB in RGBs], "r-")
-plt.plot(wavelengths, [RGB.g for RGB in RGBs], "g-")
-plt.plot(wavelengths, [RGB.b for RGB in RGBs], "b-")
+plt.plot(wavelengths, [RGB.R for RGB in RGBs], "r-")
+plt.plot(wavelengths, [RGB.G for RGB in RGBs], "g-")
+plt.plot(wavelengths, [RGB.B for RGB in RGBs], "b-")
 plt.xlim(380, 720)
 plt.show()
 
-plt.plot(wavelengths, [IRGB.r for IRGB in IRGBs], "r-")
-plt.plot(wavelengths, [IRGB.g for IRGB in IRGBs], "g-")
-plt.plot(wavelengths, [IRGB.b for IRGB in IRGBs], "b-")
+plt.plot(wavelengths, [IRGB.R for IRGB in IRGBs], "r-")
+plt.plot(wavelengths, [IRGB.G for IRGB in IRGBs], "g-")
+plt.plot(wavelengths, [IRGB.B for IRGB in IRGBs], "b-")
 plt.xlim(380, 720)
 plt.show()
-
-XYZs = XYZs.normalize()
 
 plt.plot(XYZs.x, XYZs.y)
 XYZs = ColorList([RGB.to_XYZ() for RGB in RGBs]).normalize()

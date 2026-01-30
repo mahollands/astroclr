@@ -30,7 +30,7 @@ USE_SPEC = False
 SPEC_NAME = "/home/mark/GD492/J1637/models/J1637-fit-2024.dk"
 
 XYZs = XYZ_from_wavelength(CMF.wavelength)
-RGBs = [RGB_Color.from_XYZ(XYZ)._values for XYZ in XYZs]
+RGBs = [RGB_Color.from_XYZ(XYZ).values for XYZ in XYZs]
 lams = 360 - 555 + np.arange(len(RGBs))
 
 
