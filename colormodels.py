@@ -268,9 +268,9 @@ class IRGB_Color(LinearColor):
     def __init__(self, R, G, B, color_space=sRGB):
         if not isinstance(color_space, RGB_ColorSpace):
             raise TypeError("color_space should be an RGB_ColorSpace")
-        if not all(x in range(2**color_space.bit_depth) for x in (r, g, b)):
+        if not all(x in range(2**color_space.bit_depth) for x in (R, G, B)):
             raise ValueError("RGB integral values out of range")
-        super().__init__((r, g, b), dtype=int)
+        super().__init__((R, G, B), dtype=int)
         self.color_space = color_space
 
     R = property(fget=LinearColor._1.fget, fset=LinearColor._1.fset)
