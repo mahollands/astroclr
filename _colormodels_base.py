@@ -5,38 +5,39 @@ class Color:
     """
     Tristimulus color space
     """
+    __slots__ = ["values"]
 
     def __init__(self, values, dtype):
         if len(values) != 3:
             raise ValueError
-        self._values = np.array(values, dtype=dtype)
+        self.values = np.array(values, dtype=dtype)
 
     def __repr__(self):
-        return "{}({}, {}, {})".format(self.__class__.__name__, *self._values)
+        return "{}({}, {}, {})".format(self.__class__.__name__, *self.values)
 
     def __rmul__(self, other):
         return self * other
 
     @property
     def _1(self):
-        return self._values[0]
+        return self.values[0]
     @_1.setter
     def _1(self, value):
-        self._values[0] = value
+        self.values[0] = value
 
     @property
     def _2(self):
-        return self._values[1]
+        return self.values[1]
     @_2.setter
     def _2(self, value):
-        self._values[1] = value
+        self.values[1] = value
 
     @property
     def _3(self):
-        return self._values[2]
+        return self.values[2]
     @_3.setter
     def _3(self, value):
-        self._values[2] = value
+        self.values[2] = value
 
 class LinearColor(Color):
     """
@@ -56,25 +57,25 @@ class LinearColor(Color):
     def __add__(self, other):
         if not isinstance(other, self.__class__):
             raise TypeError
-        new = self._values + other._values
+        new = self.values + other.values
         return self.__class__(*new, **self._kwargs)
 
     def __sub__(self, other):
         if not isinstance(other, self.__class__):
             raise TypeError
-        new = self._values - other._values
+        new = self.values - other.values
         return self.__class__(*new, **self._kwargs)
 
     def __mul__(self, other):
         if not isinstance(other, (int, float)):
             raise TypeError
-        new = self._values * other
+        new = self.values * other
         return self.__class__(*new, **self._kwargs)
 
     def __truediv__(self, other):
         if not isinstance(other, (int, float)):
             raise TypeError
-        new = self._values / other
+        new = self.values / other
         return self.__class__(*new, **self._kwargs)
 
 
@@ -88,7 +89,7 @@ class XYZ_Color(LinearColor):
     
     def __repr__(self):
         rpr = super().__repr__()
-        if np.isclose(self._values.sum(), 1):
+        if np.isclose(self.values.sum(), 1):
             parts = rpr.split(', ')
             rpr = ', '.join(parts[:2]) + ')'
         return rpr
@@ -98,7 +99,7 @@ class XYZ_Color(LinearColor):
     z = property(fget=LinearColor._3.fget, fset=LinearColor._3.fset)
 
     def normalize(self):
-        return self / self._values.sum()
+        return self / self.values.sum()
 
     def normalize_Y1(self):
         return self / self.y

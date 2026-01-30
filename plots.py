@@ -71,7 +71,7 @@ def spectrum_subplot(S):
     """
     XYZs = (XYZ_from_wavelength(lam) for lam in S.wavelength)
     RGBs = [RGB_Color.from_XYZ(XYZ) for XYZ in XYZs]
-    rgb_max = max(RGB._values.max() for RGB in RGBs)
+    rgb_max = max(RGB.values.max() for RGB in RGBs)
     RGBs = [RGB / rgb_max for RGB in RGBs]
     # draw color patches (thin vertical lines matching the spectrum curve) in color
     iterables = (
@@ -180,7 +180,7 @@ def visible_spectrum_plot(CMF="1931"):
     XYZs = XYZ_from_wavelength(_wavelengths, CMF=CMF)
     RGBs = ColorList([RGB_Color.from_XYZ(XYZ) for XYZ in XYZs])
     # scale to make brightest rgb value = 1.0
-    rgb_max = max(RGB._values.max() for RGB in RGBs)
+    rgb_max = max(RGB.values.max() for RGB in RGBs)
     RGBs = ColorList([RGB / rgb_max for RGB in RGBs])
     # plot colors and rgb values vs wavelength
     color_vs_param_plot(

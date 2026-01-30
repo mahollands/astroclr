@@ -197,7 +197,7 @@ class RGB_Color(LinearColor):
         return {'color_space': self.color_space} 
 
     def normalize_brightest(self):
-        return self / self._values.max()
+        return self / self.values.max()
 
     @classmethod
     def from_XYZ(cls, XYZ, color_space=sRGB, brightest=False):
@@ -206,7 +206,7 @@ class RGB_Color(LinearColor):
         default). 'brightest' keyword argument scales this so the brightest RGB
         channel is at 1.0.
         """
-        rgb = color_space.rgb_from_xyz_matrix @ XYZ._values
+        rgb = color_space.rgb_from_xyz_matrix @ XYZ.values
         RGB = cls(*rgb, color_space=color_space)
         if brightest:
             RGB = RGB.normalize_brightest()
@@ -214,7 +214,7 @@ class RGB_Color(LinearColor):
 
     def to_XYZ(self):
         """Convert an rgb color to xyz."""
-        xyz = self.color_space.xyz_from_rgb_matrix @ self._values
+        xyz = self.color_space.xyz_from_rgb_matrix @ self.values
         return XYZ_Color(*xyz)
 
     def clip_to_gamut(self, clip_method=ClipMethod.ADD_WHITE):
@@ -224,7 +224,7 @@ class RGB_Color(LinearColor):
         move the colour to the edge of the RGB gamut.
         """
         if clip_method == ClipMethod.ADD_WHITE:
-            rgb = self._values
+            rgb = self.values
             rgb_min = min(0.0, rgb.min())
             rgb_max = rgb.max()
             scaling = rgb_max / (rgb_max - rgb_min) if rgb_max > 0.0 else 1.0
@@ -232,7 +232,7 @@ class RGB_Color(LinearColor):
             if rgb_min < 0.0:
                 rgb = scaling * (rgb - rgb_min)
         elif clip_method == ClipMethod.CLAMP:
-            rgb = np.clip(self._values, 0, np.inf)
+            rgb = np.clip(self.values, 0, np.inf)
         else:
             raise ValueError(f"Invalid color clipping method {clip_method}")
         return RGB_Color(*rgb)
@@ -243,7 +243,7 @@ class RGB_Color(LinearColor):
         displayable integer irgb value (range 0 - 255), clipping as
         necessary
         """
-        rgb = self.clip_to_gamut(clip_method)._values
+        rgb = self.clip_to_gamut(clip_method).values
         # clip intensity if needed (rgb values > 1.0) by scaling
         rgb_max = max(rgb)
         # we actually don't overflow until 255.0 * intensity > 255.5, so
@@ -311,7 +311,7 @@ class IRGB_Color(LinearColor):
         into a linear rgb value (range 0.0 - 1.0).
         """
         max_val = 2**self.color_space.bit_depth
-        rgb = [self.color_space.EOTF(val / max_val) for val in self._values]
+        rgb = [self.color_space.EOTF(val / max_val) for val in self.values]
         RGB = RGB_Color(*rgb, color_space=self.color_space)
 
         if to_luminance:
@@ -392,7 +392,7 @@ class LAB_Color(Lpq_Color):
         """
         Create an LAB color from an XYZ color and white point (D65 by default).
         """
-        x_p, y_p, z_p = xyz_p = XYZ._values / white_point._values
+        x_p, y_p, z_p = xyz_p = XYZ.values / white_point.values
         f_x, f_y, f_z = map(Lab_f, xyz_p)
 
         L = L_luminance(y_p)
@@ -410,7 +410,7 @@ class LAB_Color(Lpq_Color):
         f_z = f_y - (self.b / 200.0)
         x_p = Lab_f_inverse(f_x)
         z_p = Lab_f_inverse(f_z)
-        xyz_p = np.array([x_p, y_p, z_p]) * self.white_point._values
+        xyz_p = np.array([x_p, y_p, z_p]) * self.white_point.values
         return XYZ_Color(*xyz_p)
 
 

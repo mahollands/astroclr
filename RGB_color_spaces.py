@@ -62,8 +62,8 @@ class RGB_ColorSpace:
         phosphor_matrix * intensity_vector = white_point
         """
         # See [Foley/Van Dam, p.587, eqn 13.27, 13.29] and [Hall, p. 239].
-        phosphor_matrix = np.column_stack([x._values for x in self.primaries])
-        I = np.linalg.solve(phosphor_matrix, self.W.normalize_Y1()._values)
+        phosphor_matrix = np.column_stack([x.values for x in self.primaries])
+        I = np.linalg.solve(phosphor_matrix, self.W.normalize_Y1().values)
         return phosphor_matrix * I[np.newaxis, :]
 
     @functools.cached_property
@@ -74,7 +74,7 @@ class RGB_ColorSpace:
         """
         Check whether an XYZ_Color falls within the gamut of a colour space
         """
-        rgb = self.rgb_from_xyz_matrix @ XYZ._values
+        rgb = self.rgb_from_xyz_matrix @ XYZ.values
         return np.all(rgb >= 0)
 
 
