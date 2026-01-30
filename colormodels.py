@@ -511,3 +511,9 @@ class ColorList(list):
         for rescaling all elements by a constant.
         """
         return ColorList([item * value for item in self])
+
+    def min_component(self):
+        return min(item.values.min() for item in self)
+
+    def max_component(self):
+        return max(item.values.max() for item in self)

@@ -69,10 +69,13 @@ def spectrum_subplot(S):
     This is not a complete plotting function, e.g. no file is saved, etc.
     It is assumed that this function is being called by one that handles those things.
     """
-    XYZs = (XYZ_from_wavelength(lam) for lam in S.wavelength)
-    RGBs = [RGB_Color.from_XYZ(XYZ) for XYZ in XYZs]
-    rgb_max = max(RGB.values.max() for RGB in RGBs)
-    RGBs = [RGB / rgb_max for RGB in RGBs]
+    XYZs = XYZ_from_wavelength(S.wavelength)
+    RGBs = ColorList([RGB_Color.from_XYZ(XYZ) for XYZ in XYZs])
+    grey = RGBs.min_component()
+    min_grey = RGB_Color(grey, grey, grey)
+    RGBs =  ColorList([RGB - min_grey for RGB in RGBs])
+    rgb_max = RGBs.max_component()
+    RGBs = RGBs.rescale(1 / rgb_max)
     # draw color patches (thin vertical lines matching the spectrum curve) in color
     iterables = (
         pairwise(S.wavelength.value),
@@ -161,10 +164,9 @@ def color_vs_param_plot(
     # draw rgb curves in lower plot
     plt.subplot(2, 1, 2)
     # no title in lower plot
-    R, G, B = [[getattr(RGB, c) for RGB in RGBs] for c in "rgb"]
-    plotfunc(param_list, R, color="r", label="Red")
-    plotfunc(param_list, G, color="g", label="Green")
-    plotfunc(param_list, B, color="b", label="Blue")
+    plotfunc(param_list, RGBs.R, color="r", label="Red")
+    plotfunc(param_list, RGBs.G, color="g", label="Green")
+    plotfunc(param_list, RGBs.B, color="b", label="Blue")
     if tight:
         plt.xlim(min(param_list), max(param_list))
     plt.xlabel(xlabel)
@@ -176,15 +178,19 @@ def visible_spectrum_plot(CMF="1931"):
     """
     Plot the visible spectrum, as a plot vs wavelength.
     """
-    _wavelengths, _ = CMFs[CMF]
-    XYZs = XYZ_from_wavelength(_wavelengths, CMF=CMF)
+    wavelengths = CMFs[CMF].wavelength
+    XYZs = XYZ_from_wavelength(wavelengths, CMFname=CMF)
     RGBs = ColorList([RGB_Color.from_XYZ(XYZ) for XYZ in XYZs])
+    # add grey to avoid gamut clipping
+    grey = min(RGB.values.min() for RGB in RGBs)
+    min_grey = RGB_Color(grey, grey, grey)
+    RGBs =  ColorList([RGB - min_grey for RGB in RGBs])
     # scale to make brightest rgb value = 1.0
     rgb_max = max(RGB.values.max() for RGB in RGBs)
-    RGBs = ColorList([RGB / rgb_max for RGB in RGBs])
+    RGBs = RGBs.rescale(1/rgb_max)
     # plot colors and rgb values vs wavelength
     color_vs_param_plot(
-        _wavelengths.value,
+        wavelengths.value,
         RGBs,
         "The Visible Spectrum",
         tight=True,
@@ -197,8 +203,8 @@ def cie_matching_functions_plot(CMF="1931"):
     """
     Plot the CIE XYZ matching functions, as three spectral subplots.
     """
-    _wavelengths, _xyz_table = CMFs[CMF]
-    cie_x, cie_y, cie_z = [Spectrum(_wavelengths, cie) for cie in _xyz_table]
+    wavelengths, xyz_table, _ = CMFs[CMF]
+    cie_x, cie_y, cie_z = [Spectrum(wavelengths, cie) for cie in xyz_table]
 
     plt.figure()
     # X
@@ -206,18 +212,18 @@ def cie_matching_functions_plot(CMF="1931"):
     plt.title("1931 CIE XYZ Matching Functions")
     plt.ylabel("CIE $X$")
     spectrum_subplot(cie_x)
-    plt.xlim(_wavelengths.value[(0, -1),])
+    plt.xlim(wavelengths.value[(0, -1),])
     # Y
     plt.subplot(3, 1, 2)
     plt.ylabel("CIE $Y$")
     spectrum_subplot(cie_y)
-    plt.xlim(_wavelengths.value[(0, -1),])
+    plt.xlim(wavelengths.value[(0, -1),])
     # Z
     plt.subplot(3, 1, 3)
     plt.xlabel("Wavelength [nm]")
     plt.ylabel("CIE $Z$")
     spectrum_subplot(cie_z)
-    plt.xlim(_wavelengths.value[(0, -1),])
+    plt.xlim(wavelengths.value[(0, -1),])
     plt.show()
 
 
@@ -225,11 +231,11 @@ def scattered_visual_brightness(CMF="1931"):
     """
     Plot the perceptual brightness of Rayleigh scattered light.
     """
-    _wavelengths, _xyz_table = CMFs[CMF]
-    CIE_Y = _xyz_table[1]
+    wavelengths, xyz_table, _ = CMFs[CMF]
+    CIE_Y = xyz_table[1]
     # get 'spectra' for y matching functions and multiply by 1/wl^4
-    rayleigh = (550.0 / _wavelengths.value) ** 4
-    S = Spectrum(_wavelengths, rayleigh * CIE_Y)
+    rayleigh = (550.0 / wavelengths.value) ** 4
+    S = Spectrum(wavelengths, rayleigh * CIE_Y)
 
     plt.figure()
     spectrum_subplot(S)
@@ -302,7 +308,7 @@ def BB_locus(CMF):
     BBs = [Spectrum.BlackBody(Ti * u.K, wavelengths) for Ti in T]
     flux_inf = wavelengths.value**-4
     BBs.append(Spectrum(wavelengths, flux_inf / flux_inf[0]))  # Tinfinity
-    T_XYZs = ColorList([BB.to_XYZ(CMF=CMF) for BB in BBs])
+    T_XYZs = ColorList([BB.to_XYZ(CMFname=CMF) for BB in BBs])
     T_xys = T_XYZs.normalize()
     plt.plot(T_xys.X, T_xys.Y, "k-")
     plt.plot(T_xys[-1].X, T_xys[-1].Y, "k.")
@@ -329,7 +335,7 @@ def chromacity_diagram(
     num_segments=50,
 ):
     plt.figure(figsize=(5, 4.71))
-    XYZ_boundary = get_normalized_spectral_line_colors(CMF=CMF, num_purples=num_purples)
+    XYZ_boundary = get_normalized_spectral_line_colors(CMFname=CMF, num_purples=num_purples)
     xy_boundary = XYZ_boundary.normalize()
     xy_mono = xy_boundary[:-num_purples]
     if draw_cie_space:

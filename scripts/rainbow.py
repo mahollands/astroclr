@@ -23,17 +23,15 @@ CSPACE = sRGB
 
 wavelengths = CMFs["1931"].wavelength.value
 XYZs = XYZ_from_wavelength(wavelengths)
-RGBs = [RGB_Color.from_XYZ(XYZ, color_space=CSPACE) for XYZ in XYZs]
+RGBs = ColorList([RGB_Color.from_XYZ(XYZ, color_space=CSPACE) for XYZ in XYZs])
 
-min_flux = min(RGB.values.min() for RGB in RGBs)
+min_flux = RGBs.min_component()
 for RGB in RGBs:
     RGB.values -= min_flux
 
-norm = max(RGB.values.max() for RGB in RGBs)
-RGBs = [RGB / norm for RGB in RGBs]
-IRGBs = [RGB.to_IRGB() for RGB in RGBs]
-IRGBs = [IRGB_Color(*IRGB.values) for IRGB in IRGBs]
-print(IRGBs[-1])
+norm = RGBs.max_component()
+RGBs = RGBs.rescale(1/norm)
+IRGBs = RGBs.to_IRGB()
 
 rect_x = np.array([-0.5, 0.5, 0.5, -0.5])
 rect_y = np.array([0, 0, 1, 1])
