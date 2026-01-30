@@ -94,15 +94,27 @@ class XYZ_Color(LinearColor):
             rpr = ', '.join(parts[:2]) + ')'
         return rpr
 
-    x = property(fget=LinearColor._1.fget, fset=LinearColor._1.fset)
-    y = property(fget=LinearColor._2.fget, fset=LinearColor._2.fset)
-    z = property(fget=LinearColor._3.fget, fset=LinearColor._3.fset)
+    X = property(fget=LinearColor._1.fget, fset=LinearColor._1.fset)
+    Y = property(fget=LinearColor._2.fget, fset=LinearColor._2.fset)
+    Z = property(fget=LinearColor._3.fget, fset=LinearColor._3.fset)
 
     def normalize(self):
         return self / self.values.sum()
 
     def normalize_Y1(self):
-        return self / self.y
+        return self / self.Y
+
+    @property
+    def x(self):
+        return self.normalize().X
+
+    @property
+    def y(self):
+        return self.normalize().Y
+
+    @property
+    def z(self):
+        return self.normalize().Z
 
     @classmethod
     def from_xyY(cls, x, y, Y):

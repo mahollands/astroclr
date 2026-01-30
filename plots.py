@@ -255,16 +255,16 @@ def fill_cie_space(xy_boundary, num_segments, color_space, clip_method):
         IRGBc = RGBc.to_IRGB(clip_method=clip_method)
         color_string = IRGBc.to_string()
         plt.fill(
-            corners.x, corners.y, color_string, edgecolor=color_string, rasterized=True
+            corners.X, corners.Y, color_string, edgecolor=color_string, rasterized=True
         )
 
 
 def RGB_triangle(color_space):
     primaries = ColorList(color_space.primaries)
     primaries.append(primaries[0])
-    plt.plot(primaries.x, primaries.y, "k:")
+    plt.plot(primaries.X, primaries.Y, "k:")
     for primary, c in zip(primaries, ["#FF0000", "#00FF00", "#0000FF"]):
-        plt.plot(primary.x, primary.y, "s", color=c, mec="k")
+        plt.plot(primary.X, primary.Y, "s", color=c, mec="k")
 
 
 def lam_ticks_labels(wavelengths, xy_mono, offsetx=0.03, offsety=0.01):
@@ -276,10 +276,10 @@ def lam_ticks_labels(wavelengths, xy_mono, offsetx=0.03, offsety=0.01):
         if lam % 5 == 0:
             ticklen = 0.01 if lam % 20 == 0 else 0.005
             xy_grad = xy_mono[j + 1] - xy_mono[j - 1]
-            dx, dy = xy_grad.x, xy_grad.y
+            dx, dy = xy_grad.X, xy_grad.Y
             ds = np.hypot(dx, dy)
             dx, dy = dy * ticklen / ds, -dx * ticklen / ds
-            plt.plot([xyj.x, xyj.x + dx], [xyj.y, xyj.y + dy], "k-", lw=1.5)
+            plt.plot([xyj.X, xyj.X + dx], [xyj.Y, xyj.Y + dy], "k-", lw=1.5)
         if lam < 460:
             continue
         if lam % 20 == 0:
@@ -289,7 +289,7 @@ def lam_ticks_labels(wavelengths, xy_mono, offsetx=0.03, offsety=0.01):
             dy += dy / dist * offsety
             plt.annotate(
                 str(lam),
-                (xyj.x + dx, xyj.y + dy),
+                (xyj.X + dx, xyj.Y + dy),
                 fontsize=10,
                 va="center",
                 ha="center",
@@ -304,18 +304,18 @@ def BB_locus(CMF):
     BBs.append(Spectrum(wavelengths, flux_inf / flux_inf[0]))  # Tinfinity
     T_XYZs = ColorList([BB.to_XYZ(CMF=CMF) for BB in BBs])
     T_xys = T_XYZs.normalize()
-    plt.plot(T_xys.x, T_xys.y, "k-")
-    plt.plot(T_xys[-1].x, T_xys[-1].y, "k.")
+    plt.plot(T_xys.X, T_xys.Y, "k-")
+    plt.plot(T_xys[-1].X, T_xys[-1].Y, "k.")
     ticklen = 0.005
     Tmin, Tmax, Tstep = 2000, 10000, 1000
     Tarr = np.arange(Tmin, Tmax + 1, Tstep)
     for Ttick in Tarr:
         j = np.argmin(abs(Ttick - T))
         T_xy, xy_grad = T_xys[j], T_xys[j + 1] - T_xys[j - 1]
-        dx, dy = xy_grad.x, xy_grad.y
+        dx, dy = xy_grad.X, xy_grad.Y
         ds = np.hypot(dx, dy)
         dx, dy = dy * ticklen / ds, -dx * ticklen / ds
-        plt.plot([T_xy.x - dx, T_xy.x + dx], [T_xy.y - dy, T_xy.y + dy], "k-")
+        plt.plot([T_xy.X - dx, T_xy.X + dx], [T_xy.Y - dy, T_xy.Y + dy], "k-")
 
 
 def chromacity_diagram(
@@ -334,7 +334,7 @@ def chromacity_diagram(
     xy_mono = xy_boundary[:-num_purples]
     if draw_cie_space:
         fill_cie_space(xy_boundary, num_segments, color_space, clip_method)
-    plt.plot(xy_mono.x, xy_mono.y, "k-", lw=2)
+    plt.plot(xy_mono.X, xy_mono.Y, "k-", lw=2)
     if draw_bb_locus:
         BB_locus(CMF)
     lam_ticks_labels(CMFs[CMF][0], xy_mono)

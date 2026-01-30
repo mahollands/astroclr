@@ -131,7 +131,7 @@ class TestGroup:
         xyz = sample_spectrum.to_XYZ()
         assert isinstance(xyz, XYZ_Color)
         # Check if the values are positive
-        assert all(val >= 0 for val in [xyz.x, xyz.y, xyz.z])
+        assert all(val >= 0 for val in [xyz.X, xyz.Y, xyz.Z])
 
     def test_spectrum_to_rgb(self, sample_spectrum):
         """Test conversion to RGB_Color."""
@@ -143,7 +143,7 @@ class TestGroup:
         irgb = sample_spectrum.to_IRGB()
         assert isinstance(irgb, IRGB_Color)
         # Assuming IRGB_Color is just RGB_Color with integer components or a standard tuple
-        assert all(val in range(256) for val in [irgb.r, irgb.g, irgb.b])
+        assert all(val in range(256) for val in [irgb.R, irgb.G, irgb.B])
 
     def test_spectrum_to_irgb_string(self, sample_spectrum):
         """Test conversion to hexcode string."""
@@ -176,7 +176,7 @@ class TestGroup:
         # Since the input is unit intensity, the output should be roughly normalized to CMF scale.
         # The Y value should be close to the maximum value of the y_bar function (1.0)
         # The interpolated value at 555nm for the 1931 CMFs is 1.0
-        assert np.isclose(xyz_color.y, 1.0, atol=1e-3)
+        assert np.isclose(xyz_color.Y, 1.0, atol=1e-3)
 
     def test_xyz_from_wavelength_array(self):
         """Test XYZ_from_wavelength for an array of wavelengths."""

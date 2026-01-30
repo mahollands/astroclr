@@ -99,7 +99,7 @@ def scale_illuminant(get_illuminant):
     def _wrapper(*args, **kwargs):
         illuminant = get_illuminant(*args, **kwargs)
         XYZ = illuminant.to_XYZ()
-        illuminant.flux /= XYZ.y
+        illuminant.flux /= XYZ.Y
         return illuminant
 
     return _wrapper

@@ -182,15 +182,15 @@ def L_luminance_inverse(L: float) -> float:
 
 
 class RGB_Color(LinearColor):
-    def __init__(self, r, g, b, color_space=sRGB):
-        super().__init__((r, g, b))
+    def __init__(self, R, G, B, color_space=sRGB):
+        super().__init__((R, G, B))
         if not isinstance(color_space, RGB_ColorSpace):
             raise TypeError("color_space should be an RGB_ColorSpace")
         self.color_space = color_space
 
-    r = property(fget=LinearColor._1.fget, fset=LinearColor._1.fset)
-    g = property(fget=LinearColor._2.fget, fset=LinearColor._2.fset)
-    b = property(fget=LinearColor._3.fget, fset=LinearColor._3.fset)
+    R = property(fget=LinearColor._1.fget, fset=LinearColor._1.fset)
+    G = property(fget=LinearColor._2.fget, fset=LinearColor._2.fset)
+    B = property(fget=LinearColor._3.fget, fset=LinearColor._3.fset)
 
     @property
     def _kwargs(self):
@@ -265,7 +265,7 @@ class RGB_Color(LinearColor):
 
 
 class IRGB_Color(LinearColor):
-    def __init__(self, r, g, b, color_space=sRGB):
+    def __init__(self, R, G, B, color_space=sRGB):
         if not isinstance(color_space, RGB_ColorSpace):
             raise TypeError("color_space should be an RGB_ColorSpace")
         if not all(x in range(2**color_space.bit_depth) for x in (r, g, b)):
@@ -273,22 +273,22 @@ class IRGB_Color(LinearColor):
         super().__init__((r, g, b), dtype=int)
         self.color_space = color_space
 
-    r = property(fget=LinearColor._1.fget, fset=LinearColor._1.fset)
-    g = property(fget=LinearColor._2.fget, fset=LinearColor._2.fset)
-    b = property(fget=LinearColor._3.fget, fset=LinearColor._3.fset)
+    R = property(fget=LinearColor._1.fget, fset=LinearColor._1.fset)
+    G = property(fget=LinearColor._2.fget, fset=LinearColor._2.fset)
+    B = property(fget=LinearColor._3.fget, fset=LinearColor._3.fset)
 
     def to_string(self):
         """
         Convert a displayable irgb color into a hex string.
         """
         if self.color_space.bit_depth <= 4:
-            return f"#{self.r:01X}{self.g:01X}{self.b:01X}"
+            return f"#{self.R:01X}{self.G:01X}{self.B:01X}"
         elif self.color_space.bit_depth <= 8:
-            return f"#{self.r:02X}{self.g:02X}{self.b:02X}"
+            return f"#{self.R:02X}{self.G:02X}{self.B:02X}"
         elif self.color_space.bit_depth <= 12:
-            return f"#{self.r:03X}{self.g:03X}{self.b:03X}"
+            return f"#{self.R:03X}{self.G:03X}{self.B:03X}"
         elif self.color_space.bit_depth <= 16:
-            return f"#{self.r:04X}{self.g:04X}{self.b:04X}"
+            return f"#{self.R:04X}{self.G:04X}{self.B:04X}"
         else:
             raise ValueError("Bit depths above 16 are not supported")
 
@@ -332,11 +332,11 @@ class LUV_Color(Lpq_Color):
         Converts an XYZ color to the (u', v') form of chromacity associated with
         the LUV color space.
         """
-        w_denom = XYZ.x + 15.0 * XYZ.y + 3.0 * XYZ.z
+        w_denom = XYZ.X + 15.0 * XYZ.Y + 3.0 * XYZ.Z
         if w_denom == 0.0:  # x=y=z=0 [i.e. black]
             return (0.0, 0.0)
-        u_prime = 4.0 * XYZ.x / w_denom
-        v_prime = 9.0 * XYZ.y / w_denom
+        u_prime = 4.0 * XYZ.X / w_denom
+        v_prime = 9.0 * XYZ.Y / w_denom
         return (float(u_prime), float(v_prime))
 
     @staticmethod
@@ -356,7 +356,7 @@ class LUV_Color(Lpq_Color):
         """
         Create an LUV color from an XYZ color and white point (D65 by default).
         """
-        y_p = XYZ.y / white_point.y
+        y_p = XYZ.Y / white_point.Y
         L = L_luminance(y_p)
         u_prime, v_prime = XYZ.to_uv_primes()
         reference_u_prime, reference_v_prime = white_point.to_uv_primes()
