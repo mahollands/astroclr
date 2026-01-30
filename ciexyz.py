@@ -207,6 +207,17 @@ class Spectrum:
         flux = BB(wavelength)
         return cls(wavelength, flux)
 
+    @classmethod
+    def from_file(cls, fname: str, units: tuple[u.Unit, u.Unit], **kwargs):
+        """
+        Simple reader for column text files
+        """
+        wavelength, flux = np.loadtxt(fname, unpack=True, usecols=(0, 1), **kwargs)
+        wavelength_unit, flux_unit = units
+        wavelength <<= wavelength_unit
+        flux <<= flux_unit
+        return cls(wavelength, flux)
+
     def XYZ_integrals(self, CMFname: str = "1931") -> u.Quantity:
         """
         Integrate spectrum over CIE1931 X/Y/Z color-matching functions.
