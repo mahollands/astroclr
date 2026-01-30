@@ -358,8 +358,8 @@ class LUV_Color(Lpq_Color):
         """
         y_p = XYZ.Y / white_point.Y
         L = L_luminance(y_p)
-        u_prime, v_prime = XYZ.to_uv_primes()
-        reference_u_prime, reference_v_prime = white_point.to_uv_primes()
+        u_prime, v_prime = cls.uv_primes(XYZ)
+        reference_u_prime, reference_v_prime = cls.uv_primes(white_point)
         u = 13.0 * L * (u_prime - reference_u_prime)
         v = 13.0 * L * (v_prime - reference_v_prime)
         return LUV_Color(L, u, v, white_point=white_point)
@@ -374,7 +374,7 @@ class LUV_Color(Lpq_Color):
         L13 = 13.0 * self.L
 
         white_point = self.color_space.W
-        reference_u_prime, reference_v_prime = white_point.to_uv_primes()
+        reference_u_prime, reference_v_prime = LUV_Color.uv_primes(white_point)
         u_prime = reference_u_prime + (self.u / L13)
         v_prime = reference_v_prime + (self.v / L13)
         return self.uv_primes_inverse(u_prime, v_prime, y)
