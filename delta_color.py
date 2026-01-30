@@ -6,23 +6,21 @@ import math
 from scipy.optimize import minimize
 from astropy import units as u
 from .ciexyz import Spectrum
-from .colormodels import XYZ_Color, RGB_Color, LUV_Color, LAB_Color
+from .colormodels import XYZ_Color, RGB_Color, UCS_Color, LUV_Color, LAB_Color
 
 __all__ = [
     "CCT",
     "delta_E",
 ]
 
-type RealColor = XYZ_Color | RGB_Color | LUV_Color | LAB_Color
+type RealColor = XYZ_Color | RGB_Color | UCS_Color | LUV_Color | LAB_Color
 
 def delta_uv(XYZ1: XYZ_Color, XYZ2: XYZ_Color) -> float:
     """
     Euclidean distance in UCS 1960 uv terms between a pair of XYZ colors
     """
-    u1, v1 = LUV_Color.uv_primes(XYZ1) #uv' 1972
-    u2, v2 = LUV_Color.uv_primes(XYZ2)
-    du, dv = u1-u2, v1-v2
-    dv *= 2/3 #convert from uv' 1972 to UCS 1960 uv
+    UCS1, UCS2 = UCS_Color.from_XYZ(XYZ1), UCS_Color.from_XYZ(XYZ2)
+    du, dv = UCS1.u-UCS2.u, UCS1.v-UCS2.v
     return du**2 + dv**2
 
 

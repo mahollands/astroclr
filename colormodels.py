@@ -109,6 +109,7 @@ __all__ = [
     "IRGB_Color",
     "LUV_Color",
     "LAB_Color",
+    "UCS_Color",
     "ColorList",
     "ClipMethod",
 ]
@@ -194,7 +195,7 @@ class RGB_Color(LinearColor):
 
     @property
     def _kwargs(self):
-        return {'color_space': self.color_space} 
+        return {"color_space": self.color_space}
 
     def normalize_brightest(self):
         return self / self.values.max()
@@ -315,7 +316,7 @@ class IRGB_Color(LinearColor):
         RGB = RGB_Color(*rgb, color_space=self.color_space)
 
         if to_luminance:
-            RGB *= self.color_space.peak_luminance.to_value(u.cd/u.m**2)
+            RGB *= self.color_space.peak_luminance.to_value(u.cd / u.m**2)
         return RGB
 
 
@@ -414,11 +415,60 @@ class LAB_Color(Lpq_Color):
         return XYZ_Color(*xyz_p)
 
 
+class UCS_Color(LinearColor):
+    """
+    UCS 1960 Color space with components UVW.
+    """
+
+    def __init__(self, u, v, w=None):
+        if w is None:
+            w = 1 - u - v
+        if w < 0:
+            w = 0
+        super().__init__((u, v, w))
+
+    def __repr__(self):
+        rpr = super().__repr__()
+        if np.isclose(self.values.sum(), 1):
+            parts = rpr.split(", ")
+            rpr = ", ".join(parts[:2]) + ")"
+        return rpr
+
+    U = property(fget=LinearColor._1.fget, fset=LinearColor._1.fset)
+    V = property(fget=LinearColor._2.fget, fset=LinearColor._2.fset)
+    W = property(fget=LinearColor._3.fget, fset=LinearColor._3.fset)
+
+    def normalize(self):
+        return self / self.values.sum()
+
+    @property
+    def u(self):
+        return self.normalize().U
+
+    @property
+    def v(self):
+        return self.normalize().V
+
+    @classmethod
+    def from_XYZ(cls, XYZ):
+        U = 2 / 3 * XYZ.X
+        V = XYZ.Y
+        W = (-XYZ.X + 3 * XYZ.Y + XYZ.Z) / 2
+        return cls(U, V, W)
+
+    def to_XYZ(self):
+        X = 3 / 2 * self.X
+        Y = self.V
+        Z = 3 / 2 * self.U - 3 * self.V + 2 * self.W
+        return XYZ_Color(X, Y, Z)
+
+
 class ColorList(list):
     """
     Class for a list of colours (all of the same type). This allows attributes
     and methods to be mapped across elements.
     """
+
     color_types = {
         XYZ_Color,
         RGB_Color,
@@ -432,7 +482,7 @@ class ColorList(list):
             raise TypeError("Not one of the supported colors")
         if not all(isinstance(element, first_type) for element in values):
             raise TypeError("All Colors must be of the same type")
-        super().__init__(values) 
+        super().__init__(values)
 
     def __repr__(self):
         return f"ColorList({super().__repr__()})"
@@ -445,12 +495,14 @@ class ColorList(list):
     def __getattr__(self, attr):
         if not callable(getattr(self[0], attr)):
             return [getattr(item, attr) for item in self]
+
         # Return a function that maps this method over all items
         def method(*args, **kwargs):
             ret = [getattr(item, attr)(*args, **kwargs) for item in self]
             if type(ret[0]) in ColorList.color_types:
                 ret = ColorList(ret)
             return ret
+
         return method
 
     def rescale(self, value):
