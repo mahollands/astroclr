@@ -57,11 +57,13 @@ Charles Poynton - Frequently asked questions about Gamma and Color,
 
 import os.path
 from collections import namedtuple
+import functools
 import numpy as np
 from scipy.interpolate import interp1d
 from scipy.integrate import simpson as integrate
 from astropy import units as u
 from astropy.modeling.physical_models import BlackBody
+from astropy.io import fits
 from .colormodels import XYZ_Color, RGB_Color, IRGB_Color, ColorList
 
 
@@ -95,10 +97,21 @@ CMFs = {
     "1964_10deg": load_CMF("CIE_xyz_1964_10deg.csv"),
 }
 
-_unit_spec_radiance = u.W / u.m**2 / u.sr / u.nm
-_unit_spec_irradiance = u.W / u.m**2 / u.nm
-_valid_flux_units = _unit_spec_radiance, _unit_spec_irradiance
+unit_spec_radiance = u.W / u.m**2 / u.sr / u.nm
+unit_spec_irradiance = u.W / u.m**2 / u.nm
+valid_flux_units = unit_spec_radiance, unit_spec_irradiance
 
+
+@functools.cache    
+def _load_Vega():
+    """
+    Loads the alpha_lyr_stis_011 model of Vega from Calspec
+    """
+    hdulist = fits.open(f"{DATA_DIR}/alpha_lyr_stis_011.fits")
+    data = hdulist[1].data 
+    wavelength = data['WAVELENGTH'] * u.AA
+    flux = data['FLUX'] * u.erg/u.s/u.cm**2/u.AA
+    return wavelength, flux
 
 class Spectrum:
     """
@@ -148,12 +161,12 @@ class Spectrum:
     @flux.setter
     def flux(self, value: np.ndarray | u.Quantity):
         if not isinstance(value, u.Quantity):
-            value <<= _unit_spec_radiance
+            value <<= unit_spec_radiance
         if value.isscalar:
             value = value * np.ones(self.wavelength.size)
         elif len(value) != len(self.wavelength):
             raise ValueError("Fluxes must be the same length as wavelengths")
-        for flux_unit in _valid_flux_units:
+        for flux_unit in valid_flux_units:
             if value.unit.is_equivalent(flux_unit):
                 self._y_unit_option = flux_unit
                 break
@@ -203,9 +216,18 @@ class Spectrum:
             raise ValueError("wavelengths must be array-like")
         if not wavelength.unit.is_equivalent(u.nm):
             raise ValueError("wavelengths must be a kind of length")
-        BB = BlackBody(temperature, scale=1 * _unit_spec_radiance)
+        BB = BlackBody(temperature, scale=1 * unit_spec_radiance)
         flux = BB(wavelength)
         return cls(wavelength, flux)
+
+    @classmethod    
+    def load_Vega(cls):
+        """
+        Loads the alpha_lyr_stis_011 model of Vega from Calspec as a Spectrum
+        """
+        wavelength, flux = _load_Vega()
+        Vega = cls(wavelength, flux)
+        return Vega
 
     @classmethod
     def from_file(cls, fname: str, units: tuple[u.Unit, u.Unit], **kwargs):
@@ -226,13 +248,14 @@ class Spectrum:
         """
         CMF = CMFs[CMFname]
         # merge spectrum and CMF wavelength arrays to interpolate for integrals
-        iwavelength = np.hstack([self.wavelength.to(u.nm), CMF.wavelength.to(u.nm)])
+        wunit, funit = self.wavelength.unit, self.flux.unit
+        iwavelength = np.hstack([self.wavelength, CMF.wavelength.to(wunit)])
         iwavelength = np.unique(iwavelength)
         iwavelength = np.sort(iwavelength)
-        flux = self.interp_flux(iwavelength) * self.flux.unit
-        flux = flux.to(self._y_unit_option)
-        integral_unit = flux.unit * u.nm
-        integrand = flux[np.newaxis, :] * CMF.interp(iwavelength)
+        iflux = self.interp_flux(iwavelength) * funit
+        iwavelength, iflux = iwavelength.to(u.nm), iflux.to(self._y_unit_option)
+        integral_unit = iflux.unit * u.nm
+        integrand = iflux[np.newaxis, :] * CMF.interp(iwavelength)
         I_XYZ = integrate(integrand, iwavelength, axis=1) * integral_unit
         return I_XYZ
 
@@ -282,12 +305,23 @@ class Spectrum:
         light source) in lm/m^2 (lux), or the luminous exitance (luminous flux
         density radiating from a surface) also in lm/m^2 (lux not used).
         """
-        Y = self.XYZ_integrals()
+        Y = self.XYZ_integrals()[1]
         L = 683 * u.lm / u.W * Y
 
-        if self.flux.unit.is_equivalent(_unit_spec_irradiance):
+        if self.flux.unit.is_equivalent(unit_spec_irradiance):
             return L.to(u.lm / u.m**2)
         return L.to(u.cd / u.m**2)
+
+    def visual_magnitude(self) -> u.Quantity:
+        """
+        Calculates the visual magnitude of a spectrum relative to Vega
+        """
+        if not self.flux.unit.is_equivalent(unit_spec_irradiance):
+            raise ValueError("Flux should be in terms of spectral irradiance")
+        Vega = Spectrum.load_Vega()
+        L_Vega = Vega.to_luminance()
+        L_self = self.to_luminance()
+        return -2.5*np.log10(L_self/L_Vega) * u.mag
 
 
 def XYZ_from_wavelength(
