@@ -6,8 +6,8 @@ from colorpy2.ciexyz import (
     Spectrum,
     XYZ_from_wavelength,
     get_normalized_spectral_line_colors,
-    _unit_spec_radiance,
-    _unit_spec_irradiance,
+    unit_spec_radiance,
+    unit_spec_irradiance,
 )
 from colorpy2.colormodels import XYZ_Color, RGB_Color, IRGB_Color, ColorList
 
@@ -23,7 +23,7 @@ def sample_fluxes(sample_wavelengths):
     """Fluxes with default units as an Astropy Quantity."""
     # Arbitrary values for testing
     flux = np.exp(-0.5*((sample_wavelengths-550*u.nm)/(300*u.nm))**2)
-    return  flux * _unit_spec_radiance
+    return  flux * unit_spec_radiance
 
 @pytest.fixture
 def sample_spectrum(sample_wavelengths, sample_fluxes):
@@ -59,7 +59,7 @@ class TestGroup:
         spec = Spectrum(sample_wavelengths, sample_fluxes)
         assert len(spec) == len(sample_wavelengths)
         assert spec.wavelength.unit.is_equivalent(u.nm)
-        assert spec.flux.unit.is_equivalent(_unit_spec_radiance)
+        assert spec.flux.unit.is_equivalent(unit_spec_radiance)
 
     def test_spectrum_init_with_arrays(self, sample_wavelengths, sample_fluxes):
         """Test successful initialization with numpy arrays (default units applied)."""
@@ -68,19 +68,19 @@ class TestGroup:
         spec = Spectrum(wl_array, flux_array)
         assert len(spec) == len(wl_array)
         assert spec.wavelength.unit == u.nm
-        assert spec.flux.unit == _unit_spec_radiance
+        assert spec.flux.unit == unit_spec_radiance
 
     def test_spectrum_init_mismatched_lengths(self):
         """Test ValueError for mismatched wavelength and flux lengths."""
         wl = np.array([400, 500]) * u.nm
-        flux = np.array([0.1, 0.2, 0.3]) * _unit_spec_radiance
+        flux = np.array([0.1, 0.2, 0.3]) * unit_spec_radiance
         with pytest.raises(ValueError, match="Fluxes must be the same length as wavelengths"):
             Spectrum(wl, flux)
 
     def test_spectrum_init_invalid_wavelength_unit(self):
         """Test ValueError for invalid wavelength units."""
         wl = np.array([400, 500]) * u.kg
-        flux = np.array([0.1, 0.2]) * _unit_spec_radiance
+        flux = np.array([0.1, 0.2]) * unit_spec_radiance
         with pytest.raises(ValueError, match="wavelengths must be a kind of length"):
             Spectrum(wl, flux)
 
