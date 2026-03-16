@@ -3,7 +3,7 @@ Sub-module for calculating color differences such as ΔE and
 the correlated color temperature.
 """
 import math
-from scipy.optimize import minimize
+from scipy.optimize import leastsq
 from astropy import units as u
 from .ciexyz import Spectrum
 from .colormodels import XYZ_Color, RGB_Color, UCS_Color, LUV_Color, LAB_Color
@@ -17,19 +17,20 @@ type RealColor = XYZ_Color | RGB_Color | UCS_Color | LUV_Color | LAB_Color
 
 def delta_uv(XYZ1: XYZ_Color, XYZ2: XYZ_Color) -> float:
     """
-    Euclidean distance in UCS 1960 uv terms between a pair of XYZ colors
+    vector difference in UCS 1960 uv terms between a pair of XYZ colors
     """
     UCS1, UCS2 = UCS_Color.from_XYZ(XYZ1), UCS_Color.from_XYZ(XYZ2)
     du, dv = UCS1.u-UCS2.u, UCS1.v-UCS2.v
-    return du**2 + dv**2
+    return [du, dv]
 
-
-def theta_to_T(theta: float) -> float:
+def delta_uv_iT(invT: float, XYZ: XYZ_Color) -> float:
     """
-    Maps temperature to a Reimann sphere where 0K -> 0, 6500K -> π/2 and
-    inf -> π
+    vector difference in UCS 1960 uv terms between a blackbody temperature (in
+    mireds) and another XYZ color.
     """
-    return 6500 * math.tan(abs(theta)/2)
+    T = 1e6/invT[0]
+    BB = Spectrum.BlackBody(T)
+    return delta_uv(BB.to_XYZ(), XYZ)
 
 
 def CCT(color: RealColor) -> u.Quantity:
@@ -39,12 +40,12 @@ def CCT(color: RealColor) -> u.Quantity:
     if not isinstance(color, XYZ_Color):
         color = color.to_XYZ()
 
-    result = minimize(
-        lambda theta, xyz: delta_uv(Spectrum.BlackBody(theta_to_T(theta)).to_XYZ(), xyz),
-        math.pi/2, # initialise at D65
+    result = leastsq(
+        delta_uv_iT,
+        1e6/6500, # initialise at D65 in mireds
         args=(color,),
     )
-    return theta_to_T(result['x'][0]) * u.K
+    return 1e6/(result[0][0]) * u.K
 
 
 def delta_E(color1: RealColor, color2: RealColor) -> float:
