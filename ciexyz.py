@@ -250,13 +250,11 @@ class Spectrum:
         # merge spectrum and CMF wavelength arrays to interpolate for integrals
         wunit, funit = self.wavelength.unit, self.flux.unit
         iwavelength = np.hstack([self.wavelength, CMF.wavelength.to(wunit)])
-        iwavelength = np.unique(iwavelength)
-        iwavelength = np.sort(iwavelength)
+        iwavelength = np.sort(np.unique(iwavelength))
         iflux = self.interp_flux(iwavelength) * funit
         iwavelength, iflux = iwavelength.to(u.nm), iflux.to(self._y_unit_option)
-        integral_unit = iflux.unit * u.nm
         integrand = iflux[np.newaxis, :] * CMF.interp(iwavelength)
-        I_XYZ = integrate(integrand, iwavelength, axis=1) * integral_unit
+        I_XYZ = integrate(integrand, iwavelength, axis=1) * iflux.unit * u.nm
         return I_XYZ
 
     def to_XYZ(self, CMFname: str = "1931") -> XYZ_Color:
@@ -319,7 +317,7 @@ class Spectrum:
         if not self.flux.unit.is_equivalent(unit_spec_irradiance):
             raise ValueError("Flux should be in terms of spectral irradiance")
         Vega = Spectrum.load_Vega()
-        L_Vega = Vega.to_luminance()
+        L_Vega = Vega.to_luminance() #illuminances
         L_self = self.to_luminance()
         return -2.5*np.log10(L_self/L_Vega) * u.mag
 
