@@ -33,7 +33,7 @@ def delta_uv_iT(invT: float, XYZ: XYZ_Color) -> float:
     return delta_uv(BB.to_XYZ(), XYZ)
 
 
-def CCT(color: RealColor) -> u.Quantity:
+def CCT(color: RealColor, return_uv_vec: bool=False) -> u.Quantity:
     """
     Correlated Color Temperature from euclidean distance in the uv plane
     """
@@ -45,7 +45,15 @@ def CCT(color: RealColor) -> u.Quantity:
         1e6/6500, # initialise at D65 in mireds
         args=(color,),
     )
-    return 1e6/(result[0][0]) * u.K
+    T = 1e6/result[0][0] * u.K
+
+    if not return_uv_vec:
+        return T
+
+    BB = Spectrum.BlackBody(T)
+    duv = delta_uv(BB.to_XYZ(), color)
+    return T, duv, math.hypot(du, dv)
+
 
 
 def delta_E(color1: RealColor, color2: RealColor) -> float:
