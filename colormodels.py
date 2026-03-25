@@ -194,6 +194,18 @@ class RGB_Color(LinearColor):
     B = property(fget=LinearColor._3.fget, fset=LinearColor._3.fset)
 
     @property
+    def r(self):
+        return self.R/(self.R + self.G + self.B)
+
+    @property
+    def g(self):
+        return self.R/(self.R + self.G + self.B)
+
+    @property
+    def b(self):
+        return self.R/(self.R + self.G + self.B)
+
+    @property
     def _kwargs(self):
         return {"color_space": self.color_space}
 
