@@ -55,8 +55,6 @@ Charles Poynton - Frequently asked questions about Gamma and Color,
     posted to comp.graphics.algorithms, 25 Jan 1995.
 """
 
-import os.path
-from collections import namedtuple
 import functools
 import numpy as np
 from scipy.interpolate import interp1d
@@ -64,6 +62,7 @@ from scipy.integrate import simpson as integrate
 from astropy import units as u
 from astropy.modeling.physical_models import BlackBody
 from astropy.io import fits
+from .CMFs import CMFs, DATA_DIR
 from .colormodels import XYZ_Color, RGB_Color, IRGB_Color, ColorList
 
 
@@ -73,29 +72,6 @@ __all__ = [
     "XYZ_from_wavelength",
     "get_normalized_spectral_line_colors",
 ]
-
-DATA_DIR = f"{os.path.dirname(__file__)}/data"
-
-CIE_CMF = namedtuple("CIE_CMF", "wavelength xyz_table interp")
-
-
-def load_CMF(fname: str) -> CIE_CMF:
-    CIEXYZ_table = np.loadtxt(
-        f"{DATA_DIR}/{fname}",
-        delimiter=",",
-        unpack=True,
-    )
-    wavelength, xyz_table = np.split(CIEXYZ_table, [1])
-    wavelength = wavelength.ravel() << u.nm
-    xyz_table[np.isnan(xyz_table)] = 0.0
-    xyz_interpolator = interp1d(wavelength, xyz_table, bounds_error=False, fill_value=0)
-    return CIE_CMF(wavelength, xyz_table, xyz_interpolator)
-
-
-CMFs = {
-    "1931": load_CMF("ciexyz31_1.txt"),
-    "1964_10deg": load_CMF("CIE_xyz_1964_10deg.csv"),
-}
 
 unit_spec_radiance = u.W / u.m**2 / u.sr / u.nm
 unit_spec_irradiance = u.W / u.m**2 / u.nm
