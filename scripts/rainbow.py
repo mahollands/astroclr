@@ -22,7 +22,7 @@ WRITE = False
 CSPACE = sRGB
 
 wavelengths = CMFs["1931"].wavelength.value
-XYZs = XYZ_from_wavelength(wavelengths)
+XYZs = XYZ_from_wavelength(wavelengths, CMFname='1931')
 RGBs = ColorList([RGB_Color.from_XYZ(XYZ, color_space=CSPACE) for XYZ in XYZs])
 
 min_flux = RGBs.min_component()
