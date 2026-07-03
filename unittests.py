@@ -13,44 +13,49 @@ from colorpy2.colormodels import XYZ_Color, RGB_Color, IRGB_Color, ColorList
 
 # --- Fixtures ---
 
+
 @pytest.fixture
 def sample_wavelengths():
     """Wavelengths in nm as an Astropy Quantity."""
     return np.arange(300.0, 901.0, 50.0) * u.nm
 
+
 @pytest.fixture
 def sample_fluxes(sample_wavelengths):
     """Fluxes with default units as an Astropy Quantity."""
     # Arbitrary values for testing
-    flux = np.exp(-0.5*((sample_wavelengths-550*u.nm)/(300*u.nm))**2)
-    return  flux * unit_spec_radiance
+    flux = np.exp(-0.5 * ((sample_wavelengths - 550 * u.nm) / (300 * u.nm)) ** 2)
+    return flux * unit_spec_radiance
+
 
 @pytest.fixture
 def sample_spectrum(sample_wavelengths, sample_fluxes):
     """A basic Spectrum instance."""
     return Spectrum(sample_wavelengths, sample_fluxes)
 
+
 # --- Tests for CMFs data loading and access ---
+
 
 class TestGroup:
     def test_cmfs_loading(self):
         """Test that CMFs dict is populated and contains standard data."""
         assert "1931" in CMFs
         assert "1964_10deg" in CMFs
-        
+
         # Check 1931 data structure
         wl_1931, xyz_1931, xyz_1931_interp = CMFs["1931"]
         assert isinstance(wl_1931, u.Quantity)
         assert wl_1931.unit.is_equivalent(u.nm)
         assert isinstance(xyz_1931, np.ndarray)
-        assert xyz_1931.shape[0] == 3 # x, y, z
+        assert xyz_1931.shape[0] == 3  # x, y, z
 
         # Check 1964 data structure
         wl_1964, xyz_1964, xyz_1931_interp = CMFs["1964_10deg"]
         assert isinstance(wl_1964, u.Quantity)
         assert wl_1964.unit.is_equivalent(u.nm)
         assert isinstance(xyz_1964, np.ndarray)
-        assert xyz_1964.shape[0] == 3 # x, y, z
+        assert xyz_1964.shape[0] == 3  # x, y, z
 
     # --- Tests for Spectrum Class ---
 
@@ -74,7 +79,9 @@ class TestGroup:
         """Test ValueError for mismatched wavelength and flux lengths."""
         wl = np.array([400, 500]) * u.nm
         flux = np.array([0.1, 0.2, 0.3]) * unit_spec_radiance
-        with pytest.raises(ValueError, match="Fluxes must be the same length as wavelengths"):
+        with pytest.raises(
+            ValueError, match="Fluxes must be the same length as wavelengths"
+        ):
             Spectrum(wl, flux)
 
     def test_spectrum_init_invalid_wavelength_unit(self):
@@ -91,7 +98,6 @@ class TestGroup:
         with pytest.raises(ValueError, match="Flux units must be equivalent to"):
             Spectrum(wl, flux)
 
-
     # --- Tests for Spectrum.BlackBody Class Method ---
 
     def test_blackbody_classmethod(self):
@@ -99,7 +105,7 @@ class TestGroup:
         temp = 5000 * u.K
         wl = np.linspace(400, 700, 100) * u.nm
         bb_spec = Spectrum.BlackBody(temp, wl)
-        
+
         assert isinstance(bb_spec, Spectrum)
         assert len(bb_spec) == 100
         assert np.all(bb_spec.flux.value > 0)
@@ -160,7 +166,7 @@ class TestGroup:
 
     def test_spectrum_to_luminance_lux(self, sample_wavelengths, sample_fluxes):
         """Test luminance calculation for W/m2/nm flux units (lm/m^2)."""
-        flux = sample_fluxes * u.sr # W/m2/nm (equivalent to flux_unit2)
+        flux = sample_fluxes * u.sr  # W/m2/nm (equivalent to flux_unit2)
         spec_lux = Spectrum(sample_wavelengths, flux)
         illuminance = spec_lux.to_luminance()
         assert illuminance.unit.is_equivalent(u.lm / u.m**2)
@@ -199,7 +205,9 @@ class TestGroup:
     def test_get_normalized_spectral_line_colors_with_purples(self):
         """Test color list generation with purples."""
         num_purples = 5
-        XYZs = get_normalized_spectral_line_colors(brightness=1.0, num_purples=num_purples)
+        XYZs = get_normalized_spectral_line_colors(
+            brightness=1.0, num_purples=num_purples
+        )
         assert isinstance(XYZs, ColorList)
         # Total length = Spectral points + Purples
         expected_length = len(CMFs["1931"][0]) + num_purples

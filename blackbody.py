@@ -75,9 +75,10 @@ from . import plots
 
 # Physical constants in mks units
 SUN_TEMPERATURE = 5778.0 * u.K
-_wavelengths = CMFs['1931'].wavelength
+_wavelengths = CMFs["1931"].wavelength
 
 # Figures
+
 
 def blackbody_patch_plot(T_list, title, filename):
     """Draw a patch plot of blackbody colors for the given temperature range."""
@@ -117,8 +118,8 @@ def blackbody_spectrum_plot(T_K):
     S = Spectrum.BlackBody(T_K, _wavelengths)
     title = f"Blackbody Spectrum - T {round(T_K)} K"
     filename = f"BlackbodySpectrum-{T_K}dK"
-    x_unit = S.wavelength.unit.to_string('latex_inline')
-    y_unit = S.flux.unit.to_string('latex_inline')
+    x_unit = S.wavelength.unit.to_string("latex_inline")
+    y_unit = S.flux.unit.to_string("latex_inline")
     plots.spectrum_plot(
         S,
         title,
@@ -126,6 +127,7 @@ def blackbody_spectrum_plot(T_K):
         xlabel="Wavelength [{x_unit}]",
         ylabel=r"Specific Intensity [{y_unit}]",
     )
+
 
 # Create sample figures
 

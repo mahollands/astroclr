@@ -73,7 +73,7 @@ def spectrum_subplot(S):
     RGBs = ColorList([RGB_Color.from_XYZ(XYZ) for XYZ in XYZs])
     grey = RGBs.min_component()
     min_grey = RGB_Color(grey, grey, grey)
-    RGBs =  ColorList([RGB - min_grey for RGB in RGBs])
+    RGBs = ColorList([RGB - min_grey for RGB in RGBs])
     rgb_max = RGBs.max_component()
     RGBs = RGBs.rescale(1 / rgb_max)
     # draw color patches (thin vertical lines matching the spectrum curve) in color
@@ -184,10 +184,10 @@ def visible_spectrum_plot(CMF="1931"):
     # add grey to avoid gamut clipping
     grey = min(RGB.values.min() for RGB in RGBs)
     min_grey = RGB_Color(grey, grey, grey)
-    RGBs =  ColorList([RGB - min_grey for RGB in RGBs])
+    RGBs = ColorList([RGB - min_grey for RGB in RGBs])
     # scale to make brightest rgb value = 1.0
     rgb_max = max(RGB.values.max() for RGB in RGBs)
-    RGBs = RGBs.rescale(1/rgb_max)
+    RGBs = RGBs.rescale(1 / rgb_max)
     # plot colors and rgb values vs wavelength
     color_vs_param_plot(
         wavelengths.value,
@@ -335,7 +335,9 @@ def chromacity_diagram(
     num_segments=50,
 ):
     plt.figure(figsize=(5, 4.71))
-    XYZ_boundary = get_normalized_spectral_line_colors(CMFname=CMF, num_purples=num_purples)
+    XYZ_boundary = get_normalized_spectral_line_colors(
+        CMFname=CMF, num_purples=num_purples
+    )
     xy_boundary = XYZ_boundary.normalize()
     xy_mono = xy_boundary[:-num_purples]
     if draw_cie_space:

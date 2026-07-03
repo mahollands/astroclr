@@ -25,6 +25,7 @@ Whites = {
     "MacBethWhite": XYZ_Color(0.30995, 0.31596, 0.37409),
 }
 
+
 @dataclass(frozen=True)
 class RGB_ColorSpace:
     """
@@ -46,10 +47,10 @@ class RGB_ColorSpace:
     R: XYZ_Color
     G: XYZ_Color
     B: XYZ_Color
-    W: XYZ_Color = Whites['D65']
-    EOTF: Callable = gamma_EOTF(gamma=2.2),
+    W: XYZ_Color = Whites["D65"]
+    EOTF: Callable = (gamma_EOTF(gamma=2.2),)
     bit_depth: int = 8
-    peak_luminance: u.Quantity = 80 * u.cd/u.m**2
+    peak_luminance: u.Quantity = 80 * u.cd / u.m**2
 
     @property
     def primaries(self) -> tuple:
@@ -86,8 +87,8 @@ sRGB = RGB_ColorSpace(
     B=XYZ_Color(0.150, 0.060),
     W=Whites["D65"],
     EOTF=sRGB_EOTF(),
-    bit_depth = 8,
-    peak_luminance = 80 * u.cd/u.m**2
+    bit_depth=8,
+    peak_luminance=80 * u.cd / u.m**2,
 )
 
 # HDTV standard phosphors, from Poynton [Color FAQ] p. 9
@@ -165,8 +166,8 @@ Rec2020 = RGB_ColorSpace(
     R=XYZ_Color(0.708, 0.292),
     G=XYZ_Color(0.170, 0.797),
     B=XYZ_Color(0.131, 0.046),
-    W=Whites['D65'],
-    EOTF=gamma_EOTF(gamma=2.4) #Actually piecewise gamma!
+    W=Whites["D65"],
+    EOTF=gamma_EOTF(gamma=2.4),  # Actually piecewise gamma!
 )
 
 # https://www.color.org/chardata/rgb/BT2100.xalter
@@ -175,10 +176,10 @@ Rec2100 = RGB_ColorSpace(
     R=XYZ_Color(0.708, 0.292),
     G=XYZ_Color(0.170, 0.797),
     B=XYZ_Color(0.131, 0.046),
-    W=Whites['D65'],
-    bit_depth = 10,
+    W=Whites["D65"],
+    bit_depth=10,
     EOTF=PQ_EOTF(),
-    peak_luminance=10000*u.cd/u.m**2,
+    peak_luminance=10000 * u.cd / u.m**2,
 )
 
 DCI_P3_SDR = RGB_ColorSpace(
@@ -186,7 +187,7 @@ DCI_P3_SDR = RGB_ColorSpace(
     R=XYZ_Color(0.680, 0.320),
     G=XYZ_Color(0.265, 0.690),
     B=XYZ_Color(0.150, 0.060),
-    W=Whites['D65'],
+    W=Whites["D65"],
     EOTF=sRGB_EOTF(),
     bit_depth=10,
 )
@@ -196,8 +197,8 @@ DCI_P3_HDR = RGB_ColorSpace(
     R=XYZ_Color(0.680, 0.320),
     G=XYZ_Color(0.265, 0.690),
     B=XYZ_Color(0.150, 0.060),
-    W=Whites['D65'],
+    W=Whites["D65"],
     EOTF=PQ_EOTF(),
     bit_depth=10,
-    peak_luminance=10000*u.cd/u.m**2,
+    peak_luminance=10000 * u.cd / u.m**2,
 )

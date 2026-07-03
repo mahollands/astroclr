@@ -78,16 +78,17 @@ unit_spec_irradiance = u.W / u.m**2 / u.nm
 valid_flux_units = unit_spec_radiance, unit_spec_irradiance
 
 
-@functools.cache    
+@functools.cache
 def _load_Vega():
     """
     Loads the alpha_lyr_stis_011 model of Vega from Calspec
     """
     hdulist = fits.open(f"{DATA_DIR}/alpha_lyr_stis_011.fits")
-    data = hdulist[1].data 
-    wavelength = data['WAVELENGTH'] * u.AA
-    flux = data['FLUX'] * u.erg/u.s/u.cm**2/u.AA
+    data = hdulist[1].data
+    wavelength = data["WAVELENGTH"] * u.AA
+    flux = data["FLUX"] * u.erg / u.s / u.cm**2 / u.AA
     return wavelength, flux
+
 
 class Spectrum:
     """
@@ -196,7 +197,7 @@ class Spectrum:
         flux = BB(wavelength)
         return cls(wavelength, flux)
 
-    @classmethod    
+    @classmethod
     def load_Vega(cls):
         """
         Loads the alpha_lyr_stis_011 model of Vega from Calspec as a Spectrum
@@ -293,9 +294,9 @@ class Spectrum:
         if not self.flux.unit.is_equivalent(unit_spec_irradiance):
             raise ValueError("Flux should be in terms of spectral irradiance")
         Vega = Spectrum.load_Vega()
-        L_Vega = Vega.to_luminance() #illuminances
+        L_Vega = Vega.to_luminance()  # illuminances
         L_self = self.to_luminance()
-        return -2.5*np.log10(L_self/L_Vega) * u.mag
+        return -2.5 * np.log10(L_self / L_Vega) * u.mag
 
 
 def XYZ_from_wavelength(

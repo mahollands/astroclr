@@ -5,6 +5,7 @@ class Color:
     """
     Tristimulus color space
     """
+
     __slots__ = ["values"]
 
     def __init__(self, values, dtype):
@@ -21,6 +22,7 @@ class Color:
     @property
     def _1(self):
         return self.values[0]
+
     @_1.setter
     def _1(self, value):
         self.values[0] = value
@@ -28,6 +30,7 @@ class Color:
     @property
     def _2(self):
         return self.values[1]
+
     @_2.setter
     def _2(self, value):
         self.values[1] = value
@@ -35,9 +38,11 @@ class Color:
     @property
     def _3(self):
         return self.values[2]
+
     @_3.setter
     def _3(self, value):
         self.values[2] = value
+
 
 class LinearColor(Color):
     """
@@ -47,7 +52,7 @@ class LinearColor(Color):
 
     def __init__(self, values, dtype=float):
         if np.isnan(values).any():
-            values = np.zeros(3) 
+            values = np.zeros(3)
         super().__init__(values, dtype=dtype)
 
     @property
@@ -86,12 +91,12 @@ class XYZ_Color(LinearColor):
         if z < 0:
             z = 0
         super().__init__((x, y, z))
-    
+
     def __repr__(self):
         rpr = super().__repr__()
         if np.isclose(self.values.sum(), 1):
-            parts = rpr.split(', ')
-            rpr = ', '.join(parts[:2]) + ')'
+            parts = rpr.split(", ")
+            rpr = ", ".join(parts[:2]) + ")"
         return rpr
 
     X = property(fget=LinearColor._1.fget, fset=LinearColor._1.fset)

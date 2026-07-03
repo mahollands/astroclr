@@ -95,6 +95,7 @@ def scale_illuminant(get_illuminant):
     """
     Scale the illuminant intensity to Y=1.0
     """
+
     @functools.wraps(get_illuminant)
     def _wrapper(*args, **kwargs):
         illuminant = get_illuminant(*args, **kwargs)
@@ -132,11 +133,13 @@ def _get_illuminant_D_data() -> tuple:
     xd_hot = np.polynomial.Polynomial([0.237040, 0.24748, 1.9018, -2.0064])
     yd_poly = np.polynomial.Polynomial([-0.275, +2.870, -3.000])
     d_polys = xd_cool, xd_hot, yd_poly
-    M_matrix = np.array([
-        [-1.3515, -1.7703, +5.9114],
-        [+0.0300, -31.4424, +30.0717],
-        [+0.0241, +0.2562, -0.7341],
-    ])
+    M_matrix = np.array(
+        [
+            [-1.3515, -1.7703, +5.9114],
+            [+0.0300, -31.4424, +30.0717],
+            [+0.0241, +0.2562, -0.7341],
+        ]
+    )
     return wavelength, S_eig, d_polys, M_matrix
 
 
@@ -149,21 +152,21 @@ def get_illuminant_DXX(T: float | u.Quantity) -> Spectrum:
 
     For D65 a separate pre-caculated table from the CIE is loaded instead
     """
-    T *= 1.438776877/1.4380 #CCT correcetion
-    T_inv = 1000/T
+    T *= 1.438776877 / 1.4380  # CCT correcetion
+    T_inv = 1000 / T
     wavelength, S_eig, d_polys, M_matrix = _get_illuminant_D_data()
     xd_cool, xd_hot, yd_poly = d_polys
     xd = np.select(
-        condlist = [4000 <= T <= 7000, 7000 < T <= 25000],
-        choicelist = [xd_cool(T_inv), xd_hot(T_inv)],
-        default = np.nan
+        condlist=[4000 <= T <= 7000, 7000 < T <= 25000],
+        choicelist=[xd_cool(T_inv), xd_hot(T_inv)],
+        default=np.nan,
     )
     yd = yd_poly(xd)
     M1, M2, M = M_matrix @ (1, xd, yd)
     M1 /= M
     M2 /= M
     S0, S1, S2 = S_eig
-    S = S0 + M1*S1 + M2*S2
+    S = S0 + M1 * S1 + M2 * S2
     return Spectrum(wavelength, S)
 
 
@@ -206,7 +209,13 @@ def figures():
     """
     plots.spectrum_plot(get_illuminant_A(), "CIE Illuminant A", "Illuminant-A")
     plots.spectrum_plot(get_illuminant_D65(), "CIE Illuminant D65", "Illuminant-D65")
-    plots.spectrum_plot(get_illuminant_DXX(5500), "CIE Illuminant D55", "Illuminant-D55")
-    plots.spectrum_plot(get_illuminant_DXX(7500), "CIE Illuminant D75", "Illuminant-D75")
+    plots.spectrum_plot(
+        get_illuminant_DXX(5500), "CIE Illuminant D55", "Illuminant-D55"
+    )
+    plots.spectrum_plot(
+        get_illuminant_DXX(7500), "CIE Illuminant D75", "Illuminant-D75"
+    )
     plots.spectrum_plot(get_illuminant_E(), "Constant Illuminant", "Illuminant-Const")
-    plots.spectrum_plot(get_blackbody_illuminant(5778.0), "5778 K Illuminant", "Illuminant-5778")
+    plots.spectrum_plot(
+        get_blackbody_illuminant(5778.0), "5778 K Illuminant", "Illuminant-5778"
+    )

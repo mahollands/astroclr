@@ -26,9 +26,9 @@ def load_CMF(fname: str) -> CIE_CMF:
 def CMF_plot(name, CMF):
     wavelength, (x, y, z), *_ = CMF
     plt.figure(name)
-    plt.plot(wavelength, x, 'r')
-    plt.plot(wavelength, y, 'g')
-    plt.plot(wavelength, z, 'b')
+    plt.plot(wavelength, x, "r")
+    plt.plot(wavelength, y, "g")
+    plt.plot(wavelength, z, "b")
     plt.show()
 
 
@@ -40,7 +40,6 @@ CMFs = {
 }
 
 
-
 if __name__ == "__main__":
     for name, CMF in CMFs.items():
-        CMF_plot(name, CMF) 
+        CMF_plot(name, CMF)

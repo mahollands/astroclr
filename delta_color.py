@@ -2,6 +2,7 @@
 Sub-module for calculating color differences such as ΔE and
 the correlated color temperature.
 """
+
 import math
 from scipy.optimize import leastsq
 from astropy import units as u
@@ -15,25 +16,27 @@ __all__ = [
 
 type RealColor = XYZ_Color | RGB_Color | UCS_Color | LUV_Color | LAB_Color
 
+
 def delta_uv(XYZ1: XYZ_Color, XYZ2: XYZ_Color) -> float:
     """
     vector difference in UCS 1960 uv terms between a pair of XYZ colors
     """
     UCS1, UCS2 = UCS_Color.from_XYZ(XYZ1), UCS_Color.from_XYZ(XYZ2)
-    du, dv = UCS1.u-UCS2.u, UCS1.v-UCS2.v
+    du, dv = UCS1.u - UCS2.u, UCS1.v - UCS2.v
     return [du, dv]
+
 
 def delta_uv_iT(invT: float, XYZ: XYZ_Color) -> float:
     """
     vector difference in UCS 1960 uv terms between a blackbody temperature (in
     mireds) and another XYZ color.
     """
-    T = 1e6/invT[0]
+    T = 1e6 / invT[0]
     BB = Spectrum.BlackBody(T)
     return delta_uv(BB.to_XYZ(), XYZ)
 
 
-def CCT(color: RealColor, return_uv_vec: bool=False) -> u.Quantity:
+def CCT(color: RealColor, return_uv_vec: bool = False) -> u.Quantity:
     """
     Correlated Color Temperature from euclidean distance in the uv plane
     """
@@ -42,10 +45,10 @@ def CCT(color: RealColor, return_uv_vec: bool=False) -> u.Quantity:
 
     result = leastsq(
         delta_uv_iT,
-        1e6/6500, # initialise at D65 in mireds
+        1e6 / 6500,  # initialise at D65 in mireds
         args=(color,),
     )
-    T = 1e6/result[0][0] * u.K
+    T = 1e6 / result[0][0] * u.K
 
     if not return_uv_vec:
         return T
@@ -53,7 +56,6 @@ def CCT(color: RealColor, return_uv_vec: bool=False) -> u.Quantity:
     BB = Spectrum.BlackBody(T)
     duv = delta_uv(BB.to_XYZ(), color)
     return T, duv, math.hypot(du, dv)
-
 
 
 def delta_E(color1: RealColor, color2: RealColor) -> float:

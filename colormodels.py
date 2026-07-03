@@ -195,15 +195,15 @@ class RGB_Color(LinearColor):
 
     @property
     def r(self):
-        return self.R/(self.R + self.G + self.B)
+        return self.R / (self.R + self.G + self.B)
 
     @property
     def g(self):
-        return self.G/(self.R + self.G + self.B)
+        return self.G / (self.R + self.G + self.B)
 
     @property
     def b(self):
-        return self.B/(self.R + self.G + self.B)
+        return self.B / (self.R + self.G + self.B)
 
     @property
     def _kwargs(self):
