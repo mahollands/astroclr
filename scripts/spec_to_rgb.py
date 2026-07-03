@@ -19,8 +19,8 @@ rect_x = np.array([-0.5, 0.5, 0.5, -0.5])
 rect_y = np.array([1.1, 1.1, 1.2, 1.2])
 
 
-def spectrum_figure(fname):
-    S = Spectrum.from_file(fname, units=(u.AA, u.erg / u.s / u.cm**2 / u.AA))
+def spectrum_figure(fname, units=(u.AA, u.erg / u.s / u.cm**2 / u.AA)):
+    S = Spectrum.from_file(fname, units=units)
     S.wavelength = S.wavelength.to(u.nm)
     S.flux = S.flux.to(u.W / u.m**2 / u.nm)
     S.flux /= np.percentile(S.flux, 99).value
