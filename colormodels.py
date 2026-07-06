@@ -110,7 +110,6 @@ __all__ = [
     "LUV_Color",
     "LAB_Color",
     "UCS_Color",
-    "ColorList",
     "ClipMethod",
 ]
 
@@ -184,7 +183,7 @@ def L_luminance_inverse(L: float) -> float:
 
 class RGB_Color(LinearColor):
     def __init__(self, R, G, B, color_space=sRGB):
-        super().__init__((R, G, B))
+        super().__init__(R, G, B)
         if not isinstance(color_space, RGB_ColorSpace):
             raise TypeError("color_space should be an RGB_ColorSpace")
         self.color_space = color_space
@@ -219,7 +218,8 @@ class RGB_Color(LinearColor):
         default). 'brightest' keyword argument scales this so the brightest RGB
         channel is at 1.0.
         """
-        rgb = color_space.rgb_from_xyz_matrix @ XYZ.values
+        transform_matrix = color_space.rgb_from_xyz_matrix
+        rgb = np.einsum('ij,j...->i...', transform_matrix, XYZ.values)
         RGB = cls(*rgb, color_space=color_space)
         if brightest:
             RGB = RGB.normalize_brightest()
@@ -227,7 +227,8 @@ class RGB_Color(LinearColor):
 
     def to_XYZ(self):
         """Convert an rgb color to xyz."""
-        xyz = self.color_space.xyz_from_rgb_matrix @ self.values
+        transform_matrix = color_space.xyz_from_rgb_matrix
+        xyz = np.einsum('ij,j...->i...', transform_matrix, self.values)
         return XYZ_Color(*xyz)
 
     def clip_to_gamut(self, clip_method=ClipMethod.ADD_WHITE):
@@ -236,16 +237,15 @@ class RGB_Color(LinearColor):
         the white point, or clamp any negative channels to zero. Both methods
         move the colour to the edge of the RGB gamut.
         """
+        rgb = self.values
         if clip_method == ClipMethod.ADD_WHITE:
-            rgb = self.values
-            rgb_min = min(0.0, rgb.min())
-            rgb_max = rgb.max()
-            scaling = rgb_max / (rgb_max - rgb_min) if rgb_max > 0.0 else 1.0
+            rgb_min = np.clip(rgb.min(axis=0), -np.inf, 0.0)
+            rgb_max = rgb.max(axis=0)
+            scaling = np.where(rgb_max > 0, rgb_max / (rgb_max - rgb_min), 1.0)
             # add enough white to cancel this out, maintaining the maximum of rgb
-            if rgb_min < 0.0:
-                rgb = scaling * (rgb - rgb_min)
+            rgb = np.where(rgb_min < 0.0, scaling * (rgb - rgb_min), rgb)
         elif clip_method == ClipMethod.CLAMP:
-            rgb = np.clip(self.values, 0, np.inf)
+            rgb = np.clip(rgb, 0, np.inf)
         else:
             raise ValueError(f"Invalid color clipping method {clip_method}")
         return RGB_Color(*rgb)
@@ -258,14 +258,13 @@ class RGB_Color(LinearColor):
         """
         rgb = self.clip_to_gamut(clip_method).values
         # clip intensity if needed (rgb values > 1.0) by scaling
-        rgb_max = max(rgb)
+        rgb_max = rgb.max(axis=0)
         # we actually don't overflow until 255.0 * intensity > 255.5, so
         # instead of 1.0 use ...
         intensity_cutoff = 1.0 + (0.5 / 255.0)
-        if rgb_max > intensity_cutoff:
-            # must scale intensity, so max value is intensity_cutoff
-            scaling = intensity_cutoff / rgb_max
-            rgb *= scaling
+        # must scale intensity, so max value is intensity_cutoff
+        scaling = np.where(rgb_max > intensity_cutoff, intensity_cutoff / rgb_max, 1.0)
+        rgb *= scaling
 
         # apply inverse EOTF
         irgb_unit = [self.color_space.EOTF.inv(rgb[i]) for i in range(3)]
@@ -281,9 +280,9 @@ class IRGB_Color(LinearColor):
     def __init__(self, R, G, B, color_space=sRGB):
         if not isinstance(color_space, RGB_ColorSpace):
             raise TypeError("color_space should be an RGB_ColorSpace")
-        if not all(x in range(2**color_space.bit_depth) for x in (R, G, B)):
+        if not np.all(np.array([R, G, B]) < 2**color_space.bit_depth):
             raise ValueError("RGB integral values out of range")
-        super().__init__((R, G, B), dtype=int)
+        super().__init__(R, G, B, dtype=int)
         self.color_space = color_space
 
     R = property(fget=LinearColor._1.fget, fset=LinearColor._1.fset)
@@ -437,7 +436,7 @@ class UCS_Color(LinearColor):
             w = 1 - u - v
         if w < 0:
             w = 0
-        super().__init__((u, v, w))
+        super().__init__(u, v, w)
 
     def __repr__(self):
         rpr = super().__repr__()
@@ -473,59 +472,3 @@ class UCS_Color(LinearColor):
         Y = self.V
         Z = 3 / 2 * self.U - 3 * self.V + 2 * self.W
         return XYZ_Color(X, Y, Z)
-
-
-class ColorList(list):
-    """
-    Class for a list of colours (all of the same type). This allows attributes
-    and methods to be mapped across elements.
-    """
-
-    color_types = {
-        XYZ_Color,
-        RGB_Color,
-        IRGB_Color,
-        LUV_Color,
-        LAB_Color,
-    }
-
-    def __init__(self, values):
-        if (first_type := type(values[0])) not in ColorList.color_types:
-            raise TypeError("Not one of the supported colors")
-        if not all(isinstance(element, first_type) for element in values):
-            raise TypeError("All Colors must be of the same type")
-        super().__init__(values)
-
-    def __repr__(self):
-        return f"ColorList({super().__repr__()})"
-
-    def __getitem__(self, key):
-        if isinstance(ret := super().__getitem__(key), list):
-            return ColorList(ret)
-        return ret
-
-    def __getattr__(self, attr):
-        if not callable(getattr(self[0], attr)):
-            return [getattr(item, attr) for item in self]
-
-        # Return a function that maps this method over all items
-        def method(*args, **kwargs):
-            ret = [getattr(item, attr)(*args, **kwargs) for item in self]
-            if type(ret[0]) in ColorList.color_types:
-                ret = ColorList(ret)
-            return ret
-
-        return method
-
-    def rescale(self, value):
-        """
-        List multiplication already has a function, so this is used
-        for rescaling all elements by a constant.
-        """
-        return ColorList([item * value for item in self])
-
-    def min_component(self):
-        return min(item.values.min() for item in self)
-
-    def max_component(self):
-        return max(item.values.max() for item in self)

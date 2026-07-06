@@ -11,6 +11,7 @@ do not correspond to palette entries.  The numerical values are
 proportional to the amount of light energy present.
 """
 
+import numpy as np
 from functools import partial
 
 
@@ -39,6 +40,7 @@ def sRGB_EOTF():
     https://www.color.org/chardata/rgb/srgb.xalter
     """
 
+    @np.vectorize
     def EOTF(x):
         # break_point = 0.03928 #old value
         break_point = 0.04045
@@ -46,6 +48,7 @@ def sRGB_EOTF():
         gamma = ((x + 0.055) / 1.055) ** 2.4
         return linear if x <= break_point else gamma
 
+    @np.vectorize
     def OETF(x):
         # break_point = 0.00304 #old value
         break_point = 0.0031308
@@ -92,6 +95,7 @@ def PQ_EOTF():
     ms = 1305 / 8192, 2523 / 32
     cs = 107 / 128, 2413 / 128, 2392 / 128
 
+    @np.vectorize
     def EOTF(x, ms, cs):
         (m1, m2), (c1, c2, c3) = ms, cs
         Em2 = x ** (1 / m2)
@@ -99,6 +103,7 @@ def PQ_EOTF():
         denominator = c2 - c3 * Em2
         return (numerator / denominator) ** (1 / m1)
 
+    @np.vectorize
     def OETF(x, ms, cs):
         (m1, m2), (c1, c2, c3) = ms, cs
         Ym1 = x**m1

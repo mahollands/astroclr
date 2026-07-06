@@ -6,12 +6,25 @@ class Color:
     Tristimulus color space
     """
 
-    __slots__ = ["values"]
+    __slots__ = ["__1", "__2", "__3"]
 
-    def __init__(self, values, dtype):
-        if len(values) != 3:
-            raise ValueError
-        self.values = np.array(values, dtype=dtype)
+    def __init__(self, _1, _2, _3, dtype):
+        self.values = _1, _2, _3
+
+    @classmethod
+    def from_list(cls, values):
+        """
+        Convert list of colours to a color with array attributes
+        """
+        if not isinstance(values, list):
+            raise TypeError("Values must be a list of colours of this type")
+        for value in values:
+            if not isinstance(value, cls):
+                raise TypeError("Values must be a list of colours of this type")
+            if isinstance(value._1, np.ndarray):
+                raise TypeError("Colours must be scalars")
+        values = np.array([value.values for value in values]).T
+        return cls(*values)
 
     def __repr__(self):
         return "{}({}, {}, {})".format(self.__class__.__name__, *self.values)
@@ -19,29 +32,53 @@ class Color:
     def __rmul__(self, other):
         return self * other
 
+    def __getitem__(self, key):
+        _1, _2, _3 = self.values
+        return type(self)(_1[key], _2[key], _3[key])
+        
+    @staticmethod
+    def validate_values(_1, _2, _3):
+        if not (type(_1) == type(_2) == type(_3)):
+            raise TypeError("Inputs must be the same type")
+        if isinstance(_1, np.ndarray) and not (_1.shape == _2.shape == _3.shape):
+            raise ValueError("Arrays must have the same shape")
+
     @property
     def _1(self):
-        return self.values[0]
+        return self.__1
 
     @_1.setter
     def _1(self, value):
-        self.values[0] = value
+        self.validate_values(value, self._2, self._3)
+        self.__1 = value
 
     @property
     def _2(self):
-        return self.values[1]
+        return self.__2
 
     @_2.setter
     def _2(self, value):
-        self.values[1] = value
+        self.validate_values(self._1, value, self._3)
+        self.__2 = value
 
     @property
     def _3(self):
-        return self.values[2]
+        return self.__3
 
     @_3.setter
     def _3(self, value):
-        self.values[2] = value
+        self.validate_values(self._1, self._2, value)
+        self.__3 = value
+
+    @property
+    def values(self):
+        return np.array([self.__1, self.__2, self.__3])
+
+    @values.setter
+    def values(self, values):
+        self.validate_values(*values)
+        self.__1, self.__2, self.__3 = values
+
 
 
 class LinearColor(Color):
@@ -50,10 +87,8 @@ class LinearColor(Color):
     a scalar
     """
 
-    def __init__(self, values, dtype=float):
-        if np.isnan(values).any():
-            values = np.zeros(3)
-        super().__init__(values, dtype=dtype)
+    def __init__(self, _1, _2, _3, dtype=float):
+        super().__init__(_1, _2, _3, dtype=dtype)
 
     @property
     def _kwargs(self):
@@ -72,13 +107,13 @@ class LinearColor(Color):
         return self.__class__(*new, **self._kwargs)
 
     def __mul__(self, other):
-        if not isinstance(other, (int, float)):
+        if not isinstance(other, (int, float, np.ndarray)):
             raise TypeError
         new = self.values * other
         return self.__class__(*new, **self._kwargs)
 
     def __truediv__(self, other):
-        if not isinstance(other, (int, float)):
+        if not isinstance(other, (int, float, np.ndarray)):
             raise TypeError
         new = self.values / other
         return self.__class__(*new, **self._kwargs)
@@ -88,9 +123,7 @@ class XYZ_Color(LinearColor):
     def __init__(self, x, y, z=None):
         if z is None:
             z = 1 - x - y
-        if z < 0:
-            z = 0
-        super().__init__((x, y, z))
+        super().__init__(x, y, z)
 
     def __repr__(self):
         rpr = super().__repr__()
@@ -104,7 +137,7 @@ class XYZ_Color(LinearColor):
     Z = property(fget=LinearColor._3.fget, fset=LinearColor._3.fset)
 
     def normalize(self):
-        return self / self.values.sum()
+        return self / self.values.sum(axis=0)
 
     def normalize_Y1(self):
         return self / self.Y
@@ -134,7 +167,7 @@ class Lpq_Color(Color):
     """
 
     def __init__(self, L, p, q, white_point):
-        super().__init__((L, p, q), dtype=float)
+        super().__init__(L, p, q, dtype=float)
         if not isinstance(white_point, XYZ_Color):
             raise TypeError("white_point should be an XYZ_Color")
         self.white_point = white_point

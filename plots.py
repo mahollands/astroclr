@@ -11,7 +11,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import path
 from astropy import units as u
-from .colormodels import XYZ_Color, RGB_Color, ColorList, ClipMethod
+from .colormodels import XYZ_Color, RGB_Color, ClipMethod
 from .ciexyz import CMFs, Spectrum, XYZ_from_wavelength
 from .RGB_color_spaces import sRGB
 
@@ -69,12 +69,9 @@ def spectrum_subplot(S):
     It is assumed that this function is being called by one that handles those things.
     """
     XYZs = XYZ_from_wavelength(S.wavelength)
-    RGBs = ColorList([RGB_Color.from_XYZ(XYZ) for XYZ in XYZs])
-    grey = RGBs.min_component()
-    min_grey = RGB_Color(grey, grey, grey)
-    RGBs = ColorList([RGB - min_grey for RGB in RGBs])
-    rgb_max = RGBs.max_component()
-    RGBs = RGBs.rescale(1 / rgb_max)
+    RGBs = RGB_Color.from_XYZ(XYZs)
+    RGBs.values -= RGBs.values.min()
+    RGBs /= RGBs.values.max()
     # draw color patches (thin vertical lines matching the spectrum curve) in color
     iterables = (
         pairwise(S.wavelength.value),
@@ -160,6 +157,8 @@ def color_vs_param_plot(
         plt.fill(poly_x, poly_y, color_string, edgecolor=color_string)
     if tight:
         plt.xlim(min(param_list), max(param_list))
+    plt.ylim(0, 1)
+    plt.yticks(visible=False)
     # draw rgb curves in lower plot
     plt.subplot(2, 1, 2)
     # no title in lower plot
@@ -179,14 +178,12 @@ def visible_spectrum_plot(CMF="1931"):
     """
     wavelengths = CMFs[CMF].wavelength
     XYZs = XYZ_from_wavelength(wavelengths, CMFname=CMF)
-    RGBs = ColorList([RGB_Color.from_XYZ(XYZ) for XYZ in XYZs])
+    RGBs = RGB_Color.from_XYZ(XYZs)
     # add grey to avoid gamut clipping
-    grey = min(RGB.values.min() for RGB in RGBs)
-    min_grey = RGB_Color(grey, grey, grey)
-    RGBs = ColorList([RGB - min_grey for RGB in RGBs])
+    grey = RGBs.values.min()
+    RGBs.values -= grey
     # scale to make brightest rgb value = 1.0
-    rgb_max = max(RGB.values.max() for RGB in RGBs)
-    RGBs = RGBs.rescale(1 / rgb_max)
+    RGBs /= RGBs.values.max()
     # plot colors and rgb values vs wavelength
     color_vs_param_plot(
         wavelengths.value,
@@ -249,8 +246,6 @@ def fill_cie_space(xy_boundary, color_space, clip_method, N_pixels, N_AA):
     """
     Fill the CIE chromaticity diagram
     """
-    gamma_invert = np.vectorize(color_space.EOTF.inv)
-
     x_mono, y_mono = np.array(xy_boundary.x), np.array(xy_boundary.y)
     p = path.Path(np.array([x_mono, y_mono]).T)
 
@@ -260,21 +255,23 @@ def fill_cie_space(xy_boundary, color_space, clip_method, N_pixels, N_AA):
     inside = p.contains_points(np.array([x_grid.ravel(), y_grid.ravel()]).T)
     inside = inside.reshape(x_grid.shape)
 
-    xyz_grid = np.array([x_grid, y_grid, 1-x_grid-y_grid])
-    rgb_grid = np.einsum('ij,j...->i...', color_space.rgb_from_xyz_matrix, xyz_grid)
-    rgb_grid[:,~inside] = np.ones_like(rgb_grid)[:,~inside]
-    rgb_grid /= np.max(rgb_grid, axis=0)
-    rgb_grid = np.reshape(rgb_grid, (3, N_pixels, N_AA, N_pixels, N_AA)).mean(axis=(2, 4))
-    irgb_grid = gamma_invert(rgb_grid)
-    irgb_grid = (255 * irgb_grid).astype(np.int64)
-    irgb_grid = np.moveaxis(irgb_grid, 0, 2)
+    xyz_grid = XYZ_Color(x_grid, y_grid)
+    rgb_grid = RGB_Color.from_XYZ(xyz_grid, color_space=color_space)
+    rgb_grid.values = [np.where(inside, rgb_grid_i, 1) for rgb_grid_i in rgb_grid.values]
+    rgb_grid /= rgb_grid.values.max(axis=0)
+    rgb_grid.values = np.reshape(
+        rgb_grid.values, (3, N_pixels, N_AA, N_pixels, N_AA)).mean(axis=(2, 4)
+    )
+    irgb_grid = rgb_grid.to_IRGB()
+    irgb_grid = np.moveaxis(irgb_grid.values, 0, 2)
 
     plt.imshow(irgb_grid, origin='lower', extent=(0, 1, 0, 1))
 
 
 def RGB_triangle(color_space):
-    primaries = ColorList(color_space.primaries)
+    primaries = list(color_space.primaries)
     primaries.append(primaries[0])
+    primaries = XYZ_Color.from_list(primaries)
     plt.plot(primaries.X, primaries.Y, "k:")
     for primary, c in zip(primaries, ["#FF0000", "#00FF00", "#0000FF"]):
         plt.plot(primary.X, primary.Y, "s", color=c, mec="k")
@@ -315,10 +312,10 @@ def BB_locus(CMF):
     BBs = [Spectrum.BlackBody(Ti * u.K, wavelengths) for Ti in T]
     flux_inf = wavelengths.value**-4
     BBs.append(Spectrum(wavelengths, flux_inf / flux_inf[0]))  # Tinfinity
-    T_XYZs = ColorList([BB.to_XYZ(CMFname=CMF) for BB in BBs])
+    T_XYZs = XYZ_Color.from_list([BB.to_XYZ(CMFname=CMF) for BB in BBs])
     T_xys = T_XYZs.normalize()
     plt.plot(T_xys.X, T_xys.Y, "k-")
-    plt.plot(T_xys[-1].X, T_xys[-1].Y, "k.")
+    plt.plot(T_xys.X[-1], T_xys.Y[-1], "k.")
     ticklen = 0.005
     Tmin, Tmax, Tstep = 2000, 10000, 1000
     Tarr = np.arange(Tmin, Tmax + 1, Tstep)
@@ -361,7 +358,7 @@ def chromaticity_diagram(
 
 def figures(CMF="1931"):
     """Draw specific figures not used anywhere else."""
-    #visible_spectrum_plot(CMF=CMF)
-    #cie_matching_functions_plot(CMF=CMF)
+    visible_spectrum_plot(CMF=CMF)
+    cie_matching_functions_plot(CMF=CMF)
     chromaticity_diagram(CMF=CMF, color_space=sRGB)
-    #scattered_visual_brightness(CMF=CMF)
+    scattered_visual_brightness(CMF=CMF)

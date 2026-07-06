@@ -63,7 +63,7 @@ from astropy import units as u
 from astropy.modeling.physical_models import BlackBody
 from astropy.io import fits
 from .CMFs import CMFs, DATA_DIR
-from .colormodels import XYZ_Color, RGB_Color, IRGB_Color, ColorList
+from .colormodels import XYZ_Color, RGB_Color, IRGB_Color
 
 
 __all__ = [
@@ -301,7 +301,7 @@ class Spectrum:
 def XYZ_from_wavelength(
     wavelength: None | int | float | np.ndarray | u.Quantity = None,
     CMFname: str = "1931",
-) -> XYZ_Color | ColorList[XYZ_Color]:
+) -> XYZ_Color:
     """
     Given a wavelength (nm), return the corresponding XYZ_Color, for unit
     intensity. Wavelengths can be given as arrays returning an array. with or without.
@@ -317,4 +317,4 @@ def XYZ_from_wavelength(
     xyz = CMF.interp(wavelength)
     if wavelength.isscalar:
         return XYZ_Color(*xyz)
-    return ColorList([XYZ_Color(*_xyz) for _xyz in xyz.T])
+    return XYZ_Color(*xyz)
