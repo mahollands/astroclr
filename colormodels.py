@@ -342,7 +342,7 @@ class LUV_Color(Lpq_Color):
     @staticmethod
     def uv_primes(XYZ):
         """
-        Converts an XYZ color to the (u', v') form of chromacity associated with
+        Converts an XYZ color to the (u', v') form of chromaticity associated with
         the LUV color space.
         """
         w_denom = XYZ.X + 15.0 * XYZ.Y + 3.0 * XYZ.Z
@@ -355,7 +355,7 @@ class LUV_Color(Lpq_Color):
     @staticmethod
     def uv_primes_inverse(u_prime, v_prime, y):
         """
-        Converts a luminance Y and (u', v') chromacity to an XYZ colour
+        Converts a luminance Y and (u', v') chromaticity to an XYZ colour
         """
         if v_prime == 0.0:
             return XYZ_Color(0.0, 0.0, 0.0)

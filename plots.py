@@ -324,7 +324,7 @@ def BB_locus(CMF):
         plt.plot([T_xy.X - dx, T_xy.X + dx], [T_xy.Y - dy, T_xy.Y + dy], "k-")
 
 
-def chromacity_diagram(
+def chromaticity_diagram(
     CMF="1931",
     color_space=sRGB,
     draw_cie_space=True,

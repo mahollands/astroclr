@@ -30,14 +30,14 @@ Whites = {
 class RGB_ColorSpace:
     """
     RGB Colour space for performing transforms. This stores the
-    chromacities in CIE1931 (x,y) values for the 3 RGB primaries
+    chromaticities in CIE1931 (x,y) values for the 3 RGB primaries
     and white point. Furthermore, a transform function is supplied
     to convert to display values.
 
-    R: chromacity of the red channel as an XYZ_Color
-    G: chromacity of the green channel as an XYZ_Color
-    B: chromacity of the blue channel as an XYZ_Color
-    W: chromacity of the white point as an XYZ_Color
+    R: chromaticity of the red channel as an XYZ_Color
+    G: chromaticity of the green channel as an XYZ_Color
+    B: chromaticity of the blue channel as an XYZ_Color
+    W: chromaticity of the white point as an XYZ_Color
     EOTF: Electro-Optical Transfer Function
     bit depth: integer bit depth (default 8)
     peak_luminance: Physical luminance in cd/m^2 (nits)
