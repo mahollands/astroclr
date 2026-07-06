@@ -7,13 +7,12 @@ Functions to draw various types of plots for light spectra.
 """
 
 from itertools import pairwise, product
-import math
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.interpolate import interp1d
+from matplotlib import path
 from astropy import units as u
-from .colormodels import XYZ_Color, RGB_Color, ColorList
-from .ciexyz import *
+from .colormodels import XYZ_Color, RGB_Color, ColorList, ClipMethod
+from .ciexyz import CMFs, Spectrum, XYZ_from_wavelength
 from .RGB_color_spaces import sRGB
 
 
@@ -246,23 +245,31 @@ def scattered_visual_brightness(CMF="1931"):
     plt.show()
 
 
-def fill_cie_space(xy_boundary, num_segments, color_space, clip_method):
-    wp = color_space.W
-    xy_boundary.append(xy_boundary[0])
-    f = np.linspace(0, 1, num_segments + 1)
-    for (xy1, xy2), (f1, f2) in product(pairwise(xy_boundary), pairwise(f)):
-        xy11 = xy1 * f1 + wp * (1 - f1)
-        xy12 = xy1 * f2 + wp * (1 - f2)
-        xy21 = xy2 * f1 + wp * (1 - f1)
-        xy22 = xy2 * f2 + wp * (1 - f2)
-        corners = ColorList([xy11, xy12, xy22, xy21])
-        xyc = sum(corners, start=XYZ_Color(0, 0, 0)) / 4
-        RGBc = RGB_Color.from_XYZ(xyc, brightest=True)
-        IRGBc = RGBc.to_IRGB(clip_method=clip_method)
-        color_string = IRGBc.to_string()
-        plt.fill(
-            corners.X, corners.Y, color_string, edgecolor=color_string, rasterized=True
-        )
+def fill_cie_space(xy_boundary, color_space, clip_method, N_pixels, N_AA):
+    """
+    Fill the CIE chromaticity diagram
+    """
+    gamma_invert = np.vectorize(color_space.EOTF.inv)
+
+    x_mono, y_mono = np.array(xy_boundary.x), np.array(xy_boundary.y)
+    p = path.Path(np.array([x_mono, y_mono]).T)
+
+    grid_px = np.linspace(0, 1, N_AA*N_pixels)
+    x_grid, y_grid = np.meshgrid(grid_px, grid_px)
+
+    inside = p.contains_points(np.array([x_grid.ravel(), y_grid.ravel()]).T)
+    inside = inside.reshape(x_grid.shape)
+
+    xyz_grid = np.array([x_grid, y_grid, 1-x_grid-y_grid])
+    rgb_grid = np.einsum('ij,j...->i...', color_space.rgb_from_xyz_matrix, xyz_grid)
+    rgb_grid[:,~inside] = np.ones_like(rgb_grid)[:,~inside]
+    rgb_grid /= np.max(rgb_grid, axis=0)
+    rgb_grid = np.reshape(rgb_grid, (3, N_pixels, N_AA, N_pixels, N_AA)).mean(axis=(2, 4))
+    irgb_grid = gamma_invert(rgb_grid)
+    irgb_grid = (255 * irgb_grid).astype(np.int64)
+    irgb_grid = np.moveaxis(irgb_grid, 0, 2)
+
+    plt.imshow(irgb_grid, origin='lower', extent=(0, 1, 0, 1))
 
 
 def RGB_triangle(color_space):
@@ -331,17 +338,13 @@ def chromaticity_diagram(
     draw_color_space=True,
     draw_bb_locus=True,
     clip_method="add white",
-    num_purples=50,
-    num_segments=50,
+    N_pixels = 500,
+    N_AA = 2
 ):
     plt.figure(figsize=(5, 4.71))
-    XYZ_boundary = get_normalized_spectral_line_colors(
-        CMFname=CMF, num_purples=num_purples
-    )
-    xy_boundary = XYZ_boundary.normalize()
-    xy_mono = xy_boundary[:-num_purples]
+    xy_mono = XYZ_from_wavelength(CMFname=CMF).normalize()
     if draw_cie_space:
-        fill_cie_space(xy_boundary, num_segments, color_space, clip_method)
+        fill_cie_space(xy_mono, color_space, clip_method, N_pixels, N_AA)
     plt.plot(xy_mono.X, xy_mono.Y, "k-", lw=2)
     if draw_bb_locus:
         BB_locus(CMF)
@@ -358,7 +361,7 @@ def chromaticity_diagram(
 
 def figures(CMF="1931"):
     """Draw specific figures not used anywhere else."""
-    visible_spectrum_plot(CMF=CMF)
-    cie_matching_functions_plot(CMF=CMF)
-    chromacity_diagram(CMF=CMF, color_space=sRGB)
-    scattered_visual_brightness(CMF=CMF)
+    #visible_spectrum_plot(CMF=CMF)
+    #cie_matching_functions_plot(CMF=CMF)
+    chromaticity_diagram(CMF=CMF, color_space=sRGB)
+    #scattered_visual_brightness(CMF=CMF)
