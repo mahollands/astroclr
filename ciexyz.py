@@ -70,7 +70,6 @@ __all__ = [
     "CMFs",
     "Spectrum",
     "XYZ_from_wavelength",
-    "normalized_spectral_line_colors",
 ]
 
 unit_spec_radiance = u.W / u.m**2 / u.sr / u.nm
