@@ -70,7 +70,7 @@ __all__ = [
     "CMFs",
     "Spectrum",
     "XYZ_from_wavelength",
-    "get_normalized_spectral_line_colors",
+    "normalized_spectral_line_colors",
 ]
 
 unit_spec_radiance = u.W / u.m**2 / u.sr / u.nm
@@ -319,64 +319,3 @@ def XYZ_from_wavelength(
     if wavelength.isscalar:
         return XYZ_Color(*xyz)
     return ColorList([XYZ_Color(*_xyz) for _xyz in xyz.T])
-
-
-def RGB_from_wavelength(
-    wavelength: None | int | float | np.ndarray | u.Quantity = None,
-    CMFname: str = "1931",
-) -> XYZ_Color | ColorList[XYZ_Color]:
-    """
-    Given a wavelength (nm), return the corresponding XYZ_Color, for unit
-    intensity. Wavelengths can be given as arrays returning an array. with or without.
-    If no wavelength is given, the CMF wavelength table is used.
-    """
-    XYZ = XYZ_from_wavelength(wavelength, CMFname)
-    if wavelength.isscalar:
-        return RGB_Color.from_XYZ(XYZ)
-    return ColorList([RGB_Color.from_XYZ(xyz) for xyz in XYZ])
-
-
-def get_normalized_spectral_line_colors(
-    brightness: float = 1.0,
-    num_purples: int = 0,
-    annotate: bool = False,
-    CMFname: str = "1931",
-) -> ColorList[XYZ_Color] | tuple[ColorList[XYZ_Color], list[str]]:
-    """
-    Get a list of XYZ colors covering the visible spectrum. Optionally add
-    a number of 'purples', which are colors interpolated between the color of
-    the lowest wavelength (violet) and the highest (red).
-
-    brightness - Desired maximum rgb component of each color.  Default 1.0.
-    (Maximum displayable brightness)
-    num_purples - Number of colors to interpolate in the 'purple' range.
-    Default 0. (No purples)
-    annotate - additionally return string labels for each color
-    """
-    wavelength, xyz_table, _ = CMFs[CMFname]
-
-    # build list of normalized color x,y values proceeding along each wavelength
-    XYZs = ColorList([XYZ_Color(*xyz) for xyz in np.array(xyz_table).T])
-    xyzs = XYZs.normalize()
-
-    # interpolate from start point to end point (filling in the purples)
-    first_xyz, last_xyz = xyzs[0], xyzs[-1]
-    fs = np.linspace(0, 1, num_purples)
-    xyz_purples = [first_xyz * f + last_xyz * (1 - f) for f in fs]
-    xyzs.extend(xyz_purples)
-
-    # scale each color to have the max rgb component equal to the desired
-    # brightness
-    RGBs = ColorList(
-        [brightness * RGB_Color.from_XYZ(xyz, brightest=True) for xyz in xyzs]
-    )
-    XYZs = RGBs.to_XYZ()
-
-    if not annotate:
-        return XYZs
-
-    annotation_monochromatic = [lam.to_string() for lam in wavelength]
-    annotation_purples = [f"{f:.3f} purples" for f in fs]
-    annotation = annotation_monochromatic + annotation_purples
-
-    return XYZs, annotation

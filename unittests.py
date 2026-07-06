@@ -1,11 +1,10 @@
 import numpy as np
 import pytest
 from astropy import units as u
-from colorpy2.ciexyz import (
+from astroclr.ciexyz import (
     CMFs,
     Spectrum,
     XYZ_from_wavelength,
-    get_normalized_spectral_line_colors,
     unit_spec_radiance,
     unit_spec_irradiance,
 )
@@ -191,37 +190,3 @@ class TestGroup:
         assert isinstance(color_list, ColorList)
         assert len(color_list) == 2
         assert isinstance(color_list[0], XYZ_Color)
-
-    # --- Tests for get_normalized_spectral_line_colors ---
-
-    def test_get_normalized_spectral_line_colors_no_purples(self):
-        """Test color list generation without purples."""
-        XYZs = get_normalized_spectral_line_colors(brightness=1.0, num_purples=0)
-        assert isinstance(XYZs, ColorList)
-        # Length should match the number of steps in the CMF table
-        # (471 steps from 360nm to 830nm at 1nm increment)
-        assert len(XYZs) == len(CMFs["1931"][0])
-
-    def test_get_normalized_spectral_line_colors_with_purples(self):
-        """Test color list generation with purples."""
-        num_purples = 5
-        XYZs = get_normalized_spectral_line_colors(
-            brightness=1.0, num_purples=num_purples
-        )
-        assert isinstance(XYZs, ColorList)
-        # Total length = Spectral points + Purples
-        expected_length = len(CMFs["1931"][0]) + num_purples
-        assert len(XYZs) == expected_length
-
-    def test_get_normalized_spectral_line_colors_annotated(self):
-        """Test color list generation with annotations."""
-        XYZs, annotations = get_normalized_spectral_line_colors(
-            brightness=1.0, num_purples=2, annotate=True
-        )
-        expected_length = len(CMFs["1931"][0]) + 2
-        assert isinstance(XYZs, ColorList)
-        assert isinstance(annotations, list)
-        assert len(XYZs) == expected_length
-        assert len(annotations) == expected_length
-        # Check annotation content
-        assert annotations[-1].endswith("purples")
