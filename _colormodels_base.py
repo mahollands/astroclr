@@ -165,7 +165,7 @@ class XYZ_Color(LinearColor):
     def from_xyY(cls, x, y, Y):
         """Given the 'little' x,y chromaticity, and the intensity Y, construct
         an xyz color.  See Foley/Van Dam p. 581, eq. 13.21."""
-        return Y / y * cls(x, y)
+        return cls(x, y) * (Y / y)
 
 
 class Lpq_Color(Color):
