@@ -46,7 +46,6 @@ def rgb_patch_plot(RGBs, color_names, title, patch_gap=0.05, num_across=6):
         draw_patch(float(ix), float(-iy), colorstring, name, patch_gap)
     plt.axis("off")
     plt.title(title)
-    plt.show()
 
 
 def xyz_patch_plot(XYZs, color_names, title, patch_gap=0.05, num_across=6):
@@ -120,7 +119,6 @@ def spectrum_plot(S, title, xlabel="Wavelength($nm$)", ylabel="Intensity ($W/m^2
     plt.xlim(S.wavelength.value[(0, -1),])
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
-    plt.show()
 
 
 def color_vs_param_plot(
@@ -169,7 +167,6 @@ def color_vs_param_plot(
         plt.xlim(min(param_list), max(param_list))
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
-    plt.show()
 
 
 def visible_spectrum_plot(CMF="1931"):
@@ -220,7 +217,6 @@ def cie_matching_functions_plot(CMF="1931"):
     plt.ylabel("CIE $Z$")
     spectrum_subplot(cie_z)
     plt.xlim(wavelengths.value[(0, -1),])
-    plt.show()
 
 
 def scattered_visual_brightness(CMF="1931"):
@@ -239,7 +235,6 @@ def scattered_visual_brightness(CMF="1931"):
     plt.xlabel("Wavelength (nm)")
     plt.ylabel(r"CIE $Y$ / $\lambda^4$")
     plt.xlim(S.wavelength.value[(0, -1),])
-    plt.show()
 
 
 def fill_cie_space(xy_boundary, color_space, clip_method, N_pixels, N_AA):
@@ -352,12 +347,18 @@ def chromaticity_diagram(
     plt.xlabel("$x$")
     plt.ylabel("$y$")
     plt.tight_layout()
-    plt.show()
 
 
 def figures(CMF="1931"):
     """Draw specific figures not used anywhere else."""
     visible_spectrum_plot(CMF=CMF)
+    plt.show()
+
     cie_matching_functions_plot(CMF=CMF)
+    plt.show()
+
     chromaticity_diagram(CMF=CMF, color_space=sRGB)
+    plt.show()
+
     scattered_visual_brightness(CMF=CMF)
+    plt.show()
