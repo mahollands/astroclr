@@ -1,5 +1,5 @@
-from colorpy2.delta_color import CCT
-from colorpy2.illuminants import *
+from astroclr.delta_color import CCT
+from astroclr.illuminants import *
 
 A = get_illuminant_A()
 E = get_illuminant_E()

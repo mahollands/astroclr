@@ -8,8 +8,8 @@ import sys
 import numpy as np
 import matplotlib.pyplot as plt
 from astropy import units as u
-from colorpy2.ciexyz import Spectrum, RGB_from_wavelength
-from colorpy2.colormodels import ColorList, RGB_Color
+from astroclr.ciexyz import Spectrum, RGB_from_wavelength
+from astroclr.colormodels import ColorList, RGB_Color
 
 if len(sys.argv) == 0:
     print("need at least one filename for a spectrum")
