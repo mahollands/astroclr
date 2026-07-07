@@ -227,7 +227,7 @@ class RGB_Color(LinearColor):
 
     def to_XYZ(self):
         """Convert an rgb color to xyz."""
-        transform_matrix = color_space.xyz_from_rgb_matrix
+        transform_matrix = self.color_space.xyz_from_rgb_matrix
         xyz = np.einsum('ij,j...->i...', transform_matrix, self.values)
         return XYZ_Color(*xyz)
 
@@ -329,6 +329,17 @@ class IRGB_Color(LinearColor):
         if to_luminance:
             RGB *= self.color_space.peak_luminance.to_value(u.cd / u.m**2)
         return RGB
+
+    @property
+    def values_image(self):
+        """
+        In astroclr, colour arrays are of shape (3,...), i.e. (3,m,n) for
+        images. For displaying images with plt.imshow we instead need a shape
+        of (m,n,3) which is accessed with this property
+        """
+        if self.values.ndim != 3:
+            raise ValueError("values_image is for working with 2D colour arrays")
+        return np.moveaxis(self.values, 0, 2)
 
 
 class LUV_Color(Lpq_Color):
