@@ -1,38 +1,39 @@
-# Colorpy2
+# astroclr
 
-Colorpy2 allows perceived colours of light to be calculated from the physical
+Astroclr allows perceived colours of light to be calculated from the physical
 spectra that emit them, and conversions between various colour spaces. This
 allows spectra radiated from (for example) astrophyiscal objects to be
 converted into colours that can be accurately be reproduced on a computer
 display.
 
-Colorpy2 is an almost complete rewrite of the original
+Astroclr is an almost complete rewrite of the original
 [Colorpy](https://github.com/markkness/ColorPy) by Mark Kness, further
 documentation for the original package can be found
 [here](https://github.com/markkness/ColorPy). Mark Kness' original colorpy has
 been an invaluable resource for me for calculating colours of stars from their
 spectra. The original is exceptionally well documented and referenced, and is
 largely responsible for developing my own interest in colour science. The
-original, however, is no longer actively maintained, is still designed for python2
-(though only requires a few tweaks to get it working in python3), and the module
-interface is far from pythonic by modern standards.
+original, however, is no longer actively maintained, is still designed for
+python2 (though only requires a few tweaks to get it working in python3), and
+by modern standards the module interface is far from pythonic.
 
 ## Features
-Colorpy2 aims to solve several issues with the original:
+Astroclr aims to solve several issues with the original:
 * A modern interface with a variety of colour classes and methods to convert
   between them
     - XYZ_Color
     - RGB_Color
     - IRGB_Color 
+    - UCS_Color
     - LUV_Color
     - LAB_Color
 * A bespoke Spectrum type with easy conversion to XYZ colours
     - XYZ integrations are performed trapezoidally, so wavelengths don't need
       to be uniformly spaced.
-    - Integration with astropy units for calculating luminance
+    - Integration with astropy units for calculating luminance/illuminance
     - Easy generation of black body spectra
-* A class for RGB colour spaces, including RGB and white point chromacities as
-  well as  electro-optical transfer functions.
+* A class for RGB colour spaces, including RGB and white point chromaticities
+  as well as electro-optical transfer functions.
     - sRGB
     - Rec709
     - Rec2020
@@ -65,11 +66,11 @@ z = \frac{Z}{X+Y+Z}
 ```
 
 Having lost a degree of freedom (the intensity), $x$ and $y$ now uniquely define
-the colour indepedent of brightness. This quantity is called the chromacity and
+the colour indepedent of brightness. This quantity is called the chromaticity and
 can be represented in the $xy$ plane.
 
-![image](https://github.com/mahollands/colorpy2/blob/main/images/CIE_xy.png
-"CIE 1931 chromacity diagram")
+![image](https://github.com/mahollands/astroclr/blob/main/images/CIE_xy.png
+"CIE 1931 chromaticity diagram")
 
 
 ## Usage
@@ -137,7 +138,7 @@ XYZ_Color(0.2806338166107294, 0.28828844306065954)
 
 This method scales an `XYZ_Color` so all components add to 1. In this form the
 Z component (now written z) is redundant, and the x and y components
-define the chromacity.
+define the chromaticity.
 
 ```python
 >>> XYZ.normalize_Y1()
