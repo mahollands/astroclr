@@ -14,39 +14,21 @@ import numpy as np
 import numba
 import matplotlib.pyplot as plt
 from matplotlib.widgets import Slider
-from colorpy2.ciexyz import XYZ_from_wavelength, CMFs
-from colorpy2.colormodels import RGB_Color
-
-# from colorpy2.transfer_functions import sRGB_EOTF
-from mh.spectra import Spectrum
+from astroclr.ciexyz import XYZ_from_wavelength, CMFs
+from astroclr.colormodels import RGB_Color
+from astroclr.RGB_color_spaces import sRGB as cspace
 
 CMF = CMFs["1931"]
+OETF = cspace.EOTF.inv
 
 N_PX = 200
 SPOT_EXPONENT = 20
 SPOT_RADIUS = 30
 PX_PER_LAM = 0.10
-USE_SPEC = False
-SPEC_NAME = "/home/mark/GD492/J1637/models/J1637-fit-2024.dk"
 
 XYZs = XYZ_from_wavelength(CMF.wavelength)
-RGBs = np.array([RGB_Color.from_XYZ(XYZ).values for XYZ in XYZs])
+RGBs = RGB_Color.from_XYZ(XYZs, color_space=cspace)
 lams = 360 - 555 + np.arange(len(RGBs))
-
-@numba.vectorize(cache=True)
-def OETF(x):
-    break_point = 0.0031308
-    linear = 12.92 * x
-    gamma = 1.055 * x ** (1 / 2.4) - 0.055
-    return linear if x <= break_point else gamma
-
-
-if USE_SPEC:
-    S = Spectrum.from_dk(SPEC_NAME)
-    S.x_unit_to("nm")
-    S = S.convolve_gaussian(2.0)
-    S = S.interp(CMF.wavelength)
-    XYZs = [XYZ * f for XYZ, f in zip(XYZs, S.y)]
 
 x = np.arange(N_PX) - N_PX // 2
 y = np.arange(N_PX//2) - N_PX // 4
@@ -79,11 +61,11 @@ def mk_figure():
         valinit=0,
     )
 
-    img_IRGB = mk_img(spotlight, 0, RGBs, lams)
+    img_IRGB = mk_img(spotlight, 0, RGBs.values.T, lams)
     img = ax.imshow(img_IRGB)
 
     def update_plot(val):
-        img_IRGB = mk_img(spotlight, val, RGBs, lams)
+        img_IRGB = mk_img(spotlight, val, RGBs.values.T, lams)
         img.set_array(img_IRGB)
 
     slider.on_changed(update_plot)
