@@ -1,10 +1,10 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from astropy import units as u
-from colorpy2 import Spectrum, RGB_Color
+from astroclr import Spectrum, RGB_Color
 
-REF_LUM = 250 #Display peak-luminance in cd/m2
-T_LIMITS = 700, 30000
+REF_LUM = 200 #Display peak-luminance in cd/m2
+T_LIMITS = 800, 30000
 
 Ts = np.geomspace(*T_LIMITS, 256)
 dlogT = np.diff(np.log(Ts)).mean()
@@ -17,7 +17,8 @@ for T in Ts:
     BB = Spectrum.BlackBody(T)
     XYZ = BB.to_XYZ() * 683 / REF_LUM
     RGB = RGB_Color.from_XYZ(XYZ)
-    RGB /= 1 + np.max(RGB.values) #tonemapping to avoid hard clipping
+    # tonemapping to avoid hard edge from luminance clipping
+    RGB /= 1 + np.max(RGB.values)
 
     clr = RGB.to_IRGB().to_string()
     plt.fill(T * dx, y, c=clr)
