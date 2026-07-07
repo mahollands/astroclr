@@ -263,9 +263,8 @@ def fill_cie_space(xy_boundary, color_space, clip_method, N_pixels, N_AA):
         rgb_grid.values, (3, N_pixels, N_AA, N_pixels, N_AA)).mean(axis=(2, 4)
     )
     irgb_grid = rgb_grid.to_IRGB()
-    irgb_grid = np.moveaxis(irgb_grid.values, 0, 2)
 
-    plt.imshow(irgb_grid, origin='lower', extent=(0, 1, 0, 1))
+    plt.imshow(irgb_grid.values_image, origin='lower', extent=(0, 1, 0, 1))
 
 
 def RGB_triangle(color_space):
