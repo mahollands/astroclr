@@ -237,27 +237,36 @@ def scattered_visual_brightness(CMF="1931"):
     plt.xlim(S.wavelength.value[(0, -1),])
 
 
-def fill_cie_space(xy_boundary, color_space, clip_method, N_pixels, N_AA):
+def fill_cie_space(
+    xy_mono,
+    color_space=sRGB,
+    clip_method=ClipMethod.ADD_WHITE,
+    brightest=True
+    N_pixels=500,
+    N_AA=2,
+):
     """
     Fill the CIE chromaticity diagram
     """
-    x_mono, y_mono = np.array(xy_boundary.x), np.array(xy_boundary.y)
-    p = path.Path(np.array([x_mono, y_mono]).T)
-
     grid_px = np.linspace(0, 1, N_AA*N_pixels)
     x_grid, y_grid = np.meshgrid(grid_px, grid_px)
 
+    p = path.Path(np.array([xy_mono.X, xy_mono.Y]).T)
     inside = p.contains_points(np.array([x_grid.ravel(), y_grid.ravel()]).T)
     inside = inside.reshape(x_grid.shape)
 
     xyz_grid = XYZ_Color(x_grid, y_grid)
     rgb_grid = RGB_Color.from_XYZ(xyz_grid, color_space=color_space)
+    in_gamut = np.all(rgb_grid.values > 0, axis=0)
+    if brightest:
+        rgb_grid /= rgb_grid.values.max(axis=0)
+    else:
+        rgb_grid /= rgb_grid.values.sum(axis=0) / 1.5
     rgb_grid.values = [np.where(inside, rgb_grid_i, 1) for rgb_grid_i in rgb_grid.values]
-    rgb_grid /= rgb_grid.values.max(axis=0)
     rgb_grid.values = np.reshape(
         rgb_grid.values, (3, N_pixels, N_AA, N_pixels, N_AA)).mean(axis=(2, 4)
     )
-    irgb_grid = rgb_grid.to_IRGB()
+    irgb_grid = rgb_grid.to_IRGB(clip_method=clip_method)
 
     plt.imshow(irgb_grid.values_image, origin='lower', extent=(0, 1, 0, 1))
 
@@ -326,9 +335,9 @@ def chromaticity_diagram(
     CMF="1931",
     color_space=sRGB,
     draw_cie_space=True,
-    draw_color_space=True,
     draw_bb_locus=True,
-    clip_method="add white",
+    draw_rgb_triangle=True,
+    clip_method=ClipMethod.ADD_WHITE,
     N_pixels = 500,
     N_AA = 2
 ):
@@ -340,7 +349,7 @@ def chromaticity_diagram(
     if draw_bb_locus:
         BB_locus(CMF)
     lam_ticks_labels(CMFs[CMF][0], xy_mono)
-    if draw_color_space:
+    if draw_rgb_triangle:
         RGB_triangle(color_space)
     plt.xlim(-0.06, 0.81)
     plt.ylim(0, 0.87)
@@ -351,14 +360,14 @@ def chromaticity_diagram(
 
 def figures(CMF="1931"):
     """Draw specific figures not used anywhere else."""
-    visible_spectrum_plot(CMF=CMF)
-    plt.show()
+    #visible_spectrum_plot(CMF=CMF)
+    #plt.show()
 
-    cie_matching_functions_plot(CMF=CMF)
-    plt.show()
+    #cie_matching_functions_plot(CMF=CMF)
+    #plt.show()
 
     chromaticity_diagram(CMF=CMF, color_space=sRGB)
     plt.show()
 
-    scattered_visual_brightness(CMF=CMF)
-    plt.show()
+    #scattered_visual_brightness(CMF=CMF)
+    #plt.show()
