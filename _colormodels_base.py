@@ -32,9 +32,16 @@ class Color:
     def __rmul__(self, other):
         return self * other
 
+    def __len__(self):
+        if self.values.ndim == 1:
+            return 1
+        elif self.values.ndim == 2:
+            return self.values.shape[1]
+        else:
+            raise ValueError("Length isn't defined for colour arrays with ndim > 1")
+
     def __getitem__(self, key):
-        _1, _2, _3 = self.values
-        return type(self)(_1[key], _2[key], _3[key])
+        return type(self)(*[val[key] for val in self.values])
         
     @staticmethod
     def validate_values(_1, _2, _3):
