@@ -102,27 +102,27 @@ class LinearColor(Color):
         return {}
 
     def __add__(self, other):
-        if not isinstance(other, self.__class__):
+        if not isinstance(other, type(self)):
             raise TypeError
-        new = self.values + other.values
+        new = [x+y for x, y in zip(self.values, other.values)]
         return self.__class__(*new, **self._kwargs)
 
     def __sub__(self, other):
-        if not isinstance(other, self.__class__):
+        if not isinstance(other, type(self)):
             raise TypeError
-        new = self.values - other.values
+        new = [x-y for x, y in zip(self.values, other.values)]
         return self.__class__(*new, **self._kwargs)
 
     def __mul__(self, other):
         if not isinstance(other, (int, float, np.ndarray)):
             raise TypeError
-        new = self.values * other
+        new = [x*other for x in self.values]
         return self.__class__(*new, **self._kwargs)
 
     def __truediv__(self, other):
         if not isinstance(other, (int, float, np.ndarray)):
             raise TypeError
-        new = self.values / other
+        new = [x/other for x in self.values]
         return self.__class__(*new, **self._kwargs)
 
 
