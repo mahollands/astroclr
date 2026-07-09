@@ -35,19 +35,24 @@ for lam, IRGB in zip(wavelengths, IRGBs):
     plt.fill(rect_x + lam, rect_y, c=IRGB.to_string())
 plt.xlim(380, 720)
 plt.ylim(0, 1)
+plt.xlabel("Wavelength [nm]")
 plt.savefig("rainbow.png")
 plt.show()
 
 plt.plot(wavelengths, RGBs.R, "r-")
 plt.plot(wavelengths, RGBs.G, "g-")
 plt.plot(wavelengths, RGBs.B, "b-")
+plt.title("Linear RGB")
 plt.xlim(380, 720)
+plt.xlabel("Wavelength [nm]")
 plt.show()
 
+plt.title("Display RGB")
 plt.plot(wavelengths, IRGBs.R, "r-")
 plt.plot(wavelengths, IRGBs.G, "g-")
 plt.plot(wavelengths, IRGBs.B, "b-")
 plt.xlim(380, 720)
+plt.xlabel("Wavelength [nm]")
 plt.show()
 
 plt.plot(XYZs.x, XYZs.y)
@@ -62,6 +67,8 @@ plt.plot(
 plt.plot(CSPACE.R.x, CSPACE.R.y, "ro")
 plt.plot(CSPACE.G.x, CSPACE.G.y, "go")
 plt.plot(CSPACE.B.x, CSPACE.B.y, "bo")
+plt.xlabel("$x$")
+plt.ylabel("$y$")
 plt.show()
 
 
