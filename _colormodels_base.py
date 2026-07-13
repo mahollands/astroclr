@@ -6,7 +6,7 @@ class Color:
     Tristimulus color space
     """
 
-    __slots__ = ["__1", "__2", "__3"]
+    __slots__ = ["_values"]
 
     def __init__(self, _1, _2, _3, dtype):
         self.values = _1, _2, _3
@@ -45,46 +45,46 @@ class Color:
         
     @staticmethod
     def validate_values(_1, _2, _3):
-        if not (type(_1) == type(_2) == type(_3)):
+        if not isinstance(_1, type(_2)) or not isinstance(_1, type(_3)):
             raise TypeError("Inputs must be the same type")
         if isinstance(_1, np.ndarray) and not (_1.shape == _2.shape == _3.shape):
             raise ValueError("Arrays must have the same shape")
 
     @property
     def _1(self):
-        return self.__1
+        return self._values[0]
 
     @_1.setter
     def _1(self, value):
         self.validate_values(value, self._2, self._3)
-        self.__1 = value
+        self._values[0] = value
 
     @property
     def _2(self):
-        return self.__2
+        return self._values[1]
 
     @_2.setter
     def _2(self, value):
         self.validate_values(self._1, value, self._3)
-        self.__2 = value
+        self._values[1] = value
 
     @property
     def _3(self):
-        return self.__3
+        return self._values[2]
 
     @_3.setter
     def _3(self, value):
         self.validate_values(self._1, self._2, value)
-        self.__3 = value
+        self._values[2] = value
 
     @property
     def values(self):
-        return np.array([self.__1, self.__2, self.__3])
+        return self._values
 
     @values.setter
     def values(self, values):
         self.validate_values(*values)
-        self.__1, self.__2, self.__3 = values
+        self._values = np.array(values)
 
 
 
