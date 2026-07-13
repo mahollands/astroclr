@@ -1,3 +1,15 @@
+"""
+Basic classes for working with colours. 
+
+Classes:
+
+Color - This is the most basic colour class, storing a set of three values.
+
+LinearColor - For colours where each component represents some linear value.
+Colours of this type can be added together or scaled by a constant.
+
+Lpq_Color - Base class for LAB and LUV color spaces which both include a lightness component.
+"""
 import numpy as np
 
 
@@ -126,6 +138,20 @@ class LinearColor(Color):
         return self.__class__(*new, **self._kwargs)
 
 
+class Lpq_Color(Color):
+    """
+    Template class for LAB and LUB color spaces, which have a shared L property
+    """
+
+    def __init__(self, L, p, q, white_point):
+        super().__init__(L, p, q, dtype=float)
+        if not isinstance(white_point, XYZ_Color):
+            raise TypeError("white_point should be an XYZ_Color")
+        self.white_point = white_point
+
+    L = property(fget=LinearColor._1.fget, fset=LinearColor._1.fset)
+
+
 class XYZ_Color(LinearColor):
     def __init__(self, x, y, z=None):
         if z is None:
@@ -163,20 +189,8 @@ class XYZ_Color(LinearColor):
 
     @classmethod
     def from_xyY(cls, x, y, Y):
-        """Given the 'little' x,y chromaticity, and the intensity Y, construct
-        an xyz color.  See Foley/Van Dam p. 581, eq. 13.21."""
+        """
+        Given the 'little' x,y chromaticity, and the intensity Y, construct an
+        XYZ color.
+        """
         return cls(x, y) * (Y / y)
-
-
-class Lpq_Color(Color):
-    """
-    Template class for LAB and LUB color spaces, which have a shared L property
-    """
-
-    def __init__(self, L, p, q, white_point):
-        super().__init__(L, p, q, dtype=float)
-        if not isinstance(white_point, XYZ_Color):
-            raise TypeError("white_point should be an XYZ_Color")
-        self.white_point = white_point
-
-    L = property(fget=LinearColor._1.fget, fset=LinearColor._1.fset)
