@@ -280,6 +280,9 @@ class Spectrum:
         density radiating from a surface) also in lm/m^2 (lux not used).
         """
         Y = self.XYZ_integrals()[1]
+        # The Candela definition specifies 683 lm/W at 540 THz (vac). However,
+        # the 1931 CIE photopic luminous efficiency function peaks at 555 nm
+        # (air). The extra 0.002 lm/W corrects for the wavelength mismatch.
         L = 683.002 * u.lm / u.W * Y
 
         if self.flux.unit.is_equivalent(unit_spec_irradiance):
