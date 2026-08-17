@@ -31,7 +31,7 @@ along with ColorPy.  If not, see <http://www.gnu.org/licenses/>.
 
 # This file only needs to exist to indicate that this is a package.
 
-from .ciexyz import *
+from .spectral import *
 from .colormodels import *
 from .RGB_color_spaces import sRGB
 from .delta_color import *
