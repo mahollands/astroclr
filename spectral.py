@@ -1,58 +1,25 @@
 """
-ciexyz.py - Spectral response curves for 1931 CIE XYZ 2 degree field of view
-matching functions.
+spectral.py: A collection of classes and functions for working with spectra and
+converting to directly to perceived colours. This module also imports CMFs from
+the CMFs submodule.
 
-Description:
+Basic usage:
+>>> S = Spectrum.BlackBody(6000 * u.K)
+>>> XYZ = S.to_XYZ()
+>>> RGB = RGB_Color.from_XYZ(XYZ)
+>>> IRGB = RGB.to_IRGB()
+>>> print(IRGB.to_string())
+'#FFF3F1'
 
-This module provides the CIE standard XYZ color matching functions. The 1931
-tabulation, for a 2 degree field of view, is used in preference to the 10
-degree 1964 set, as is conventional in computer graphics.
+Even faster usage:
+>>> S = Spectrum.from_file("my_spec.dat")
+>>> print(S.to_IRGB_string())
+'#DDFFB8'
 
-The matching functions are stored internally at 1 nm increments, and linear
-interpolation is used for any wavelength in between.
-
-ColorPy attempts to scale the matching functions so that: A spectrum, constant
-with wavelength, over the range 360 nm to 830 nm, with a total intensity equal
-to the (assumed) physical intensity of the monitor, will sample with Y = 1.0.
-
-This scaling corresponds with that in colormodels.py, which assumes Y = 1.0 at
-full white.
-
-NOTE - I suspect that the scaling is not quite correct.  I think it is at least
-close.
-
-Ideally, we would like the spectrum of the actual monitor display, at full
-white, which is not independent of wavelength, to sample to Y = 1.0.
-
-References:
-
-Wyszecki and Stiles, Color Science: Concepts and Methods, Quantitative Data and Formulae,
-    2nd edition, John Wiley, 1982. Wiley Classics Library Edition 2000. ISBN 0-471-39918-3.
-
-CVRL Color and Vision Database - http://cvrl.ioo.ucl.ac.uk/index.htm - (accessed 17 Sep 2008)
-    Color and Vision Research Laboratories.
-    Provides a set of data sets related to color vision.
-    ColorPy uses the tables from this site for the 1931 CIE XYZ matching functions,
-    and for Illuminant D65, both at 1 nm wavelength increments.
-
-CIE Standards - http://cvrl.ioo.ucl.ac.uk/cie.htm - (accessed 17 Sep 2008)
-    CIE standards as maintained by CVRL. The 1931 CIE XYZ and D65 tables that
-    ColorPy uses were obtained from the following files, linked here:
-        http://cvrl.ioo.ucl.ac.uk/database/data/cmfs/ciexyz31_1.txt
-        http://cvrl.ioo.ucl.ac.uk/database/data/cie/Illuminantd65.txt
-
-CIE International Commission on Illumination - http://www.cie.co.at/ - (accessed 17 Sep 2008)
-    Official website of the CIE. There are tables of the standard functions
-    (matching functions, illuminants) here:
-        http://www.cie.co.at/main/freepubs.html
-        http://www.cie.co.at/publ/abst/datatables15_2004/x2.txt
-        http://www.cie.co.at/publ/abst/datatables15_2004/y2.txt
-        http://www.cie.co.at/publ/abst/datatables15_2004/z2.txt
-        http://www.cie.co.at/publ/abst/datatables15_2004/sid65.txt
-    ColorPy does not use these specific files.
-
-Charles Poynton - Frequently asked questions about Gamma and Color,
-    posted to comp.graphics.algorithms, 25 Jan 1995.
+Monochromatic colours:
+>>> XYZ = XYZ_from_wavelength(555 * u.nm)
+>>> print(XYZ)
+XYZ_Color(0.5120501, 1.0, 0.005749999)
 """
 
 import functools
