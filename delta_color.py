@@ -6,7 +6,7 @@ the correlated color temperature.
 import math
 from scipy.optimize import leastsq
 from astropy import units as u
-from .ciexyz import Spectrum
+from .spectral import Spectrum
 from .colormodels import XYZ_Color, RGB_Color, UCS_Color, LUV_Color, LAB_Color
 
 __all__ = [

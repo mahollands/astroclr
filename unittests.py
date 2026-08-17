@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 from astropy import units as u
-from astroclr.ciexyz import (
+from astroclr.spectral import (
     CMFs,
     Spectrum,
     XYZ_from_wavelength,

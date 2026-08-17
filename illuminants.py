@@ -72,7 +72,7 @@ import os
 import functools
 import numpy as np
 from astropy import units as u
-from .ciexyz import Spectrum
+from .spectral import Spectrum
 from . import plots
 
 __all__ = [

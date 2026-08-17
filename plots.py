@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 from matplotlib import path
 from astropy import units as u
 from .colormodels import XYZ_Color, RGB_Color, ClipMethod
-from .ciexyz import CMFs, Spectrum, XYZ_from_wavelength
+from .spectral import CMFs, Spectrum, XYZ_from_wavelength
 from .RGB_color_spaces import sRGB
 
 
@@ -241,7 +241,7 @@ def fill_cie_space(
     xy_mono,
     color_space=sRGB,
     clip_method=ClipMethod.ADD_WHITE,
-    brightest=True
+    brightest=True,
     N_pixels=500,
     N_AA=2,
 ):
@@ -338,13 +338,14 @@ def chromaticity_diagram(
     draw_bb_locus=True,
     draw_rgb_triangle=True,
     clip_method=ClipMethod.ADD_WHITE,
+    brightest=False,
     N_pixels = 500,
     N_AA = 2
 ):
     plt.figure(figsize=(5, 4.71))
     xy_mono = XYZ_from_wavelength(CMFname=CMF).normalize()
     if draw_cie_space:
-        fill_cie_space(xy_mono, color_space, clip_method, N_pixels, N_AA)
+        fill_cie_space(xy_mono, color_space, clip_method, brightest, N_pixels, N_AA)
     plt.plot(xy_mono.X, xy_mono.Y, "k-", lw=2)
     if draw_bb_locus:
         BB_locus(CMF)
@@ -366,7 +367,7 @@ def figures(CMF="1931"):
     #cie_matching_functions_plot(CMF=CMF)
     #plt.show()
 
-    chromaticity_diagram(CMF=CMF, color_space=sRGB)
+    chromaticity_diagram(CMF=CMF, color_space=sRGB, brightest=True)
     plt.show()
 
     #scattered_visual_brightness(CMF=CMF)
