@@ -280,7 +280,7 @@ class Spectrum:
         density radiating from a surface) also in lm/m^2 (lux not used).
         """
         Y = self.XYZ_integrals()[1]
-        L = 683 * u.lm / u.W * Y
+        L = 683.002 * u.lm / u.W * Y
 
         if self.flux.unit.is_equivalent(unit_spec_irradiance):
             return L.to(u.lm / u.m**2)
