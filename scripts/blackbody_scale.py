@@ -1,3 +1,12 @@
+"""
+Plots a blackbody scale from 800K (roughly the Draper point), up
+to 30000K. For low temperatures, where a blackbody may be less luminous
+than a typical monitor luminance of 200 cd/m2, the displayed intensity
+is approximately correct. To avoid hard clipping at 200 cd/m2, a
+basic form of tone mapping adds some amount of roll-off, giving
+a smoother luminance scale.
+"""
+
 import numpy as np
 import matplotlib.pyplot as plt
 from astropy import units as u
