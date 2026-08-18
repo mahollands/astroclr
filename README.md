@@ -74,17 +74,17 @@ transformation between XYZ and sRGB.
     \left(\begin{array}{c}
     R \\
     G \\
-    B \\
+    B
     \end{array}\right) =
     \left(\begin{array}{rrr}
      3.2410 & -1.5374 & -0.4986 \\
     -0.9692 &  1.8760 &  0.0416 \\
-     0.0556 & -0.2040 &  1.0570 \\
+     0.0556 & -0.2040 &  1.0570
     \end{array}\right) \cdot
     \left(\begin{array}{c}
     X \\
     Y \\
-    Z \\
+    Z
     \end{array}\right)
 ```
 
