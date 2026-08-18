@@ -62,7 +62,7 @@ class RGB_ColorSpace:
         (R,G,B)=(1,1,1) corresponds to Y=1.
         """
         phosphor_matrix = np.column_stack([p.values for p in self.primaries])
-        full_white = self.W.normalize_Y2().values
+        full_white = self.W.normalize_Y1().values
         phosphor_intensities = np.linalg.solve(phosphor_matrix, full_white)
         return phosphor_matrix * phosphor_intensities[np.newaxis, :]
 
