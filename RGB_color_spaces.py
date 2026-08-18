@@ -11,8 +11,6 @@ from astropy import units as u
 from ._colormodels_base import XYZ_Color
 from .transfer_functions import gamma_EOTF, sRGB_EOTF, PQ_EOTF
 
-# White points [all are for CIE 1931 for small field of view]
-#   These are from Judd/Wyszecki
 Whites = {
     "A": XYZ_Color(0.4476, 0.4074),  # approx 2856 K
     "B": XYZ_Color(0.3484, 0.3516),  # approx 4874 K
@@ -59,16 +57,22 @@ class RGB_ColorSpace:
     @functools.cached_property
     def xyz_from_rgb_matrix(self) -> np.ndarray:
         """
-        Determine intensities of each phosphor by solving:
-        phosphor_matrix * intensity_vector = white_point
+        Determine the transformation from XYZ to RGB. This requires the
+        chromaticities of the RGB primaries and white point, and the constraint
+        (R,G,B)=(1,1,1) corresponds to Y=1.
         """
-        # See [Foley/Van Dam, p.587, eqn 13.27, 13.29] and [Hall, p. 239].
-        phosphor_matrix = np.column_stack([x.values for x in self.primaries])
-        I = np.linalg.solve(phosphor_matrix, self.W.normalize_Y1().values)
-        return phosphor_matrix * I[np.newaxis, :]
+        phosphor_matrix = np.column_stack([p.values for p in self.primaries])
+        full_white = self.W.normalize_Y2().values
+        phosphor_intensities = np.linalg.solve(phosphor_matrix, full_white)
+        return phosphor_matrix * phosphor_intensities[np.newaxis, :]
 
     @functools.cached_property
     def rgb_from_xyz_matrix(self) -> np.ndarray:
+        """
+        Determine the transformation from XYZ to RGB. This requires the
+        chromaticities of the RGB primaries and white point and the constraint
+        (R,G,B)=(1,1,1) corresponds to Y=1.
+        """
         return np.linalg.inv(self.xyz_from_rgb_matrix)
 
     def in_gamut(self, XYZ: XYZ_Color) -> bool:
