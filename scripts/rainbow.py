@@ -13,7 +13,7 @@ projected onto an otherwise dimly illuminated white wall.
 
 import numpy as np
 import matplotlib.pyplot as plt
-from astroclr.ciexyz import CMFs, XYZ_from_wavelength
+from astroclr.spectral import CMFs, XYZ_from_wavelength
 from astroclr.colormodels import RGB_Color, IRGB_Color
 from astroclr.RGB_color_spaces import sRGB
 

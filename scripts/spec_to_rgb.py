@@ -8,7 +8,7 @@ import sys
 import numpy as np
 import matplotlib.pyplot as plt
 from astropy import units as u
-from astroclr.ciexyz import Spectrum, RGB_from_wavelength
+from astroclr.spectral import Spectrum, RGB_from_wavelength
 from astroclr.colormodels import ColorList, RGB_Color
 
 if len(sys.argv) == 0:
