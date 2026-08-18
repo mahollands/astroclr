@@ -1,26 +1,22 @@
 # astroclr
 
-Astroclr allows perceived colours of light to be calculated from the physical
-spectra that emit them, and conversions between various colour spaces. This
-allows spectra radiated from (for example) astrophyiscal objects to be
-converted into colours that can be accurately be reproduced on a computer
-display.
+Astroclr allows perceived colours of light sources to be calculated from the
+physical spectra that emit them, and conversions between various colour spaces.
+This allows spectra radiated from (for example) astrophyiscal objects to be
+converted into colours that can be replicated on a computer display.
 
-Astroclr is an almost complete rewrite of the original
-[Colorpy](https://github.com/markkness/ColorPy) by Mark Kness, further
-documentation for the original package can be found
-[here](https://github.com/markkness/ColorPy). Mark Kness' original colorpy has
-been an invaluable resource for me for calculating colours of stars from their
-spectra. The original is exceptionally well documented and referenced, and is
-largely responsible for developing my own interest in colour science. The
-original, however, is no longer actively maintained, is still designed for
-python2 (though only requires a few tweaks to get it working in python3), and
-by modern standards the module interface is far from pythonic.
+Astroclr is an almost complete rewrite of
+[Colorpy](https://github.com/markkness/ColorPy) by Mark Kness, which has been
+an invaluable resource for me for calculating colours of white dwarfs. While
+Colorpy is well documented and referenced (and helped develop my own interest
+in colour science), it is no longer actively maintained, is still designed for
+python2 (can be made to work in python3 with a few tweaks), and by modern
+standards the module interface is far from pythonic.
 
 ## Features
 Astroclr aims to solve several issues with the original:
 * A modern interface with a variety of colour classes and methods to convert
-  between them
+  between them (all supporting numpy arrays for multiple objects or images)
     - XYZ_Color
     - RGB_Color
     - IRGB_Color 
@@ -28,17 +24,19 @@ Astroclr aims to solve several issues with the original:
     - LUV_Color
     - LAB_Color
 * A bespoke Spectrum type with easy conversion to XYZ colours
-    - XYZ integrations are performed trapezoidally, so wavelengths don't need
-      to be uniformly spaced.
-    - Integration with astropy units for calculating luminance/illuminance
+    - XYZ integrations are performed trapezoidally, so wavelengths can have
+      arbitraty spacing.
+    - Works with astropy units for calculating luminance/illuminance
     - Easy generation of black body spectra
-* A class for RGB colour spaces, including RGB and white point chromaticities
-  as well as electro-optical transfer functions.
+* Support for a variety of RGB colour spaces
     - sRGB
     - Rec709
     - Rec2020
     - DCI P3 SDR/HDR
     - and many more
+* Scripts for interesting things an astronomer might want to do
+    - Approximated rainbow plot of monochromtic colours
+    - Interactive simulation of chromatic abberation
 
 ## Installation:
 
@@ -60,22 +58,49 @@ to consider the colour independent of its brightness/intensity/luminance? Then
 we can normalise the $X, Y, Z$ by scaling by their sum: 
 
 ```math
-x = \frac{X}{X+Y+Z} \qquad
-y = \frac{Y}{X+Y+Z} \qquad
-z = \frac{Z}{X+Y+Z}
+x = \frac{X}{X+Y+Z} \qquad y = \frac{Y}{X+Y+Z} \qquad z = \frac{Z}{X+Y+Z}
 ```
 
 Having lost a degree of freedom (the intensity), $x$ and $y$ now uniquely define
-the colour indepedent of brightness. This quantity is called the chromaticity and
-can be represented in the $xy$ plane.
-
+the brightness-indepedent component of colour and is called the chromaticity.
 ![image](https://github.com/mahollands/astroclr/blob/main/images/CIE_xy.png
 "CIE 1931 chromaticity diagram")
+
+The sRGB colour space specifies the chromaticities of the red/green/blue
+primaries (and also the white point), which uniquely define a linear
+transformation between XYZ and sRGB.
+
+```math
+    \left(\begin{array}{c}
+    R \\
+    G \\
+    B \\
+    \end{array}\right) =
+    \left(\begin{array}{rrr}
+     3.2410 & -1.5374 & -0.4986 \\
+    -0.9692 &  1.8760 &  0.0416 \\
+     0.0556 & -0.2040 &  1.0570 \\
+    \end{array}\right) \cdot
+    \left(\begin{array}{c}
+    X \\
+    Y \\
+    Z \\
+    \end{array}\right)
+```
+
+These give linear intensities in the R/G/B channels in the range 0 to 1, where
+(R,G,B)=(1,1,1) represents full white. To convert these to display RGB values
+(IRGB in astroclr), we cannot simply multiply by 255 and round. As the display
+scale is non-linear. We therefore have to apply an opto-electrical transfer
+function. In some colour-spaces this is just a power-law (gamma curve), though
+in sRGB a piecewise function is used that is linear at low-brightness and a
+shifted plus scaled power-law at higher brightness, but closely resembles a
+power-law with exponent 1/2.2.
 
 
 ## Usage
 
-Calculating colours with Colorpy2 has been made as easy as possible. The recipe
+Calculating colours with astroclr has been made as easy as possible. The recipe
 for doing so looks basically like:
 * create a Spectrum object
 * convert to the CIE 1931 XYZ colour space
