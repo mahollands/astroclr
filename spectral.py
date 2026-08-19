@@ -208,17 +208,17 @@ class Spectrum:
         XYZ = self.XYZ_integrals(CMFname=CMFname)
         return XYZ_Color(*XYZ.value)
 
-    def to_RGB(self, **kwargs) -> RGB_Color:
+    def to_RGB(self, CMFname: str = "1931", **kwargs) -> RGB_Color:
         """
         Calculate the RGB color of the spectrum. Units are dropped but
         converted to SI W/m^2 or W/m^2/sr first (depending on the flux units).
         Keyword arguments to be passed to RGB_Color.
         """
-        XYZ = self.to_XYZ()
+        XYZ = self.to_XYZ(CMFname=CMFname)
         RGB = RGB_Color.from_XYZ(XYZ, **kwargs)
         return RGB
 
-    def to_IRGB(self, **kwargs) -> IRGB_Color:
+    def to_IRGB(self, CMFname: str = "1931", **kwargs) -> IRGB_Color:
         """
         Calculate the displayable RGB color (IRGB) of the spectrum. Keyword
         arguments passed to RGB_Color and RGB_Color.to_IRGB.
@@ -226,19 +226,19 @@ class Spectrum:
         irgb_kw = {}
         if "clip_method" in kwargs:
             irgb_kw["clip_method"] = kwargs.pop("clip_method")
-        RGB = self.to_RGB(**kwargs)
+        RGB = self.to_RGB(CMFname=CMFname, **kwargs)
         IRGB = RGB.to_IRGB(**irgb_kw)
         return IRGB
 
-    def to_IRGB_string(self, **kwargs) -> str:
+    def to_IRGB_string(self, CMFname: str = "1931", **kwargs) -> str:
         """
         Calculate the displayable RGB color (IRGB) of the spectrum as a
         hexcode. Keyword arguments passed to RGB_Color, and RGB_Color.to_IRGB.
         """
-        IRGB = self.to_IRGB(**kwargs)
+        IRGB = self.to_IRGB(CMFname=CMFname, **kwargs)
         return IRGB.to_string()
 
-    def to_luminance(self) -> u.Quantity:
+    def to_luminance(self, CMFname: str = "1931") -> u.Quantity:
         """
         If flux units are equivalent to W/m2/sr/nm calculate the luminance in
         cd/m^2 (nits). If flux units are equivalent to W/m2/nm calculate the
@@ -246,7 +246,7 @@ class Spectrum:
         light source) in lm/m^2 (lux), or the luminous exitance (luminous flux
         density radiating from a surface) also in lm/m^2 (lux not used).
         """
-        Y = self.XYZ_integrals()[1]
+        Y = self.XYZ_integrals(CMFname=CMFname)[1]
         # The Candela definition specifies 683 lm/W at 540 THz (vac). However,
         # the 1931 CIE photopic luminous efficiency function peaks at 555 nm
         # (air). The extra 0.002 lm/W corrects for the wavelength mismatch.
@@ -256,15 +256,15 @@ class Spectrum:
             return L.to(u.lm / u.m**2)
         return L.to(u.cd / u.m**2)
 
-    def visual_magnitude(self) -> u.Quantity:
+    def visual_magnitude(self, CMFname: str = "1931") -> u.Quantity:
         """
         Calculates the visual magnitude of a spectrum relative to Vega
         """
         if not self.flux.unit.is_equivalent(unit_spec_irradiance):
             raise ValueError("Flux should be in terms of spectral irradiance")
         Vega = Spectrum.load_Vega()
-        L_Vega = Vega.to_luminance()  # illuminances
-        L_self = self.to_luminance()
+        L_Vega = Vega.to_luminance(CMFname=CMFname)  # illuminances
+        L_self = self.to_luminance(CMFname=CMFname)
         return -2.5 * np.log10(L_self / L_Vega) * u.mag
 
 
