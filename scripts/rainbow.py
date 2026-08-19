@@ -20,9 +20,10 @@ from astroclr.RGB_color_spaces import sRGB
 
 WRITE = False
 CSPACE = sRGB
+CMF = "1931"
 
-wavelengths = CMFs["1931"].wavelength.value
-XYZs = XYZ_from_wavelength(wavelengths, CMFname='1931')
+wavelengths = CMFs[CMF].wavelength.value
+XYZs = XYZ_from_wavelength(wavelengths, CMFname=CMF)
 RGBs = RGB_Color.from_XYZ(XYZs, color_space=CSPACE)
 
 RGBs.values -= RGBs.values.min()
