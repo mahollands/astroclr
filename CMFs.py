@@ -9,6 +9,14 @@ DATA_DIR = f"{os.path.dirname(__file__)}/data"
 
 CIE_CMF = namedtuple("CIE_CMF", "wavelength xyz_table interp")
 
+# The Stockman & Sharp (2000) data come from LMS cone fundametals and are
+# transformed to XYZ using the following matrix. The CIE data have already been
+# transformed, but this matrix can be used to recover the original LMS curves.
+LMS_XYZ_MATRIX_2000 = np.array([
+    [1.94735469, -1.41445123, 0.36476327],
+    [0.68990272,  0.34832189, 0         ],
+    [0         ,  0         , 1.93485343],
+])
 
 def load_CMF(fname: str) -> CIE_CMF:
     CIEXYZ_table = np.loadtxt(
@@ -37,6 +45,8 @@ CMFs = {
     "1931J": load_CMF("ciexyzj.csv"),
     "1931JV": load_CMF("ciexyzjv.csv"),
     "1964_10deg": load_CMF("CIE_xyz_1964_10deg.csv"),
+    "2000_2deg": load_CMF("CIE_cfb_stv_2deg.csv"),
+    "2000_10deg": load_CMF("CIE_cfb_stv_10deg.csv"),
 }
 
 
