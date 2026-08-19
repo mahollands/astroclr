@@ -25,7 +25,7 @@ XYZ_Color(0.5120501, 1.0, 0.005749999)
 import functools
 import numpy as np
 from scipy.interpolate import interp1d
-from scipy.integrate import simpson as integrate
+from scipy.integrate import trapezoid as integrate
 from astropy import units as u
 from astropy.modeling.physical_models import BlackBody
 from astropy.io import fits
