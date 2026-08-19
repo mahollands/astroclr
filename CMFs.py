@@ -45,8 +45,8 @@ CMFs = {
     "1931J": load_CMF("ciexyzj.csv"),
     "1931JV": load_CMF("ciexyzjv.csv"),
     "1964_10deg": load_CMF("CIE_xyz_1964_10deg.csv"),
-    "2000_2deg": load_CMF("CIE_cfb_stv_2deg.csv"),
-    "2000_10deg": load_CMF("CIE_cfb_stv_10deg.csv"),
+    "2015_2deg": load_CMF("CIE_cfb_stv_2deg.csv"),
+    "2015_10deg": load_CMF("CIE_cfb_stv_10deg.csv"),
 }
 
 
