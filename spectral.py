@@ -42,6 +42,30 @@ __all__ = [
 unit_spec_radiance = u.W / u.m**2 / u.sr / u.nm
 unit_spec_irradiance = u.W / u.m**2 / u.nm
 valid_flux_units = unit_spec_radiance, unit_spec_irradiance
+K_cd = 683 * u.lm/u.W #luminous efficacy constant defined at 540THz
+
+
+def XYZ_from_wavelength(
+    wavelength: None | int | float | np.ndarray | u.Quantity = None,
+    CMFname: str = "1931",
+) -> XYZ_Color:
+    """
+    Given a wavelength (in nm if no units supplied), return the corresponding
+    XYZ_Color, for unit intensity. Wavelengths can be given as arrays (or
+    Quantity arrays) returning an array. If no wavelength is given, the CMF
+    wavelength table is used, giving an XYZ_Color array for all wavelengths.
+    """
+    CMF = CMFs[CMFname]
+    if wavelength is None:
+        wavelength = CMF.wavelength
+    elif isinstance(wavelength, u.Quantity):
+        wavelength = wavelength.to(u.nm)
+    else:
+        wavelength <<= u.nm
+    xyz = CMF.interp(wavelength)
+    if wavelength.isscalar:
+        return XYZ_Color(*xyz)
+    return XYZ_Color(*xyz)
 
 
 @functools.cache
@@ -246,11 +270,14 @@ class Spectrum:
         light source) in lm/m^2 (lux), or the luminous exitance (luminous flux
         density radiating from a surface) also in lm/m^2 (lux not used).
         """
+        # The candela definition specifies a luminous efficacy of 683 lm/W at
+        # 540 THz, with a corresponding air wavelength of 555.0171 nm. However,
+        # the CIE 1931 photopic luminous efficiency function peaks at 555 nm.
+        # This gives a peak luminous efficacy of about 683.002 lm/W.
+        correct_540THz = XYZ_from_wavelength(555.0171*u.nm, CMFname=CMFname).Y
+
         Y = self.XYZ_integrals(CMFname=CMFname)[1]
-        # The Candela definition specifies 683 lm/W at 540 THz (vac). However,
-        # the 1931 CIE photopic luminous efficiency function peaks at 555 nm
-        # (air). The extra 0.002 lm/W corrects for the wavelength mismatch.
-        L = 683.002 * u.lm / u.W * Y
+        L = K_cd / correct_540THz * Y
 
         if self.flux.unit.is_equivalent(unit_spec_irradiance):
             return L.to(u.lm / u.m**2)
@@ -266,25 +293,3 @@ class Spectrum:
         L_Vega = Vega.to_luminance(CMFname=CMFname)  # illuminances
         L_self = self.to_luminance(CMFname=CMFname)
         return -2.5 * np.log10(L_self / L_Vega) * u.mag
-
-
-def XYZ_from_wavelength(
-    wavelength: None | int | float | np.ndarray | u.Quantity = None,
-    CMFname: str = "1931",
-) -> XYZ_Color:
-    """
-    Given a wavelength (nm), return the corresponding XYZ_Color, for unit
-    intensity. Wavelengths can be given as arrays returning an array. with or without.
-    If no wavelength is given, the CMF wavelength table is used.
-    """
-    CMF = CMFs[CMFname]
-    if wavelength is None:
-        wavelength = CMF.wavelength
-    elif isinstance(wavelength, u.Quantity):
-        wavelength = wavelength.to(u.nm)
-    else:
-        wavelength <<= u.nm
-    xyz = CMF.interp(wavelength)
-    if wavelength.isscalar:
-        return XYZ_Color(*xyz)
-    return XYZ_Color(*xyz)
