@@ -221,7 +221,7 @@ class Spectrum:
         iflux = self.interp_flux(iwavelength) * funit
         iwavelength, iflux = iwavelength.to(u.nm), iflux.to(self._y_unit_option)
         integrand = iflux[np.newaxis, :] * CMF.interp(iwavelength)
-        I_XYZ = integrate(integrand, iwavelength, axis=1) * iflux.unit * u.nm
+        I_XYZ = integrate(integrand, iwavelength, axis=1)
         return I_XYZ
 
     def to_XYZ(self, CMFname: str = "1931") -> XYZ_Color:
