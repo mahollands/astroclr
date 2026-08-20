@@ -8,6 +8,7 @@ from astropy.constants import sigma_sb
 from astroclr import Spectrum
 
 T_sun = 5900 * u.K
+K_cd_max = 683.002 * u.lm/u.W
 S = Spectrum.BlackBody(T_sun)
 
 # Light radiated over 2pi sr, with constant instensity as a function
@@ -22,13 +23,17 @@ print("Luminous quantities at the Sun's surface/independent of distance:")
 luminance = S.to_luminance()
 exitance = luminance * solid_angle_factor
 luminous_flux = exitance * solar_surface_area
+luminous_intensity = luminous_flux / (4*np.pi * u.sr)
 power_density = sigma_sb * T_sun**4
 luminous_efficacy = exitance / power_density
+luminous_efficiency = luminous_efficacy / K_cd_max
 
 print("Solar luminance:", luminance)
 print("Solar exitance:", exitance.to(u.lm/u.m**2))
 print("Solar luminous flux:", luminous_flux.to(u.lm))
+print("Solar luminous intensity:", luminous_intensity.to(u.cd))
 print("Solar luminous efficacy:", luminous_efficacy.to(u.lm/u.W))
+print("Solar luminous efficiency:", luminous_efficiency.to(u.percent))
 
 
 ################################################################################
