@@ -5,7 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from astropy import units as u
 from astropy.constants import sigma_sb
-from astroclr import Spectrum
+from astroclr import Spectrum, CCT
 
 T_sun = 5900 * u.K
 K_cd_max = 683.002 * u.lm/u.W
@@ -19,7 +19,18 @@ solid_angle_factor = 0.5 * 2*np.pi * u.sr
 solar_surface_area = 4*np.pi*u.Rsun**2
 
 ################################################################################
-print("Luminous quantities at the Sun's surface/independent of distance:")
+print("Chromatic quantities of the Sun:")
+XYZ = S.to_XYZ()
+rgb_string = S.to_IRGB_string()
+colour_temp = CCT(XYZ) #We're using a black body, so we better get 5900 K again
+
+print("Solar chromaticity:", XYZ.normalize())
+print("Solar RGB hex:", rgb_string)
+print("Solar colour temperature:", colour_temp)
+
+
+################################################################################
+print("\nLuminous quantities at the Sun's surface/independent of distance:")
 luminance = S.to_luminance()
 exitance = luminance * solid_angle_factor
 luminous_flux = exitance * solar_surface_area
