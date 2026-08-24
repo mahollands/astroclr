@@ -277,6 +277,12 @@ class RGB_Color(LinearColor):
 
 
 class IRGB_Color(LinearColor):
+    """
+    Color class for display RGB values. These have the same primaries and white
+    point as RGB_Color, but the values are on a non-linear scale (passed through
+    a transfer function and quantised (typically 0--255).
+    """
+
     def __init__(self, R, G, B, color_space=sRGB):
         if not isinstance(color_space, RGB_ColorSpace):
             raise TypeError("color_space should be an RGB_ColorSpace")
@@ -307,7 +313,7 @@ class IRGB_Color(LinearColor):
     @classmethod
     def from_hex_string(cls, irgb_string, colorspace=sRGB):
         """
-        Create a IRGB value (range 0 - 255) from a corresponding hex_string
+        Create a IRGB value (typical range 0 - 255) from a corresponding hex_string
         """
         if not isinstance(irgb_string, str):
             raise TypeError
@@ -319,8 +325,8 @@ class IRGB_Color(LinearColor):
 
     def to_RGB(self, to_luminance=False):
         """
-        Convert a displayable (gamma corrected) IRGB value (range 0 - 255)
-        into a linear rgb value (range 0.0 - 1.0).
+        Convert a displayable (gamma corrected) IRGB value (typical range
+        0--255) into a linear rgb value (range 0.0--1.0).
         """
         max_val = 2**self.color_space.bit_depth
         rgb = [self.color_space.EOTF(val / max_val) for val in self.values]
