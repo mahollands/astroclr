@@ -323,6 +323,24 @@ class IRGB_Color(LinearColor):
         ir, ig, ib = [int(part, 16) for part in parts]
         return cls(ir, ig, ib, colorspace)
 
+    @classmethod
+    def from_numpy_image(cls, img, colorspace=sRGB):
+        """
+        Create an IRGB_Color object from a numpy image. For an image with
+        spatial dimensions NxM, img should have shape NxMx3, with data values
+        in the range usually in the range 0--255 for 8-bit per channel data.
+        """
+        if not isinstance(img, np.ndarray):
+            raise TypeError("img should be a numpy array")
+        if img.ndim != 3 or img.shape[2] != 3:
+            raise ValueError("img should be have dimensions NxMx3")
+        if not np.issubdtype(img.dtype, np.integer):
+            raise ValueError("img should be integer type")
+        if not np.all((x >= 0) & (x < 2**self.colorspace.bit_depth)):
+            raise ValueError("img values should be in the range 0--255")
+        R, G, B = np.moveaxis(img, 2, 0)
+        return cls(R, G, B, colorspace)
+
     def to_RGB(self, to_luminance=False):
         """
         Convert a displayable (gamma corrected) IRGB value (typical range
