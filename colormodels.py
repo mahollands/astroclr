@@ -219,7 +219,7 @@ class RGB_Color(LinearColor):
         channel is at 1.0.
         """
         transform_matrix = color_space.rgb_from_xyz_matrix
-        rgb = np.einsum('ij,j...->i...', transform_matrix, XYZ.values)
+        rgb = np.einsum("ij,j...->i...", transform_matrix, XYZ.values)
         RGB = cls(*rgb, color_space=color_space)
         if brightest:
             RGB = RGB.normalize_brightest()
@@ -228,7 +228,7 @@ class RGB_Color(LinearColor):
     def to_XYZ(self):
         """Convert an rgb color to xyz."""
         transform_matrix = self.color_space.xyz_from_rgb_matrix
-        xyz = np.einsum('ij,j...->i...', transform_matrix, self.values)
+        xyz = np.einsum("ij,j...->i...", transform_matrix, self.values)
         return XYZ_Color(*xyz)
 
     def clip_to_gamut(self, clip_method=ClipMethod.ADD_WHITE):
