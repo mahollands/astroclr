@@ -39,8 +39,8 @@ power_density = sigma_sb * T_sun**4
 luminous_efficacy = exitance / power_density
 luminous_efficiency = luminous_efficacy / K_cd_max
 
-print(f"Solar luminance: {luminance.to(u.Gcd/u.m**2):.2f}")
-print(f"Solar exitance: {exitance.to(u.Glm/u.m**2):.2f}")
+print(f"Solar luminance: {luminance.to(u.cd/u.m**2):.3e}")
+print(f"Solar exitance: {exitance.to(u.lm/u.m**2):.3e}")
 print(f"Solar luminous flux: {luminous_flux.to(u.lm):.2e}")
 print(f"Solar luminous intensity: {luminous_intensity.to(u.cd):.2e}")
 print(f"Solar luminous efficacy: {luminous_efficacy.to(u.lm/u.W):.1f}")
