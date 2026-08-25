@@ -23,6 +23,7 @@ class Color:
     """
 
     __slots__ = ["_values"]
+    channels = ["_1", "_2", "_3"]
 
     def __init__(self, _1, _2, _3, dtype):
         self.values = _1, _2, _3
@@ -43,10 +44,11 @@ class Color:
         return cls(*values)
 
     def __repr__(self):
-        return "{}({}, {}, {})".format(self.__class__.__name__, *self.values)
+        values_formatted = (f"{c}={v}" for c, v in zip(self.channels, self.values))
+        return "{}({}, {}, {})".format(self.__class__.__name__, *values_formatted)
 
     def __format__(self, format_spec):
-        values_formatted = (format(v, format_spec) for v in self.values)
+        values_formatted = (f"{c}={format(v, format_spec)}" for c, v in zip(self.channels, self.values))
         return "{}({}, {}, {})".format(self.__class__.__name__, *values_formatted)
 
     def __rmul__(self, other):
@@ -185,6 +187,8 @@ class XYZ_Color(LinearColor):
     defined. This typically refers to the 1931 XYZ space though is flexible
     enough to accommodate more recent XYZ models.
     """
+    channels = "XYZ"
+
     def __init__(self, x, y, z=None):
         if z is None:
             z = 1 - x - y
@@ -195,6 +199,8 @@ class XYZ_Color(LinearColor):
         if np.isclose(self.values.sum(), 1):
             parts = rpr.split(", ")
             rpr = ", ".join(parts[:2]) + ")"
+            rpr = rpr.replace('X=', 'x=')
+            rpr = rpr.replace('Y=', 'y=')
         return rpr
 
     def __format__(self, format_spec):
@@ -202,6 +208,8 @@ class XYZ_Color(LinearColor):
         if np.isclose(self.values.sum(), 1):
             parts = fmt.split(", ")
             fmt = ", ".join(parts[:2]) + ")"
+            fmt = fmt.replace('X=', 'x=')
+            fmt = fmt.replace('Y=', 'y=')
         return fmt
 
     X = property(fget=LinearColor._1.fget, fset=LinearColor._1.fset)

@@ -182,6 +182,8 @@ def L_luminance_inverse(L: float) -> float:
 
 
 class RGB_Color(LinearColor):
+    channels = "RGB"
+
     def __init__(self, R, G, B, color_space=sRGB):
         super().__init__(R, G, B)
         if not isinstance(color_space, RGB_ColorSpace):
@@ -282,6 +284,7 @@ class IRGB_Color(LinearColor):
     point as RGB_Color, but the values are on a non-linear scale (passed through
     a transfer function and quantised (typically 0--255).
     """
+    channels = "RGB"
 
     def __init__(self, R, G, B, color_space=sRGB):
         if not isinstance(color_space, RGB_ColorSpace):
@@ -336,7 +339,7 @@ class IRGB_Color(LinearColor):
             raise ValueError("img should be have dimensions NxMx3")
         if not np.issubdtype(img.dtype, np.integer):
             raise ValueError("img should be integer type")
-        if not np.all((x >= 0) & (x < 2**self.colorspace.bit_depth)):
+        if not np.all((img >= 0) & (img < 2**colorspace.bit_depth)):
             raise ValueError("img values should be in the range 0--255")
         R, G, B = np.moveaxis(img, 2, 0)
         return cls(R, G, B, colorspace)
@@ -367,6 +370,8 @@ class IRGB_Color(LinearColor):
 
 
 class LUV_Color(Lpq_Color):
+    channels="Luv"
+
     def __init__(self, L, u, v, white_point=sRGB.W):
         super().__init__(L, u, v, white_point)
 
@@ -428,6 +433,8 @@ class LUV_Color(Lpq_Color):
 
 
 class LAB_Color(Lpq_Color):
+    channels="Lab"
+    
     def __init__(self, L, a, b, white_point=sRGB.W):
         super().__init__(L, a, b, white_point)
 
@@ -465,6 +472,7 @@ class UCS_Color(LinearColor):
     """
     UCS 1960 Color space with components UVW.
     """
+    channels="UVW"
 
     def __init__(self, u, v, w=None):
         if w is None:
@@ -478,7 +486,18 @@ class UCS_Color(LinearColor):
         if np.isclose(self.values.sum(), 1):
             parts = rpr.split(", ")
             rpr = ", ".join(parts[:2]) + ")"
+            rpr = rpr.replace("U=", "u=")
+            rpr = rpr.replace("V=", "v=")
         return rpr
+
+    def __format__(self, format_spec):
+        fmt = super().__format__(format_spec)
+        if np.isclose(self.values.sum(), 1):
+            parts = fmt.split(", ")
+            fmt = ", ".join(parts[:2]) + ")"
+            fmt = fmt.replace('U=', 'u=')
+            fmt = fmt.replace('V=', 'v=')
+        return fmt
 
     U = property(fget=LinearColor._1.fget, fset=LinearColor._1.fset)
     V = property(fget=LinearColor._2.fget, fset=LinearColor._2.fset)
