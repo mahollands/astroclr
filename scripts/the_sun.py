@@ -24,9 +24,9 @@ XYZ = S.to_XYZ()
 rgb_string = S.to_IRGB_string()
 colour_temp = CCT(XYZ) #We're using a black body, so we better get 5900 K again
 
-print("Solar chromaticity:", XYZ.normalize())
-print("Solar RGB hex:", rgb_string)
-print("Solar colour temperature:", colour_temp)
+print(f"Solar chromaticity: {XYZ.normalize():.3f}")
+print(f"Solar RGB hex: {rgb_string}")
+print(f"Solar colour temperature: {colour_temp:.0f}")
 
 
 ################################################################################
@@ -39,12 +39,12 @@ power_density = sigma_sb * T_sun**4
 luminous_efficacy = exitance / power_density
 luminous_efficiency = luminous_efficacy / K_cd_max
 
-print("Solar luminance:", luminance)
-print("Solar exitance:", exitance.to(u.lm/u.m**2))
-print("Solar luminous flux:", luminous_flux.to(u.lm))
-print("Solar luminous intensity:", luminous_intensity.to(u.cd))
-print("Solar luminous efficacy:", luminous_efficacy.to(u.lm/u.W))
-print("Solar luminous efficiency:", luminous_efficiency.to(u.percent))
+print(f"Solar luminance: {luminance.to(u.Gcd/u.m**2):.2f}")
+print(f"Solar exitance: {exitance.to(u.Glm/u.m**2):.2f}")
+print(f"Solar luminous flux: {luminous_flux.to(u.lm):.2e}")
+print(f"Solar luminous intensity: {luminous_intensity.to(u.cd):.2e}")
+print(f"Solar luminous efficacy: {luminous_efficacy.to(u.lm/u.W):.1f}")
+print(f"Solar luminous efficiency: {luminous_efficiency.to(u.percent):.1f}")
 
 
 ################################################################################
@@ -56,8 +56,8 @@ S.flux *= np.pi * u.sr * (u.Rsun/D)**2
 # directional dependence (no steradian**-1).
 illuminance = S.to_luminance() 
 
-print("Solar exitance:", illuminance.to(u.lux))
-print("Solar visual magnitude:", S.visual_magnitude())
+print(f"Solar exitance: {illuminance.to(u.lux):.2e}")
+print(f"Solar visual magnitude: {S.visual_magnitude():.2f}")
 
 
 ################################################################################
@@ -66,5 +66,5 @@ D = 10* u.pc
 S.flux *= (u.au/D)**2
 illuminance = S.to_luminance()
 
-print("Solar exitance:", illuminance.to(u.lux))
-print("Solar visual magnitude:", S.visual_magnitude())
+print(f"Solar exitance: {illuminance.to(u.lux):.2e}")
+print(f"Solar visual magnitude: {S.visual_magnitude():.2f}")
