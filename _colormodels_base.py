@@ -45,6 +45,10 @@ class Color:
     def __repr__(self):
         return "{}({}, {}, {})".format(self.__class__.__name__, *self.values)
 
+    def __format__(self, format_spec):
+        values_formatted = (format(v, format_spec) for v in self.values)
+        return "{}({}, {}, {})".format(self.__class__.__name__, *values_formatted)
+
     def __rmul__(self, other):
         return self * other
 
@@ -192,6 +196,13 @@ class XYZ_Color(LinearColor):
             parts = rpr.split(", ")
             rpr = ", ".join(parts[:2]) + ")"
         return rpr
+
+    def __format__(self, format_spec):
+        fmt = super().__format__(format_spec)
+        if np.isclose(self.values.sum(), 1):
+            parts = fmt.split(", ")
+            fmt = ", ".join(parts[:2]) + ")"
+        return fmt
 
     X = property(fget=LinearColor._1.fget, fset=LinearColor._1.fset)
     Y = property(fget=LinearColor._2.fget, fset=LinearColor._2.fset)
