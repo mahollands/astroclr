@@ -239,13 +239,13 @@ class RGB_Color(LinearColor):
         the white point, or clamp any negative channels to zero. Both methods
         move the colour to the edge of the RGB gamut.
         """
-        rgb = self.values
+        if np.all((rgb := self.values) >= 0):
+            return self
         if clip_method == ClipMethod.ADD_WHITE:
             rgb_min = np.clip(rgb.min(axis=0), -np.inf, 0.0)
             rgb_max = rgb.max(axis=0)
-            scaling = np.where(rgb_max > 0, rgb_max / (rgb_max - rgb_min), 1.0)
-            # add enough white to cancel this out, maintaining the maximum of rgb
-            rgb = np.where(rgb_min < 0.0, scaling * (rgb - rgb_min), rgb)
+            rgb -= rgb_min
+            rgb *= rgb_max / rgb.max(axis=0)
         elif clip_method == ClipMethod.CLAMP:
             rgb = np.clip(rgb, 0, np.inf)
         else:
@@ -254,35 +254,21 @@ class RGB_Color(LinearColor):
 
     def to_IRGB(self, clip_method=ClipMethod.ADD_WHITE):
         """
-        Convert a (linear) rgb value (range 0.0 - 1.0) into a 0-255
-        displayable integer irgb value (range 0 - 255), clipping as
-        necessary
+        Convert a (linear) rgb value (range 0.0--1.0) into a displayable
+        integer irgb value (0--255 for bit depth of 8), clipping as necessary.
         """
         rgb = self.clip_to_gamut(clip_method).values
-        # clip intensity if needed (rgb values > 1.0) by scaling
-        rgb_max = rgb.max(axis=0)
-        # we actually don't overflow until 255.0 * intensity > 255.5, so
-        # instead of 1.0 use ...
-        intensity_cutoff = 1.0 + (0.5 / 255.0)
-        # must scale intensity, so max value is intensity_cutoff
-        scaling = np.where(rgb_max > intensity_cutoff, intensity_cutoff / rgb_max, 1.0)
-        rgb *= scaling
-
-        # apply inverse EOTF
-        irgb_unit = [self.color_space.EOTF.inv(rgb[i]) for i in range(3)]
-
-        # scale to 0--255
-        irgb = np.round(255 * np.array(irgb_unit))
-        # ensure that values are in the range 0--255
-        ir, ig, ib = np.clip(irgb, 0, 255).astype(int)
-        return IRGB_Color(ir, ig, ib, self.color_space)
+        rgb = np.clip(rgb, 0, 1)
+        irgb_unit = self.color_space.EOTF.inv(rgb)
+        irgb = np.round(self.color_space.max_int * irgb_unit).astype(int)
+        return IRGB_Color(*irgb, self.color_space)
 
 
 class IRGB_Color(LinearColor):
     """
     Color class for display RGB values. These have the same primaries and white
     point as RGB_Color, but the values are on a non-linear scale (passed through
-    a transfer function and quantised (typically 0--255).
+    a transfer function and quantised (typically 0--255 for a bit depth of 8).
     """
     channels = "RGB"
 
@@ -349,8 +335,7 @@ class IRGB_Color(LinearColor):
         Convert a displayable (gamma corrected) IRGB value (typical range
         0--255) into a linear rgb value (range 0.0--1.0).
         """
-        max_val = 2**self.color_space.bit_depth
-        rgb = [self.color_space.EOTF(val / max_val) for val in self.values]
+        rgb = self.color_space.EOTF(self.values / self.color_space.max_int)
         RGB = RGB_Color(*rgb, color_space=self.color_space)
 
         if to_luminance:

@@ -81,6 +81,13 @@ class RGB_ColorSpace:
         """
         rgb = self.rgb_from_xyz_matrix @ XYZ.values
         return np.all(rgb >= 0)
+    
+    @functools.cached_property
+    def max_int(self):
+        """
+        The maximium integer for a given bit depth
+        """
+        return 2**self.bit_depth - 1
 
 
 # https://www.color.org/chardata/rgb/srgb.xalter
