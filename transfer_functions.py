@@ -12,7 +12,6 @@ proportional to the amount of light energy present.
 """
 
 import numpy as np
-import numba
 from functools import partial
 
 
@@ -41,21 +40,19 @@ def sRGB_EOTF():
     https://www.color.org/chardata/rgb/srgb.xalter
     """
 
-    @numba.vectorize
     def EOTF(x):
         # break_point = 0.03928 #old value
         break_point = 0.04045
         linear = x / 12.92
         gamma = ((x + 0.055) / 1.055) ** 2.4
-        return linear if x <= break_point else gamma
+        return np.where(x <= break_point, linear, gamma)
 
-    @numba.vectorize
     def OETF(x):
         # break_point = 0.00304 #old value
         break_point = 0.0031308
         linear = 12.92 * x
         gamma = 1.055 * x ** (1 / 2.4) - 0.055
-        return linear if x <= break_point else gamma
+        return np.where(x <= break_point, linear, gamma)
 
     EOTF.inv = OETF
     return EOTF
@@ -93,10 +90,6 @@ def PQ_EOTF():
     luminance.
     https://www.color.org/chardata/rgb/BT2100.xalter
     """
-    ms = 1305 / 8192, 2523 / 32
-    cs = 107 / 128, 2413 / 128, 2392 / 128
-
-    @numba.vectorize
     def EOTF(x, ms, cs):
         (m1, m2), (c1, c2, c3) = ms, cs
         Em2 = x ** (1 / m2)
@@ -104,13 +97,15 @@ def PQ_EOTF():
         denominator = c2 - c3 * Em2
         return (numerator / denominator) ** (1 / m1)
 
-    @numba.vectorize
     def OETF(x, ms, cs):
         (m1, m2), (c1, c2, c3) = ms, cs
         Ym1 = x**m1
         numerator = c1 + c2 * Ym1
         denominator = 1 + c3 * Ym1
         return (numerator / denominator) ** m2
+
+    ms = 1305 / 8192, 2523 / 32
+    cs = 107 / 128, 2413 / 128, 2392 / 128
 
     EOTF = partial(EOTF, ms=ms, cs=cs)
     EOTF.inv = partial(OETF, ms=ms, cs=cs)
