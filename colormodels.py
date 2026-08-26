@@ -248,20 +248,26 @@ class IRGB_Color(LinearColor):
     G = property(fget=LinearColor._2.fget, fset=LinearColor._2.fset)
     B = property(fget=LinearColor._3.fget, fset=LinearColor._3.fset)
 
+
+    @staticmethod
+    def _to_hex(R, G, B, fs):
+        hex_vals = [format(v, fs) for v in (R, G, B)]
+        return "#{}{}{}".format(*hex_vals)
+
     def to_string(self):
         """
-        Convert a displayable irgb color into a hex string.
+        Convert a displayable irgb color into a hex string. Will also work for
+        arrays of colours.
         """
-        if self.color_space.bit_depth <= 4:
-            return f"#{self.R:01X}{self.G:01X}{self.B:01X}"
-        elif self.color_space.bit_depth <= 8:
-            return f"#{self.R:02X}{self.G:02X}{self.B:02X}"
-        elif self.color_space.bit_depth <= 12:
-            return f"#{self.R:03X}{self.G:03X}{self.B:03X}"
-        elif self.color_space.bit_depth <= 16:
-            return f"#{self.R:04X}{self.G:04X}{self.B:04X}"
-        else:
-            raise ValueError("Bit depths above 16 are not supported")
+        n_hex = (self.color_space.bit_depth + 3) // 4
+        fs = f"{n_hex:02}X"
+        values = self.values
+
+        if values.ndim == 1:
+            return self._to_hex(*values, fs)
+            
+        f = np.vectorize(self._to_hex)
+        return f(*self.values, fs)
 
     @classmethod
     def from_hex_string(cls, irgb_string, colorspace=sRGB):
