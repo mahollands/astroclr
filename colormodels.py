@@ -3,11 +3,11 @@ colormodels.py - Conversions between color models
 
 Defines several color models, and conversions between them. The models are:
 
-xyz - CIE XYZ color space, based on the 1931 matching functions for a 2 degree
+XYZ - CIE XYZ color space, based on the 1931 matching functions for a 2 degree
 field of view. Spectra are converted to xyz color values by integrating with
 the matching functions in ciexyz.py.
 
-xyz colors are often handled as absolute values, conventionally written
+XYZ colors are often handled as absolute values, conventionally written
 with uppercase letters XYZ, or as scaled values (so that X+Y+Z = 1.0),
 conventionally written with lowercase letters xyz.
 
@@ -35,10 +35,10 @@ XYZ_Color(x, y, z = None) -
     Construct an xyz color.  If z is omitted, set it so that x+y+z = 1.0.
 
 RGB_Color(r, g, b, color_space=sRGB) -
-    Construct a linear rgb color from components.
+    Construct a linear RGB color from components.
 
 IRGB_Color(ir, ig, ib, color_space=sRGB) -
-    Construct a displayable integer irgb color from components.
+    Construct a displayable "intensity" RGB color from components.
 
 LUV_Color(L, u, v, white_point=sRGB.W) -
     Construct a Luv color from components.
@@ -48,7 +48,7 @@ LAB_Color(L, a, b, white_point=sRGB.W) -
 
 
 By design, the XYZ color space is ignorant of the other spaces. However, the
-others, such as RGB, know about XYZ. So conversions from XYZ are of the form:
+others (e.g. RGB), know about XYZ. So conversions from XYZ are of the form:
 >>> RGB = RGB_Color.from_XYZ(XYZ)
 
 But conversions back are of the simpler form
@@ -59,42 +59,6 @@ terms of XYZ colors. While sRGB is used by default, this allows flexibility in
 working in other RGB color spaces, or with other white points. If we were using
 a different color space, we would instead do something like
 >>> RGB = RGB_Color.from_XYZ(XYZ, color_space=Rec2020)
-
-Color Spaces:
-
-sRGB - Chromaticity values for sRGB standard display monitors.
-HDTV - Same as sRGB
-SMPTE
-NSTC
-FoleyShort
-FoleyLong
-Judd
-
-
-References:
-
-Foley, van Dam, Feiner and Hughes. Computer Graphics: Principles and Practice, 2nd edition,
-    Addison Wesley Systems Programming Series, 1990. ISBN 0-201-12110-7.
-
-Roy Hall, Illumination and Color in Computer Generated Imagery. Monographs in Visual Communication,
-    Springer-Verlag, New York, 1989. ISBN 0-387-96774-5.
-
-Wyszecki and Stiles, Color Science: Concepts and Methods, Quantitative Data and Formulae, 2nd edition,
-    John Wiley, 1982. Wiley Classics Library Edition 2000. ISBN 0-471-39918-3.
-
-Judd and Wyszecki, Color in Business, Science and Industry, 1975.
-
-Kasson and Plouffe, An Analysis of Selected Computer Interchange Color Spaces,
-    ACM Transactions on Graphics, Vol. 11, No. 4, October 1992.
-
-Charles Poynton - Frequently asked questions about Gamma and Color,
-    posted to comp.graphics.algorithms, 25 Jan 1995.
-
-sRGB - http://www.color.org/sRGB.xalter - (accessed 15 Sep 2008)
-    A Standard Default Color Space for the Internet: sRGB,
-    Michael Stokes (Hewlett-Packard), Matthew Anderson (Microsoft), Srinivasan Chandrasekar (Microsoft),
-    Ricardo Motta (Hewlett-Packard), Version 1.10, November 5, 1996.
-
 """
 
 from enum import StrEnum
