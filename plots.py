@@ -85,7 +85,7 @@ def spectrum_subplot(S):
     plt.plot(S.wavelength, S.flux, color="k", linewidth=2.0)
 
 
-def spectrum_plot(S, title, xlabel="Wavelength($nm$)", ylabel="Intensity ($W/m^2$)"):
+def spectrum_plot(S, title, xlabel="Wavelength [nm]", ylabel="Intensity [W/m$^2$]"):
     """
     Plot for a single spectrum -
     In a two part graph, plot:
@@ -107,8 +107,8 @@ def spectrum_plot(S, title, xlabel="Wavelength($nm$)", ylabel="Intensity ($W/m^2
     plt.subplot(2, 1, 1)
     plt.title(title)
     color_string = S.to_IRGB().to_string()
-    poly_x = [0.0, 1.0, 1.0, 0.0]
-    poly_y = [0.0, 0.0, 1.0, 1.0]
+    poly_x = [0.0, 1.0, 1.0, 0.0, 0.0]
+    poly_y = [0.0, 0.0, 1.0, 1.0, 0.0]
     plt.fill(poly_x, poly_y, color_string)
     # draw a solid line around the patch to look nicer
     plt.plot(poly_x, poly_y, color="k", linewidth=2.0)
