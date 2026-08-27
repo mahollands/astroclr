@@ -1,9 +1,40 @@
+"""
+Data for colour matching functions, used to convert spectra to XYZ colour
+spaces. These are stored in a dictionary called CMFs.
+
+Available CMFs:
+    "1931" - The standard CIE 1931 CMFs (2 degree observer). This is the
+             default set of CMFs used unless otherwise specified. 
+
+    "1931J" - CIE 1931 CMFs with Judd correction.
+
+    "1931JV" - CIE 1931 CMFs with Judd-Vos correction.
+
+    "1964_10deg" - CIE 1964 CMFs (10 degree observer)
+
+    "2015_2deg" - CIE 2015 CMFs (2 degree observer).
+                  These use the Stockman & Sharp (2000) data.
+
+    "2015_10deg" - CIE 2015 CMFs (10 degree observer).
+
+LMS_XYZ_MATRIX_2000 -
+    The Stockman & Sharp (2000) data are specified in terms of cone fundamentals
+    (long/medium/short), and have been transformed into their CMF form. This
+    matrix can be used to convert the CMFs back to LMS form, or transform
+    sets of XYZ values to LMS values.
+"""
+
 import os.path
 from collections import namedtuple
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.interpolate import interp1d
 from astropy import units as u
+
+__all__ =   [
+    "CMFs",
+    "LMS_XYZ_MATRIX_2000",
+]
 
 DATA_DIR = f"{os.path.dirname(__file__)}/data"
 
