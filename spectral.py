@@ -39,9 +39,9 @@ __all__ = [
     "XYZ_from_wavelength",
 ]
 
-unit_spec_radiance = u.W / u.m**2 / u.sr / u.nm
-unit_spec_irradiance = u.W / u.m**2 / u.nm
-valid_flux_units = unit_spec_radiance, unit_spec_irradiance
+UNIT_SPEC_RADIANCE = u.W / u.m**2 / u.sr / u.nm
+UNIT_SPEC_IRRADIANCE = u.W / u.m**2 / u.nm
+VALID_FLUX_UNITS = UNIT_SPEC_RADIANCE, UNIT_SPEC_IRRADIANCE
 K_cd = 683 * u.lm/u.W #luminous efficacy constant defined at 540THz
 
 
@@ -128,12 +128,12 @@ class Spectrum:
     @flux.setter
     def flux(self, value: np.ndarray | u.Quantity):
         if not isinstance(value, u.Quantity):
-            value <<= unit_spec_radiance
+            value <<= UNIT_SPEC_RADIANCE
         if value.isscalar:
             value = value * np.ones(self.wavelength.size)
         elif len(value) != len(self.wavelength):
             raise ValueError("Fluxes must be the same length as wavelengths")
-        for flux_unit in valid_flux_units:
+        for flux_unit in VALID_FLUX_UNITS:
             if value.unit.is_equivalent(flux_unit):
                 self._y_unit_option = flux_unit
                 break
@@ -183,7 +183,7 @@ class Spectrum:
             raise ValueError("wavelengths must be array-like")
         if not wavelength.unit.is_equivalent(u.nm):
             raise ValueError("wavelengths must be a kind of length")
-        BB = BlackBody(temperature, scale=1 * unit_spec_radiance)
+        BB = BlackBody(temperature, scale=1 * UNIT_SPEC_RADIANCE)
         flux = BB(wavelength)
         return cls(wavelength, flux)
 
@@ -279,7 +279,7 @@ class Spectrum:
         Y = self.XYZ_integrals(CMFname=CMFname)[1]
         L = K_cd / correct_540THz * Y
 
-        if self.flux.unit.is_equivalent(unit_spec_irradiance):
+        if self.flux.unit.is_equivalent(UNIT_SPEC_IRRADIANCE):
             return L.to(u.lm / u.m**2)
         return L.to(u.cd / u.m**2)
 
@@ -287,7 +287,7 @@ class Spectrum:
         """
         Calculates the visual magnitude of a spectrum relative to Vega
         """
-        if not self.flux.unit.is_equivalent(unit_spec_irradiance):
+        if not self.flux.unit.is_equivalent(UNIT_SPEC_IRRADIANCE):
             raise ValueError("Flux should be in terms of spectral irradiance")
         Vega = Spectrum.load_Vega()
         L_Vega = Vega.to_luminance(CMFname=CMFname)  # illuminances
