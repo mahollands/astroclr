@@ -26,7 +26,7 @@ img_bw_avg = np.repeat(img_bw_avg, 3, axis=2)
 IRGB = IRGB_Color.from_numpy_image(img_clr)
 RGB = IRGB.to_RGB()
 XYZ = RGB.to_XYZ()
-RGB_bw = RGB_Color(XYZ.Y, XYZ.Y, XYZ.Y)
+RGB_bw = RGB_Color.from_grey(XYZ.Y)
 IRGB_bw = RGB_bw.to_IRGB()
 img_bw_lum = IRGB_bw.values_image
 

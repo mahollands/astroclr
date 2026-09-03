@@ -28,8 +28,7 @@ def spectrum_figure(fname, units=(u.AA, u.erg / u.s / u.cm**2 / u.AA)):
     XYZs = XYZ_from_wavelength(S.wavelength)
     RGBs = RGB_Color.from_XYZ(XYZs)
     RGBs = RGBs * S.flux.value
-    offset = RGBs.values.min()
-    RGBs -= RGB_Color(offset, offset, offset) 
+    RGBs -= RGB_Color.from_grey(RGBs.values.min()) 
     RGBs /= RGBs.values.max()
 
     print(fname, S_XYZ.normalize(), S_hex)

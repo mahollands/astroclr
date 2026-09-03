@@ -191,6 +191,14 @@ class RGB_Color(LinearColor):
             RGB = RGB.normalize_brightest()
         return RGB
 
+    @classmethod
+    def from_grey(cls, grey):
+        """
+        Create an RGB color where all three colour channels are identical.
+        Equivalent to RGB_Color(R=grey, G=grey, B=grey).
+        """
+        return cls(R=grey, G=grey, B=grey)
+
     def to_XYZ(self):
         """Convert an rgb color to xyz."""
         transform_matrix = self.color_space.xyz_from_rgb_matrix
@@ -268,6 +276,14 @@ class IRGB_Color(LinearColor):
             
         f = np.vectorize(self._to_hex)
         return f(*self.values, fs)
+
+    @classmethod
+    def from_grey(cls, grey):
+        """
+        Create an RGB color where all three colour channels are identical.
+        Equivalent to RGB_Color(R=grey, G=grey, B=grey).
+        """
+        return cls(R=grey, G=grey, B=grey)
 
     @classmethod
     def from_hex_string(cls, irgb_string, colorspace=sRGB):
