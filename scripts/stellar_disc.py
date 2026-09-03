@@ -29,10 +29,6 @@ limb_basis = {
 }
 
 
-def sqrt_r(r):
-    return np.where(r < 1, np.sqrt(abs(1 - r * r)), -1)
-
-
 def limb_interpolator(mu_i, vec, scale):
     limb_f = limb_functions[LIMB_MODEL]
     I_mu = scale * limb_f(vec, np.abs(mu_i))
@@ -72,7 +68,7 @@ f_R, f_G, f_B = [fit_limb(mu, C) for C in (RGB.R, RGB.G, RGB.B)]
 x, y = [np.linspace(-xylim, xylim, N) for _ in range(2)]
 x, y = np.meshgrid(x, y)
 r = np.hypot(x, y)
-mu_i = sqrt_r(r)
+mu_i = np.where(r < 1, np.sqrt(abs(1 - r * r)), -1)
 im_RGB = RGB_Color(R=f_R(mu_i), G=f_G(mu_i), B=f_B(mu_i))
 im_IRGB = im_RGB.to_IRGB()
 
