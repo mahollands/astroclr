@@ -48,15 +48,16 @@ mu = np.array([float(word) for word in line.split()[1:]])
 # Read in spectral fluxes as a function of mu
 flux_unit = u.erg / u.s / u.cm**2 / u.sr / u.AA
 wavelength, *fluxes = np.loadtxt(DATA, unpack=True)
-MM = [
-    Spectrum(wavelength * u.AA, flux * u.erg / u.s / u.cm**2 / u.sr / u.AA)
-    for flux in fluxes
-]
+MM = [Spectrum(wavelength * u.AA, flux * flux_unit) for flux in fluxes]
+
+peak_luminance = MM[-1].to_luminance()
 
 # Determine RGB interpolating functions
 RGB = RGB_Color.from_list([M.to_RGB() for M in MM])
 RGB /= RGB.values.max()
 f_R, f_G, f_B = [fit_limb(mu, C) for C in (RGB.R, RGB.G, RGB.B)]
+
+Y_max = RGB[-1].to_XYZ().Y
 
 # Calculate RGB image and show
 axis = np.linspace(-xylim, xylim, N*N_AA)
@@ -66,6 +67,9 @@ mu_i = np.where(r2 < 1, np.sqrt(abs(1 - r2)), -1)
 im_RGB = RGB_Color(R=f_R(mu_i), G=f_G(mu_i), B=f_B(mu_i))
 im_RGB.values = im_RGB.values.reshape((3, N, N_AA, N, N_AA)).mean(axis=(2, 4)) #AA
 im_IRGB = im_RGB.to_IRGB()
+
+print(f"atmospheric peak luminance: {peak_luminance:.2e}")
+print(f"image luminance Y={Y_max:.3f} (0-1)")
 
 plt.figure(figsize=(N / DPI, N / DPI))
 plt.imshow(im_IRGB.values_image)
