@@ -4,7 +4,8 @@ import matplotlib.pyplot as plt
 from astropy import units as u
 from astroclr import Spectrum, RGB_Color
 
-N = 1024
+N = 1000
+N_AA = 2 # antialiasing factor
 DPI = 100
 xylim = 1.2
 DATA = "data/WDJ1330+6435_mu.dat"
@@ -70,6 +71,7 @@ x, y = np.meshgrid(x, y)
 r = np.hypot(x, y)
 mu_i = np.where(r < 1, np.sqrt(abs(1 - r * r)), -1)
 im_RGB = RGB_Color(R=f_R(mu_i), G=f_G(mu_i), B=f_B(mu_i))
+im_RGB.values = im_RGB.values.reshape((3, N, N_AA, N, N_AA)).mean(axis=(2, 4)) #AA
 im_IRGB = im_RGB.to_IRGB()
 
 plt.figure(figsize=(N / DPI, N / DPI))
