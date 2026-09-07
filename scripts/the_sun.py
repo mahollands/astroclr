@@ -21,7 +21,7 @@ solar_surface_area = 4*np.pi*u.Rsun**2
 ################################################################################
 print("Chromatic quantities of the Sun:")
 XYZ = S.to_XYZ()
-rgb_string = S.to_IRGB_string()
+rgb_string = S.to_IRGB_string(brightest=True)
 colour_temp = CCT(XYZ) #We're using a black body, so we better get 5900 K again
 
 print(f"Solar chromaticity: {XYZ.normalize():.3f}")
