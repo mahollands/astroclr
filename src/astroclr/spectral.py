@@ -1,5 +1,5 @@
 """
-spectral.py: A collection of classes and functions for working with spectra and
+A collection of classes and functions for working with spectra and
 converting to directly to perceived colours. This module also imports CMFs from
 the CMFs submodule.
 

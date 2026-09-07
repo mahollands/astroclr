@@ -1,8 +1,4 @@
 """
-plots.py - Various types of plots.
-
-Description:
-
 Functions to draw various types of plots for light spectra.
 """
 

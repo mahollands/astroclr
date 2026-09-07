@@ -8,20 +8,23 @@ Available CMFs:
 
     "1931J" - CIE 1931 CMFs with Judd correction.
 
-    "1931JV" - CIE 1931 CMFs with Judd-Vos correction.
+    "1931JV" - CIE 1931 CMFs with Judd-Vos corrections.
 
     "1964_10deg" - CIE 1964 CMFs (10 degree observer)
 
     "2015_2deg" - CIE 2015 CMFs (2 degree observer).
-                  These use the Stockman & Sharp (2000) data.
+                  These use the Stockman & Sharp (2000) data that are
+                  used in the 2015 CIE standard.
 
     "2015_10deg" - CIE 2015 CMFs (10 degree observer).
+                   Similar to the above but for a wider viewing angle.
 
 LMS_XYZ_MATRIX_2000 -
-    The Stockman & Sharp (2000) data are specified in terms of cone fundamentals
-    (long/medium/short), and have been transformed into their CMF form. This
-    matrix can be used to convert the CMFs back to LMS form, or transform
-    sets of XYZ values to LMS values.
+    The Stockman & Sharp (2000) data are specified in terms of cone
+    fundamentals (long/medium/short), and have been transformed into their CMF
+    form. This matrix can be used to convert the CMFs back to LMS form, or
+    transform individual XYZ values to LMS values. This should not be used for
+    other CMFs such as the 1931 values.
 """
 
 import os.path

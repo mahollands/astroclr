@@ -1,6 +1,4 @@
 """
-illuminants.py - Definitions of some standard illuminants.
-
 Functions defined here generate various standard illuminants normalised to Y=1
 in the CIE XYZ colour space. Arguably the most important of these is CIE
 standard illuminant D65, which is used to define the white point chromaticity

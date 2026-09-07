@@ -1,6 +1,4 @@
 """
-colormodels.py - Conversions between color models
-
 Defines several color models, and conversions between them. The models are:
 
 XYZ - CIE XYZ color space, based on the 1931 matching functions for a 2 degree

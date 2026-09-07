@@ -1,17 +1,20 @@
 """
 Basic classes for working with colours:
 
-Color - This is the most basic colour class, storing a set of three values.
+Color - This is the base class for all colour types, storing a set of three
+values.
 
 LinearColor - For colours where each component represents some linear value.
-Colours of this type can be added together, subtracted, or scaled by a
-constant.
+Linear colours of the same type can be added together, subtracted, or scaled by
+a constant.
 
 Lpq_Color - Base class for LAB and LUV color spaces which both include a
-lightness component.
+lightness component, and dependend on a fixed white point.
 
-XYZ_Color - The fundamental colour model from which all RGB colour spaces as
-well as Luv and Lab are defined. It is defined here for dependency reasons.
+XYZ_Color - The fundamental colour model from which all other colour models and
+RGB colour spaces are defined. XYZ_Color is defined here as RGB colour spaces
+like sRGB are defined in terms of XYZ chromaticities, and RGB colour objects
+are defined in terms of RGB colour spaces.
 """
 
 import numpy as np
