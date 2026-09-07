@@ -63,7 +63,7 @@ x = \frac{X}{X+Y+Z} \qquad y = \frac{Y}{X+Y+Z} \qquad z = \frac{Z}{X+Y+Z}
 
 Having lost a degree of freedom (the intensity), $x$ and $y$ now uniquely define
 the brightness-indepedent component of colour and is called the chromaticity.
-![image](https://github.com/mahollands/astroclr/blob/main/images/CIE_xy.png
+![image](https://github.com/mahollands/astroclr/blob/main/src/astroclr/images/CIE_xy.png
 "CIE 1931 chromaticity diagram")
 
 The sRGB colour space specifies the chromaticities of the red/green/blue
