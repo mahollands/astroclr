@@ -16,6 +16,7 @@ import matplotlib.pyplot as plt
 from astroclr.spectral import CMFs, XYZ_from_wavelength
 from astroclr.colormodels import RGB_Color, IRGB_Color
 from astroclr.RGB_color_spaces import sRGB
+from astroclr.plots import chromaticity_diagram
 
 
 WRITE = False
@@ -56,20 +57,9 @@ plt.xlim(380, 720)
 plt.xlabel("Wavelength [nm]")
 plt.show()
 
-plt.plot(XYZs.x, XYZs.y)
+chromaticity_diagram(draw_bb_locus=False)
 XYZs = RGBs.to_XYZ()
-
-plt.plot(XYZs.x, XYZs.y)
-plt.plot(
-    [CSPACE.R.x, CSPACE.G.x, CSPACE.B.x, CSPACE.R.x],
-    [CSPACE.R.y, CSPACE.G.y, CSPACE.B.y, CSPACE.R.y],
-    "k:",
-)
-plt.plot(CSPACE.R.x, CSPACE.R.y, "ro")
-plt.plot(CSPACE.G.x, CSPACE.G.y, "go")
-plt.plot(CSPACE.B.x, CSPACE.B.y, "bo")
-plt.xlabel("$x$")
-plt.ylabel("$y$")
+plt.plot(XYZs.x, XYZs.y, 'k-')
 plt.show()
 
 
