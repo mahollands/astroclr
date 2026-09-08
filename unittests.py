@@ -177,15 +177,16 @@ class TestGroup:
         wl = 555.0 * u.nm
         xyz_color = XYZ_from_wavelength(wl)
         assert isinstance(xyz_color, XYZ_Color)
-        # Max Y value for 1931 CMFs is at 555nm, which should be 1.0 (approximately)
-        # Since the input is unit intensity, the output should be roughly normalized to CMF scale.
-        # The Y value should be close to the maximum value of the y_bar function (1.0)
-        # The interpolated value at 555nm for the 1931 CMFs is 1.0
+        # Max Y value for 1931 CMFs is at 555nm, which should be 1.0
+        # (approximately) Since the input is unit intensity, the output should
+        # be roughly normalized to CMF scale. The Y value should be close to
+        # the maximum value of the y_bar function (1.0) The interpolated value
+        # at 555nm for the 1931 CMFs is 1.0
         assert np.isclose(xyz_color.Y, 1.0, atol=1e-3)
 
     def test_xyz_from_wavelength_array(self):
         """Test XYZ_from_wavelength for an array of wavelengths."""
         wl_array = np.array([500.0, 600.0]) * u.nm
-        color_list = XYZ_from_wavelength(wl_array)
-        assert isinstance(color_list, XYZ_Color)
-        assert len(color_list[0]) == 2
+        XYZ_lam = XYZ_from_wavelength(wl_array)
+        assert isinstance(XYZ_lam, XYZ_Color)
+        assert len(XYZ_lam) == 2
