@@ -211,12 +211,13 @@ class RGB_Color(LinearColor):
         """
         if np.all((rgb := self.values) >= 0):
             return self
-        if clip_method == ClipMethod.ADD_WHITE:
+        if clip_method is ClipMethod.ADD_WHITE:
             rgb_min = np.clip(rgb.min(axis=0), -np.inf, 0.0)
             rgb_max = rgb.max(axis=0)
             rgb -= rgb_min
-            rgb *= rgb_max / rgb.max(axis=0)
-        elif clip_method == ClipMethod.CLAMP:
+            #tiny offset fixes issues with black values
+            rgb *= rgb_max / (1e-300 + rgb.max(axis=0))
+        elif clip_method is ClipMethod.CLAMP:
             rgb = np.clip(rgb, 0, np.inf)
         else:
             raise ValueError(f"Invalid color clipping method {clip_method}")
