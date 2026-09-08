@@ -334,7 +334,7 @@ def chromaticity_diagram(
     draw_bb_locus=True,
     draw_rgb_triangle=True,
     clip_method=ClipMethod.ADD_WHITE,
-    brightest=False,
+    brightest=True,
     N_pixels = 500,
     N_AA = 2
 ):
