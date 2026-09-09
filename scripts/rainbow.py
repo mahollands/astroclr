@@ -57,7 +57,7 @@ plt.xlim(380, 720)
 plt.xlabel("Wavelength [nm]")
 plt.show()
 
-chromaticity_diagram(draw_bb_locus=False)
+chromaticity_diagram(color_space=CSPACE, draw_bb_locus=False)
 XYZs = RGBs.to_XYZ()
 plt.plot(XYZs.x, XYZs.y, 'k-')
 plt.show()
