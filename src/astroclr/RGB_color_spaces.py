@@ -16,6 +16,7 @@ __all__ = [
     "RGB_Colorspace",
     "Whites",
     "sRGB",
+    "HDTV",
     "Rec709",
     "Rec2020",
     "Rec2100",
@@ -31,9 +32,6 @@ Whites = {
     "D55": XYZ_Color(0.3324, 0.3475),  # approx 5500 K
     "D65": XYZ_Color(0.3127, 0.3290),  # approx 6500 K
     "D75": XYZ_Color(0.2990, 0.3150),  # approx 7500 K
-    # MacBeth Color Checker white patch
-    #   Using this as white point will force MacBeth chart entry to equal machine RGB
-    "MacBethWhite": XYZ_Color(0.30995, 0.31596, 0.37409),
 }
 
 
@@ -135,53 +133,6 @@ Rec709 = RGB_ColorSpace(
     W=Whites["D65"],
     EOTF=gamma_EOTF(gamma=2.4),
 )
-
-# SMPTE phosphors
-# However, Hall [p. 188] notes that TV expects values calibrated for NTSC
-# even though actual phosphors are as below.
-# From Hall p. 118, and Kasson p. 400
-SMPTE = RGB_ColorSpace(
-    name="SMPTE",
-    R=XYZ_Color(0.630, 0.340),
-    G=XYZ_Color(0.310, 0.595),
-    B=XYZ_Color(0.155, 0.070),
-    W=Whites["D65"],
-)
-
-# NTSC phosphors [original standard for TV, but no longer used in TV sets]
-# From Hall p. 119 and Foley/Van Dam p. 589
-NTSC = RGB_ColorSpace(
-    name="NTSC",
-    R=XYZ_Color(0.670, 0.330),
-    G=XYZ_Color(0.210, 0.710),
-    B=XYZ_Color(0.140, 0.080),
-    W=Whites["D65"],
-)
-
-# Typical short persistence phosphors from Foley/Van Dam p. 583
-FoleyShort = RGB_ColorSpace(
-    name="FoleyShort",
-    R=XYZ_Color(0.61, 0.35),
-    G=XYZ_Color(0.29, 0.59),
-    B=XYZ_Color(0.15, 0.063),
-)
-
-# Typical long persistence phosphors from Foley/Van Dam p. 583
-FoleyLong = RGB_ColorSpace(
-    name="FoleyLong",
-    R=XYZ_Color(0.62, 0.33),
-    G=XYZ_Color(0.21, 0.685),
-    B=XYZ_Color(0.15, 0.063),
-)
-
-# Typical TV phosphors from Judd/Wyszecki p. 239
-Judd = RGB_ColorSpace(
-    name="Judd",
-    R=XYZ_Color(0.68, 0.32),  # Europium Yttrium Vanadate
-    G=XYZ_Color(0.28, 0.60),  # Zinc Cadmium Sulfide
-    B=XYZ_Color(0.15, 0.07),  # Zinc Sulfide
-)
-
 
 # https://www.itu.int/rec/R-REC-BT.2020-2-201510-I/en
 # https://www.color.org/chardata/rgb/BT2020.xalter
