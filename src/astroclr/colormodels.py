@@ -209,7 +209,7 @@ class RGB_Color(LinearColor):
         the white point, or clamp any negative channels to zero. Both methods
         move the colour to the edge of the RGB gamut.
         """
-        if np.all((rgb := self.values) >= 0):
+        if np.all((rgb := self.values.copy()) >= 0):
             return self
         if clip_method is ClipMethod.ADD_WHITE:
             rgb_min = np.clip(rgb.min(axis=0), -np.inf, 0.0)
