@@ -9,19 +9,17 @@ from dataclasses import dataclass
 import numpy as np
 from astropy import units as u
 from ._colormodels_base import XYZ_Color
-from .transfer_functions import gamma_EOTF, sRGB_EOTF, PQ_EOTF
+from .transfer_functions import gamma_EOTF, piecewise_EOTF, PQ_EOTF
 
 
 __all__ = [
-    "RGB_Colorspace",
-    "Whites",
     "sRGB",
-    "HDTV",
     "Rec709",
     "Rec2020",
     "Rec2100",
-    "DCI_P3_SDR",
-    "DCI_P3_HDR",
+    "DCI_P3_D65",
+    "DCI_P3_DCI",
+    "Display_P3",
 ]
 
 
@@ -101,51 +99,43 @@ class RGB_ColorSpace:
         return 2**self.bit_depth - 1
 
 
-# https://www.color.org/chardata/rgb/srgb.xalter
+# https://registry.color.org/rgb-registry/srgb
 sRGB = RGB_ColorSpace(
     name="sRGB",
     R=XYZ_Color(0.640, 0.330),
     G=XYZ_Color(0.300, 0.600),
     B=XYZ_Color(0.150, 0.060),
     W=Whites["D65"],
-    EOTF=sRGB_EOTF(),
+    EOTF=piecewise_EOTF(break_point=0.0031308, gamma=2.4, slope=12.92, offset=0.055),
     bit_depth=8,
     peak_luminance=80 * u.cd / u.m**2,
 )
 
-# HDTV standard phosphors, from Poynton [Color FAQ] p. 9
-# These are claimed to be similar to typical computer monitors
-HDTV = RGB_ColorSpace(
-    name="HDTV",
-    R=XYZ_Color(0.640, 0.330),
-    G=XYZ_Color(0.300, 0.600),
-    B=XYZ_Color(0.150, 0.060),
-    W=Whites["D65"],
-    EOTF=gamma_EOTF(gamma=2.2),
-)
-
-# https://www.color.org/chardata/rgb/BT709.xalter
+# https://registry.color.org/rgb-registry/bt709
 Rec709 = RGB_ColorSpace(
     name="Rec. 709",
     R=XYZ_Color(0.640, 0.330),
     G=XYZ_Color(0.300, 0.600),
     B=XYZ_Color(0.150, 0.060),
     W=Whites["D65"],
-    EOTF=gamma_EOTF(gamma=2.4),
+    EOTF=piecewise_EOTF(break_point=0.018, gamma=1/0.45, slope=4.5, offset=0.099),
+    peak_luminance=100 *u.cd/u.m**2
 )
 
 # https://www.itu.int/rec/R-REC-BT.2020-2-201510-I/en
-# https://www.color.org/chardata/rgb/BT2020.xalter
+# https://registry.color.org/rgb-registry/bt2020
 Rec2020 = RGB_ColorSpace(
     name="Rec. 2020",
     R=XYZ_Color(0.708, 0.292),
     G=XYZ_Color(0.170, 0.797),
     B=XYZ_Color(0.131, 0.046),
     W=Whites["D65"],
-    EOTF=gamma_EOTF(gamma=2.4),  # Actually piecewise gamma!
+    bit_depth=10,
+    EOTF=gamma_EOTF(gamma=2.4),
+    peak_luminance= 100 *u.cd / u.m**2
 )
 
-# https://www.color.org/chardata/rgb/BT2100.xalter
+# https://registry.color.org/rgb-registry/bt2100
 Rec2100 = RGB_ColorSpace(
     name="Rec. 2100",
     R=XYZ_Color(0.708, 0.292),
@@ -157,23 +147,35 @@ Rec2100 = RGB_ColorSpace(
     peak_luminance=10000 * u.cd / u.m**2,
 )
 
-DCI_P3_SDR = RGB_ColorSpace(
-    name="DCI-P3 D65 SDR",
+# https://registry.color.org/rgb-registry/dcip3
+DCI_P3_D65 = RGB_ColorSpace(
+    name="DCI-P3 D65",
     R=XYZ_Color(0.680, 0.320),
     G=XYZ_Color(0.265, 0.690),
     B=XYZ_Color(0.150, 0.060),
     W=Whites["D65"],
-    EOTF=sRGB_EOTF(),
-    bit_depth=10,
+    EOTF=gamma_EOTF(gamma=2.6),
+    peak_luminance= 48 *u.cd / u.m**2
 )
 
-DCI_P3_HDR = RGB_ColorSpace(
-    name="DCI-P3 D65 HDR",
+# https://registry.color.org/rgb-registry/dcip3
+DCI_P3_DCI = RGB_ColorSpace(
+    name="DCI-P3 DCI",
+    R=XYZ_Color(0.680, 0.320),
+    G=XYZ_Color(0.265, 0.690),
+    B=XYZ_Color(0.150, 0.060),
+    W=XYZ_Color(0.314, 0.351),
+    EOTF=gamma_EOTF(gamma=2.6),
+    peak_luminance= 48 *u.cd / u.m**2
+)
+
+# https://registry.color.org/rgb-registry/displayp3
+Display_P3 = RGB_ColorSpace(
+    name="Display-P3",
     R=XYZ_Color(0.680, 0.320),
     G=XYZ_Color(0.265, 0.690),
     B=XYZ_Color(0.150, 0.060),
     W=Whites["D65"],
-    EOTF=PQ_EOTF(),
-    bit_depth=10,
-    peak_luminance=10000 * u.cd / u.m**2,
+    EOTF=piecewise_EOTF(break_point=0.0031308, gamma=2.4, slope=12.92, offset=0.055),
+    peak_luminance= 80 *u.cd / u.m**2
 )

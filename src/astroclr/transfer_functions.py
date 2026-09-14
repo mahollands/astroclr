@@ -15,7 +15,7 @@ import numpy as np
 from functools import partial
 
 
-def gamma_EOTF(gamma: float = 2.2):
+def gamma_EOTF(gamma: float):
     """
     Simple power law for gamma correction.
     """
@@ -31,30 +31,25 @@ def gamma_EOTF(gamma: float = 2.2):
     return EOTF
 
 
-def sRGB_EOTF():
+def piecewise_EOTF(break_point: float, gamma: float, slope: float, offset: float):
     """
-    sRGB standard for gamma correction. The effect of the equations is to
-    closely fit a straightforward gamma 2.2 curve with an slight offset to
-    allow for invertability in integer math. Therefore, we are maintaining
-    consistency with the gamma 2.2 legacy images and the video industry.
-    https://www.color.org/chardata/rgb/srgb.xalter
+    Colour spaces such as sRGB use a piecewise EOTF/OETF, which approximates a
+    gamma shifted curve curve over most of the range, but features a small
+    linear section near zero. This avoids a vertical slope in the OETF at zero,
+    allowing higher precision gamma correction for near-black values.
     """
+    def EOTF(x, break_point, gamma, slope, offset):
+        linear = x / slope
+        gamma = ((x + offset) / (1 + offset)) ** gamma
+        return np.where(x <= break_point*slope, linear_section, gamma_section)
 
-    def EOTF(x):
-        # break_point = 0.03928 #old value
-        break_point = 0.04045
-        linear = x / 12.92
-        gamma = ((x + 0.055) / 1.055) ** 2.4
-        return np.where(x <= break_point, linear, gamma)
+    def OETF(x, break_point, gamma, slope, offset):
+        linear_section = slope * x
+        gamma_section = (1 + offset) * x ** (1 / gamma) - offset
+        return np.where(x <= break_point, linear_section, gamma_section)
 
-    def OETF(x):
-        # break_point = 0.00304 #old value
-        break_point = 0.0031308
-        linear = 12.92 * x
-        gamma = 1.055 * x ** (1 / 2.4) - 0.055
-        return np.where(x <= break_point, linear, gamma)
-
-    EOTF.inv = OETF
+    EOTF = partial(EOTF, break_point=break_point, gamma=gamma, slope=slope, offset=offset)
+    EOTF.inv = partial(OETF, break_point=break_point, gamma=gamma, slope=slope, offset=offset)
     return EOTF
 
 
