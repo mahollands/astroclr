@@ -46,13 +46,14 @@ class Color:
         values = np.array([value.values for value in values]).T
         return cls(*values)
 
-    def __repr__(self):
-        values_formatted = (f"{c}={v}" for c, v in zip(self.channels, self.values))
+    def __format__(self, format_spec):
+        values_formatted = (
+            f"{c}={format(v, format_spec)}" for c, v in zip(self.channels, self.values)
+        )
         return "{}({}, {}, {})".format(self.__class__.__name__, *values_formatted)
 
-    def __format__(self, format_spec):
-        values_formatted = (f"{c}={format(v, format_spec)}" for c, v in zip(self.channels, self.values))
-        return "{}({}, {}, {})".format(self.__class__.__name__, *values_formatted)
+    def __repr__(self):
+        return format(self, "")
 
     def __rmul__(self, other):
         return self * other
@@ -70,7 +71,7 @@ class Color:
 
     def __getitem__(self, key):
         return type(self)(*[val[key] for val in self.values])
-        
+
     @staticmethod
     def _validate_values(_1, _2, _3):
         if not isinstance(_1, type(_2)) or not isinstance(_1, type(_3)):
@@ -139,7 +140,7 @@ class LinearColor(Color):
         """
         if not isinstance(other, type(self)):
             raise TypeError
-        new = [x+y for x, y in zip(self.values, other.values)]
+        new = [x + y for x, y in zip(self.values, other.values)]
         return self.__class__(*new, **self._kwargs)
 
     def __sub__(self, other):
@@ -148,7 +149,7 @@ class LinearColor(Color):
         """
         if not isinstance(other, type(self)):
             raise TypeError
-        new = [x-y for x, y in zip(self.values, other.values)]
+        new = [x - y for x, y in zip(self.values, other.values)]
         return self.__class__(*new, **self._kwargs)
 
     def __mul__(self, other):
@@ -157,7 +158,7 @@ class LinearColor(Color):
         """
         if not isinstance(other, (int, float, np.ndarray)):
             raise TypeError
-        new = [x*other for x in self.values]
+        new = [x * other for x in self.values]
         return self.__class__(*new, **self._kwargs)
 
     def __truediv__(self, other):
@@ -166,7 +167,7 @@ class LinearColor(Color):
         """
         if not isinstance(other, (int, float, np.ndarray)):
             raise TypeError
-        new = [x/other for x in self.values]
+        new = [x / other for x in self.values]
         return self.__class__(*new, **self._kwargs)
 
 
@@ -190,6 +191,7 @@ class XYZ_Color(LinearColor):
     defined. This typically refers to the 1931 XYZ space though is flexible
     enough to accommodate more recent XYZ models.
     """
+
     channels = "XYZ"
 
     def __init__(self, x, y, z=None):
@@ -197,22 +199,13 @@ class XYZ_Color(LinearColor):
             z = 1 - x - y
         super().__init__(x, y, z)
 
-    def __repr__(self):
-        rpr = super().__repr__()
-        if np.isclose(self.values.sum(), 1):
-            parts = rpr.split(", ")
-            rpr = ", ".join(parts[:2]) + ")"
-            rpr = rpr.replace('X=', 'x=')
-            rpr = rpr.replace('Y=', 'y=')
-        return rpr
-
     def __format__(self, format_spec):
         fmt = super().__format__(format_spec)
         if np.isclose(self.values.sum(), 1):
             parts = fmt.split(", ")
             fmt = ", ".join(parts[:2]) + ")"
-            fmt = fmt.replace('X=', 'x=')
-            fmt = fmt.replace('Y=', 'y=')
+            fmt = fmt.replace("X=", "x=")
+            fmt = fmt.replace("Y=", "y=")
         return fmt
 
     X = property(fget=LinearColor._1.fget, fset=LinearColor._1.fset)

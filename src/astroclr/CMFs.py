@@ -4,7 +4,7 @@ spaces. These are stored in a dictionary called CMFs.
 
 Available CMFs:
     "1931" - The standard CIE 1931 CMFs (2 degree observer). This is the
-             default set of CMFs used unless otherwise specified. 
+             default set of CMFs used unless otherwise specified.
 
     "1931J" - CIE 1931 CMFs with Judd correction.
 
@@ -34,7 +34,7 @@ import matplotlib.pyplot as plt
 from scipy.interpolate import interp1d
 from astropy import units as u
 
-__all__ =   [
+__all__ = [
     "CMFs",
     "LMS_XYZ_MATRIX_2000",
 ]
@@ -46,11 +46,14 @@ CIE_CMF = namedtuple("CIE_CMF", "wavelength xyz_table interp")
 # The Stockman & Sharp (2000) data come from LMS cone fundametals and are
 # transformed to XYZ using the following matrix. The CIE data have already been
 # transformed, but this matrix can be used to recover the original LMS curves.
-LMS_XYZ_MATRIX_2000 = np.array([
-    [1.94735469, -1.41445123, 0.36476327],
-    [0.68990272,  0.34832189, 0         ],
-    [0         ,  0         , 1.93485343],
-])
+LMS_XYZ_MATRIX_2000 = np.array(
+    [
+        [1.94735469, -1.41445123, 0.36476327],
+        [0.68990272, 0.34832189, 0],
+        [0, 0, 1.93485343],
+    ]
+)
+
 
 def load_CMF(fname: str) -> CIE_CMF:
     CIEXYZ_table = np.loadtxt(

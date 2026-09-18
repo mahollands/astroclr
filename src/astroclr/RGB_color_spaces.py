@@ -134,7 +134,6 @@ Rec2020 = RGB_ColorSpace(
     G=XYZ_Color(0.170, 0.797),
     B=XYZ_Color(0.131, 0.046),
     W=Whites["D65"],
-    bit_depth=10,
     EOTF=gamma_EOTF(gamma=2.4),
     peak_luminance= 100 *u.cd / u.m**2
 )

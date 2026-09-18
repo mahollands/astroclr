@@ -451,15 +451,6 @@ class UCS_Color(LinearColor):
             w = 0
         super().__init__(u, v, w)
 
-    def __repr__(self):
-        rpr = super().__repr__()
-        if np.isclose(self.values.sum(), 1):
-            parts = rpr.split(", ")
-            rpr = ", ".join(parts[:2]) + ")"
-            rpr = rpr.replace("U=", "u=")
-            rpr = rpr.replace("V=", "v=")
-        return rpr
-
     def __format__(self, format_spec):
         fmt = super().__format__(format_spec)
         if np.isclose(self.values.sum(), 1):
@@ -474,7 +465,7 @@ class UCS_Color(LinearColor):
     W = property(fget=LinearColor._3.fget, fset=LinearColor._3.fset)
 
     def normalize(self):
-        return self / self.values.sum()
+        return self / self.values.sum(axis=0)
 
     @property
     def u(self):
