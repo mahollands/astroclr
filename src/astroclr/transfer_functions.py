@@ -38,18 +38,23 @@ def piecewise_EOTF(break_point: float, gamma: float, slope: float, offset: float
     linear section near zero. This avoids a vertical slope in the OETF at zero,
     allowing higher precision gamma correction for near-black values.
     """
+
     def EOTF(x, break_point, gamma, slope, offset):
-        linear = x / slope
-        gamma = ((x + offset) / (1 + offset)) ** gamma
-        return np.where(x <= break_point*slope, linear_section, gamma_section)
+        linear_section = x / slope
+        gamma_section = ((x + offset) / (1 + offset)) ** gamma
+        return np.where(x <= break_point * slope, linear_section, gamma_section)
 
     def OETF(x, break_point, gamma, slope, offset):
         linear_section = slope * x
         gamma_section = (1 + offset) * x ** (1 / gamma) - offset
         return np.where(x <= break_point, linear_section, gamma_section)
 
-    EOTF = partial(EOTF, break_point=break_point, gamma=gamma, slope=slope, offset=offset)
-    EOTF.inv = partial(OETF, break_point=break_point, gamma=gamma, slope=slope, offset=offset)
+    EOTF = partial(
+        EOTF, break_point=break_point, gamma=gamma, slope=slope, offset=offset
+    )
+    EOTF.inv = partial(
+        OETF, break_point=break_point, gamma=gamma, slope=slope, offset=offset
+    )
     return EOTF
 
 
@@ -85,6 +90,7 @@ def PQ_EOTF():
     luminance.
     https://www.color.org/chardata/rgb/BT2100.xalter
     """
+
     def EOTF(x, ms, cs):
         (m1, m2), (c1, c2, c3) = ms, cs
         Em2 = x ** (1 / m2)
