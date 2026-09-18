@@ -230,7 +230,7 @@ class RGB_Color(LinearColor):
         """
         rgb = self.clip_to_gamut(clip_method).values
         rgb = np.clip(rgb, 0, 1)
-        irgb_unit = self.color_space.EOTF.inv(rgb)
+        irgb_unit = self.color_space.OETF(rgb)
         irgb = np.round(self.color_space.max_int * irgb_unit).astype(int)
         return IRGB_Color(*irgb, self.color_space)
 

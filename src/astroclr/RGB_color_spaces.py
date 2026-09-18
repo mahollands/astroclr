@@ -97,6 +97,10 @@ class RGB_ColorSpace:
         The maximium integer for a given bit depth
         """
         return 2**self.bit_depth - 1
+    
+    @property
+    def OETF(self):
+        return self.EOTF.inv
 
 
 # https://registry.color.org/rgb-registry/srgb
