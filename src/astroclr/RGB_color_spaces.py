@@ -54,8 +54,8 @@ class RGB_ColorSpace:
     R: XYZ_Color
     G: XYZ_Color
     B: XYZ_Color
-    W: XYZ_Color = Whites["D65"]
-    EOTF: Callable = (gamma_EOTF(gamma=2.2),)
+    W: XYZ_Color
+    EOTF: Callable
     bit_depth: int = 8
     peak_luminance: u.Quantity = 80 * u.cd / u.m**2
 
