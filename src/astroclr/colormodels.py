@@ -334,9 +334,13 @@ class IRGB_Color(LinearColor):
         images. For displaying images with plt.imshow we instead need a shape
         of (m,n,3) which is accessed with this property
         """
-        if self.values.ndim != 3:
+        if self.values.ndim == 2:
+            img = self.values.T
+            return img.reshape((1, len(self), 3))
+        elif self.values.ndim == 3:
+            return np.moveaxis(self.values, 0, 2)
+        else:
             raise ValueError("values_image is for working with 2D colour arrays")
-        return np.moveaxis(self.values, 0, 2)
 
 
 class LUV_Color(Lpq_Color):
