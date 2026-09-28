@@ -94,7 +94,7 @@ def PQ_EOTF():
     def EOTF(x, ms, cs):
         (m1, m2), (c1, c2, c3) = ms, cs
         Em2 = x ** (1 / m2)
-        numerator = max(Em2 - c1, 0)
+        numerator = np.clip(Em2 - c1, 0, np.inf)
         denominator = c2 - c3 * Em2
         return (numerator / denominator) ** (1 / m1)
 
