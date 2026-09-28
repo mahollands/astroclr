@@ -6,7 +6,7 @@ from astroclr import *
 cs = sRGB
 #cs = Rec2020 # More vibrant/less accurate on most monitors
 
-xi = np.arange(350, 750, 0.01) * u.nm
+xi = np.arange(350, 750, 0.002) * u.nm
 Sun = Spectrum.from_file("data/solar_model.dat", units=(u.AA, u.erg/u.s/u.cm**2/u.AA))
 yi = Sun.interp_flux(xi.to(u.AA))
 Sun = Spectrum(xi, yi)
