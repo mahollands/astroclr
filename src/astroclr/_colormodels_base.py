@@ -29,7 +29,7 @@ class Color:
     channels = ["_1", "_2", "_3"]
 
     def __init__(self, _1, _2, _3, dtype):
-        self.values = _1, _2, _3
+        self.values = dtype(_1), dtype(_2), dtype(_3)
 
     @classmethod
     def from_list(cls, values):
@@ -127,7 +127,7 @@ class LinearColor(Color):
     a scalar
     """
 
-    def __init__(self, _1, _2, _3, dtype=float):
+    def __init__(self, _1, _2, _3, dtype=np.float64):
         super().__init__(_1, _2, _3, dtype=dtype)
 
     @property
@@ -175,14 +175,34 @@ class Lpq_Color(Color):
     """
     Template class for LAB and LUB color spaces, which have a shared L property
     """
+    L_LUM = {"A": 116, "B": 16, "C": (29 / 3) ** 3, "CUTOFF": (6 / 29) ** 3}
 
     def __init__(self, L, p, q, white_point):
-        super().__init__(L, p, q, dtype=float)
+        super().__init__(L, p, q, dtype=np.float64)
         if not isinstance(white_point, XYZ_Color):
             raise TypeError("white_point should be an XYZ_Color")
         self.white_point = white_point
 
     L = property(fget=LinearColor._1.fget, fset=LinearColor._1.fset)
+
+    @classmethod
+    def L_from_luminance(cls, Y):
+        """
+        L coefficient for Luv and Lab models.
+        """
+        cubic = cls.L_LUM["A"] * np.cbrt(Y) - cls.L_LUM["B"]
+        linear = cls.L_LUM["C"] * Y
+        return np.where(Y > cls.L_LUM["CUTOFF"], cubic, linear)
+
+    @classmethod
+    def luminance_from_L(cls, L):
+        """
+        Inverse of L_from_luminance().
+        """
+        linear = L / cls.L_LUM["C"]
+        t = (L + cls.L_LUM["B"]) / cls.L_LUM["A"]
+        cubic = t * t * t
+        return np.where(L > 8, cubic, linear)
 
 
 class XYZ_Color(LinearColor):

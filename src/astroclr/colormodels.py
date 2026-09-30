@@ -1,61 +1,61 @@
 """
-Defines several color models, and conversions between them. The models are:
+Defines several colour models, and conversions between them. The models are:
 
-XYZ - CIE XYZ color space, based on the 1931 matching functions for a 2 degree
-field of view. Spectra are converted to xyz color values by integrating with
+XYZ - CIE XYZ colour space, based on the 1931 matching functions for a 2 degree
+field of view. Spectra are converted to xyz colour values by integrating with
 the matching functions in ciexyz.py.
 
-XYZ colors are often handled as absolute values, conventionally written
+XYZ colours are often handled as absolute values, conventionally written
 with uppercase letters XYZ, or as scaled values (so that X+Y+Z = 1.0),
 conventionally written with lowercase letters xyz.
 
-This is the fundamental color model around which all others are based.
+This is the fundamental colour model around which all others are based.
 
 rgb - Colors expressed as red, green and blue values, in the nominal range 0.0
-- 1.0. These are linear color values, meaning that doubling the number implies
-a doubling of the light intensity. rgb color values may be out of range
+- 1.0. These are linear colour values, meaning that doubling the number implies
+a doubling of the light intensity. rgb colour values may be out of range
 (greater than 1.0, or negative), and do not account for gamma correction.
 They should not be drawn directly.
 
-irgb - Displayable color values expressed as red, green and blue values, in the
+irgb - Displayable colour values expressed as red, green and blue values, in the
 range 0 - 255. These have been adjusted for gamma correction, and have been
-clipped into the displayable range 0 - 255. These color values can be drawn
+clipped into the displayable range 0 - 255. These colour values can be drawn
 directly.
 
-Luv - A nearly perceptually uniform color space.
+Luv - A nearly perceptually uniform colour space.
 
-Lab - Another nearly perceptually uniform color space.
+Lab - Another nearly perceptually uniform colour space.
 
 
 Color model classes:
 
 XYZ_Color(x, y, z = None) -
-    Construct an xyz color.  If z is omitted, set it so that x+y+z = 1.0.
+    Construct an xyz colour.  If z is omitted, set it so that x+y+z = 1.0.
 
-RGB_Color(r, g, b, color_space=sRGB) -
-    Construct a linear RGB color from components.
+RGB_Color(r, g, b, colour_space=sRGB) -
+    Construct a linear RGB colour from components.
 
-IRGB_Color(ir, ig, ib, color_space=sRGB) -
-    Construct a displayable "intensity" RGB color from components.
+IRGB_Color(ir, ig, ib, colour_space=sRGB) -
+    Construct a displayable "intensity" RGB colour from components.
 
 LUV_Color(L, u, v, white_point=sRGB.W) -
-    Construct a Luv color from components.
+    Construct a Luv colour from components.
 
 LAB_Color(L, a, b, white_point=sRGB.W) -
-    Construct a Lab color from components.
+    Construct a Lab colour from components.
 
 
-By design, the XYZ color space is ignorant of the other spaces. However, the
+By design, the XYZ colour space is ignorant of the other spaces. However, the
 others (e.g. RGB), know about XYZ. So conversions from XYZ are of the form:
 >>> RGB = RGB_Color.from_XYZ(XYZ)
 
 But conversions back are of the simpler form
 >>> XYZ = RGB.to_XYZ()
 
-This is because the various RGB color spaces and white points are defined in
-terms of XYZ colors. While sRGB is used by default, this allows flexibility in
-working in other RGB color spaces, or with other white points. If we were using
-a different color space, we would instead do something like
+This is because the various RGB colour spaces and white points are defined in
+terms of XYZ colours. While sRGB is used by default, this allows flexibility in
+working in other RGB colour spaces, or with other white points. If we were using
+a different colour space, we would instead do something like
 >>> RGB = RGB_Color.from_XYZ(XYZ, color_space=Rec2020)
 """
 
@@ -76,66 +76,9 @@ __all__ = [
 ]
 
 
-# Utility function for Lab
-#     See [Kasson p.399] for details.
-#     The linear range coefficient has more digits than in the paper,
-#     this makes the function more continuous over the boundary.
-
-L_LUM = {"A": 116, "B": 16, "C": (29 / 3) ** 3, "CUTOFF": (6 / 29) ** 3}
-LAB_F = {"A": (29 / 6) ** 2 / 3, "B": 4 / 29}
-
-# Some standard xyz/rgb conversion matricies, which assume particular phosphors.
-# These are useful for testing.
-
-
 class ClipMethod(StrEnum):
     CLAMP = "clamp"
     ADD_WHITE = "add white"
-
-
-def Lab_f(t: float) -> float:
-    """
-    Lab utility function.
-    """
-    if t > L_LUM["CUTOFF"]:
-        return np.cbrt(t)
-    # linear range
-    return LAB_F["A"] * t + LAB_F["B"]
-
-
-def Lab_f_inverse(F: float) -> float:
-    """
-    Inverse of Lab_f().
-    """
-    if F > (LAB_F["A"] * L_LUM["CUTOFF"] + LAB_F["B"]):
-        return F * F * F
-    # linear range
-    return (F - LAB_F["B"]) / LAB_F["A"]
-
-
-def L_luminance(y: float) -> float:
-    """
-    L coefficient for Luv and Lab models.
-    """
-    if y > L_LUM["CUTOFF"]:
-        return L_LUM["A"] * np.cbrt(y) - L_LUM["B"]
-    return L_LUM["C"] * y  # linear range
-
-
-def L_luminance_inverse(L: float) -> float:
-    """Inverse of L_luminance()."""
-    # Luminance function [of Y value of an XYZ color] used in Luv and Lab.
-    # See [Kasson p.399] for details. The linear range coefficient L_LUM['C']
-    # has more digits than in the paper, this makes the function more
-    # continuous over the boundary.
-
-    if L > 8:
-        t = (L + L_LUM["B"]) / L_LUM["A"]
-        y = t * t * t
-        return y
-    # linear range
-    y = L / L_LUM["C"]
-    return y
 
 
 ###############################################################
@@ -248,7 +191,7 @@ class IRGB_Color(LinearColor):
             raise TypeError("color_space should be an RGB_ColorSpace")
         if not np.all(np.array([R, G, B]) < 2**color_space.bit_depth):
             raise ValueError("RGB integral values out of range")
-        super().__init__(R, G, B, dtype=int)
+        super().__init__(R, G, B, dtype=np.int64)
         self.color_space = color_space
 
     R = property(fget=LinearColor._1.fget, fset=LinearColor._1.fset)
@@ -344,6 +287,9 @@ class IRGB_Color(LinearColor):
 
 
 class LUV_Color(Lpq_Color):
+    """
+    CIE LUV 1976 L* u* v* colour space.
+    """
     channels="Luv"
 
     def __init__(self, L, u, v, white_point=sRGB.W):
@@ -352,43 +298,50 @@ class LUV_Color(Lpq_Color):
     u = property(fget=Lpq_Color._2.fget, fset=Lpq_Color._2.fset)
     v = property(fget=Lpq_Color._3.fget, fset=Lpq_Color._3.fset)
 
+    @property
+    def uv_prime(self):
+        white_point = self.white_point
+        u_prime_wp, v_prime_wp = LUV_Color.uv_primes_from_XYZ(white_point)
+        L13 = 13.0 * self.L
+        u_prime = u_prime_wp + (self.u / L13)
+        v_prime = v_prime_wp + (self.v / L13)
+        return u_prime, v_prime
+        
+
     @staticmethod
-    def uv_primes(XYZ):
+    def uv_primes_from_XYZ(XYZ):
         """
         Converts an XYZ color to the (u', v') form of chromaticity associated with
         the LUV color space.
         """
-        w_denom = XYZ.X + 15.0 * XYZ.Y + 3.0 * XYZ.Z
-        if w_denom == 0.0:  # x=y=z=0 [i.e. black]
-            return (0.0, 0.0)
-        u_prime = 4.0 * XYZ.X / w_denom
-        v_prime = 9.0 * XYZ.Y / w_denom
-        return (float(u_prime), float(v_prime))
+        xyz_denom = XYZ.X + 15.0 * XYZ.Y + 3.0 * XYZ.Z
+        u_prime = 4.0 * XYZ.X / xyz_denom
+        v_prime = 9.0 * XYZ.Y / xyz_denom
+        return u_prime, v_prime
 
     @staticmethod
-    def uv_primes_inverse(u_prime, v_prime, y):
+    def XYZ_from_uv_primes_Y(u_prime, v_prime, Y):
         """
         Converts a luminance Y and (u', v') chromaticity to an XYZ colour
         """
-        if v_prime == 0.0:
+        if Y == 0.0:
             return XYZ_Color(0.0, 0.0, 0.0)
-        w_denom = (9.0 * y) / v_prime
-        x = 0.25 * u_prime * w_denom
-        z = (w_denom - x - 15.0 * y) / 3.0
-        return XYZ_Color(x, y, z)
+        uv_denom = 6 * u_prime - 16 * v_prime + 12
+        x = 9 * u_prime / uv_denom
+        y = 4 * v_prime / uv_denom
+        return XYZ_Color.from_xyY(x, y, Y)
 
     @classmethod
     def from_XYZ(cls, XYZ, white_point=sRGB.W):
         """
         Create an LUV color from an XYZ color and white point (D65 by default).
         """
-        y_p = XYZ.Y / white_point.Y
-        L = L_luminance(y_p)
-        u_prime, v_prime = cls.uv_primes(XYZ)
-        reference_u_prime, reference_v_prime = cls.uv_primes(white_point)
-        u = 13.0 * L * (u_prime - reference_u_prime)
-        v = 13.0 * L * (v_prime - reference_v_prime)
-        return LUV_Color(L, u, v, white_point=white_point)
+        L = cls.L_from_luminance(XYZ.Y / white_point.Y)
+        u_prime, v_prime = cls.uv_primes_from_XYZ(XYZ)
+        u_prime_wp, v_prime_wp = cls.uv_primes_from_XYZ(white_point)
+        u = 13.0 * L * (u_prime - u_prime_wp)
+        v = 13.0 * L * (v_prime - v_prime_wp)
+        return cls(L, u, v, white_point=white_point)
 
     def to_XYZ(self):
         """
@@ -396,18 +349,14 @@ class LUV_Color(Lpq_Color):
         """
         if self.L == 0.0:
             return XYZ_Color(0.0, 0.0, 0.0)
-        y = L_luminance_inverse(self.L)
-        L13 = 13.0 * self.L
-
-        white_point = self.color_space.W
-        reference_u_prime, reference_v_prime = LUV_Color.uv_primes(white_point)
-        u_prime = reference_u_prime + (self.u / L13)
-        v_prime = reference_v_prime + (self.v / L13)
-        return self.uv_primes_inverse(u_prime, v_prime, y)
+        Y = self.luminance_from_L(self.L)
+        u_prime, v_prime = self.uv_prime
+        return self.XYZ_from_uv_primes_Y(u_prime, v_prime, Y)
 
 
 class LAB_Color(Lpq_Color):
     channels="Lab"
+    LAB_F = {"A": (29 / 6) ** 2 / 3, "B": 4 / 29}
     
     def __init__(self, L, a, b, white_point=sRGB.W):
         super().__init__(L, a, b, white_point)
@@ -416,14 +365,33 @@ class LAB_Color(Lpq_Color):
     b = property(fget=Lpq_Color._3.fget, fset=Lpq_Color._3.fset)
 
     @classmethod
+    def Lab_f(cls, t):
+        """
+        Lab utility function.
+        """
+        linear = cls.LAB_F["A"] * t + cls.LAB_F["B"]
+        cubic = np.cbrt(t)
+        return np.where(t > cls.L_LUM["CUTOFF"], cubic, linear)
+
+    @classmethod
+    def Lab_f_inverse(cls, F):
+        """
+        Inverse of Lab_f().
+        """
+        linear = (F - cls.LAB_F["B"]) / cls.LAB_F["A"]
+        cubic = F * F * F
+        f_cut = F > (cls.LAB_F["A"] * cls.L_LUM["CUTOFF"] + cls.LAB_F["B"])
+        return np.where(f_cut, cubic, linear)
+
+    @classmethod
     def from_XYZ(cls, XYZ, white_point=sRGB.W):
         """
         Create an LAB color from an XYZ color and white point (D65 by default).
         """
         x_p, y_p, z_p = xyz_p = XYZ.values / white_point.values
-        f_x, f_y, f_z = map(Lab_f, xyz_p)
+        f_x, f_y, f_z = map(cls.Lab_f, xyz_p)
 
-        L = L_luminance(y_p)
+        L = cls.L_from_luminance(y_p)
         a = 500.0 * (f_x - f_y)
         b = 200.0 * (f_y - f_z)
         return cls(L, a, b, white_point=white_point)
@@ -432,27 +400,25 @@ class LAB_Color(Lpq_Color):
         """
         Converts an LUV color to an XYZ color.
         """
-        y_p = L_luminance_inverse(self.L)
-        f_y = Lab_f(y_p)
+        y_p = self.luminance_from_L(self.L)
+        f_y = self.Lab_f(y_p)
         f_x = f_y + (self.a / 500.0)
         f_z = f_y - (self.b / 200.0)
-        x_p = Lab_f_inverse(f_x)
-        z_p = Lab_f_inverse(f_z)
+        x_p = self.Lab_f_inverse(f_x)
+        z_p = self.Lab_f_inverse(f_z)
         xyz_p = np.array([x_p, y_p, z_p]) * self.white_point.values
         return XYZ_Color(*xyz_p)
 
 
 class UCS_Color(LinearColor):
     """
-    UCS 1960 Color space with components UVW.
+    UCS 1960 Colour space with components UVW.
     """
     channels="UVW"
 
     def __init__(self, u, v, w=None):
         if w is None:
             w = 1 - u - v
-        if w < 0:
-            w = 0
         super().__init__(u, v, w)
 
     def __format__(self, format_spec):
@@ -487,7 +453,7 @@ class UCS_Color(LinearColor):
         return cls(U, V, W)
 
     def to_XYZ(self):
-        X = 3 / 2 * self.X
+        X = 3 / 2 * self.U
         Y = self.V
         Z = 3 / 2 * self.U - 3 * self.V + 2 * self.W
         return XYZ_Color(X, Y, Z)
