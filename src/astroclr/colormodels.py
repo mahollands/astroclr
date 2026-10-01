@@ -324,8 +324,6 @@ class LUV_Color(Lpq_Color):
         """
         Converts a luminance Y and (u', v') chromaticity to an XYZ colour
         """
-        if Y == 0.0:
-            return XYZ_Color(0.0, 0.0, 0.0)
         uv_denom = 6 * u_prime - 16 * v_prime + 12
         x = 9 * u_prime / uv_denom
         y = 4 * v_prime / uv_denom
@@ -335,8 +333,10 @@ class LUV_Color(Lpq_Color):
     def from_XYZ(cls, XYZ, white_point=sRGB.W):
         """
         Create an LUV color from an XYZ color and white point (D65 by default).
+        LUV colour space assumes luminance on scale 0--1.
         """
-        L = cls.L_from_luminance(XYZ.Y / white_point.Y)
+        wp = white_point.normalize_Y1()
+        L = 116*cls.f(XYZ.Y / wp.Y)-16
         u_prime, v_prime = cls.uv_primes_from_XYZ(XYZ)
         u_prime_wp, v_prime_wp = cls.uv_primes_from_XYZ(white_point)
         u = 13.0 * L * (u_prime - u_prime_wp)
@@ -347,16 +347,17 @@ class LUV_Color(Lpq_Color):
         """
         Converts an LUV color to an XYZ color.
         """
-        if self.L == 0.0:
-            return XYZ_Color(0.0, 0.0, 0.0)
-        Y = self.luminance_from_L(self.L)
+        f_y = (self.L+16)/116
+        Y = self.f_inverse(f_y)
         u_prime, v_prime = self.uv_prime
         return self.XYZ_from_uv_primes_Y(u_prime, v_prime, Y)
 
 
 class LAB_Color(Lpq_Color):
+    """
+    CIE LAB 1976 L* a* b* colour space.
+    """
     channels="Lab"
-    LAB_F = {"A": (29 / 6) ** 2 / 3, "B": 4 / 29}
     
     def __init__(self, L, a, b, white_point=sRGB.W):
         super().__init__(L, a, b, white_point)
@@ -365,49 +366,31 @@ class LAB_Color(Lpq_Color):
     b = property(fget=Lpq_Color._3.fget, fset=Lpq_Color._3.fset)
 
     @classmethod
-    def Lab_f(cls, t):
-        """
-        Lab utility function.
-        """
-        linear = cls.LAB_F["A"] * t + cls.LAB_F["B"]
-        cubic = np.cbrt(t)
-        return np.where(t > cls.L_LUM["CUTOFF"], cubic, linear)
-
-    @classmethod
-    def Lab_f_inverse(cls, F):
-        """
-        Inverse of Lab_f().
-        """
-        linear = (F - cls.LAB_F["B"]) / cls.LAB_F["A"]
-        cubic = F * F * F
-        f_cut = F > (cls.LAB_F["A"] * cls.L_LUM["CUTOFF"] + cls.LAB_F["B"])
-        return np.where(f_cut, cubic, linear)
-
-    @classmethod
     def from_XYZ(cls, XYZ, white_point=sRGB.W):
         """
         Create an LAB color from an XYZ color and white point (D65 by default).
+        LUV colour space assumes luminance on scale 0--100.
         """
-        x_p, y_p, z_p = xyz_p = XYZ.values / white_point.values
-        f_x, f_y, f_z = map(cls.Lab_f, xyz_p)
+        wp = 100 * white_point.normalize_Y1()
+        f_x = cls.f(XYZ.X/wp.X)
+        f_y = cls.f(XYZ.Y/wp.Y)
+        f_z = cls.f(XYZ.Z/wp.Z)
 
-        L = cls.L_from_luminance(y_p)
-        a = 500.0 * (f_x - f_y)
-        b = 200.0 * (f_y - f_z)
+        L = 116 * f_y - 16
+        a = 500 * (f_x - f_y)
+        b = 200 * (f_y - f_z)
         return cls(L, a, b, white_point=white_point)
 
     def to_XYZ(self):
         """
         Converts an LUV color to an XYZ color.
         """
-        y_p = self.luminance_from_L(self.L)
-        f_y = self.Lab_f(y_p)
-        f_x = f_y + (self.a / 500.0)
-        f_z = f_y - (self.b / 200.0)
-        x_p = self.Lab_f_inverse(f_x)
-        z_p = self.Lab_f_inverse(f_z)
-        xyz_p = np.array([x_p, y_p, z_p]) * self.white_point.values
-        return XYZ_Color(*xyz_p)
+        f_y = (self.L+16)/116
+        f_x = f_y + self.a / 500
+        f_z = f_y - self.b / 200
+        x_p, y_p, z_p = map(self.f_inverse, (f_x, f_y, f_z))
+        wp = 100 * self.white_point.normalize_Y1()
+        return XYZ_Color(x_p*wp.X, y_p*wp.Y, z_p*wp.Z)
 
 
 class UCS_Color(LinearColor):

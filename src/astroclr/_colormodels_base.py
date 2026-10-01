@@ -175,7 +175,9 @@ class Lpq_Color(Color):
     """
     Template class for LAB and LUB color spaces, which have a shared L property
     """
-    L_LUM = {"A": 116, "B": 16, "C": (29 / 3) ** 3, "CUTOFF": (6 / 29) ** 3}
+    _delta = (6 / 29)
+    _delta2 = _delta*_delta
+    _delta3 = _delta*_delta2
 
     def __init__(self, L, p, q, white_point):
         super().__init__(L, p, q, dtype=np.float64)
@@ -186,23 +188,22 @@ class Lpq_Color(Color):
     L = property(fget=LinearColor._1.fget, fset=LinearColor._1.fset)
 
     @classmethod
-    def L_from_luminance(cls, Y):
+    def f(cls, t):
         """
-        L coefficient for Luv and Lab models.
+        Lab/Luv f(t) utility function.
         """
-        cubic = cls.L_LUM["A"] * np.cbrt(Y) - cls.L_LUM["B"]
-        linear = cls.L_LUM["C"] * Y
-        return np.where(Y > cls.L_LUM["CUTOFF"], cubic, linear)
+        linear = (t + 2*cls._delta3)/(3*cls._delta2)
+        cbrt = np.cbrt(t)
+        return np.where(t > cls._delta3, cbrt, linear)
 
     @classmethod
-    def luminance_from_L(cls, L):
+    def f_inverse(cls, F):
         """
-        Inverse of L_from_luminance().
+        Inverse of Lab/Luv f(t).
         """
-        linear = L / cls.L_LUM["C"]
-        t = (L + cls.L_LUM["B"]) / cls.L_LUM["A"]
-        cubic = t * t * t
-        return np.where(L > 8, cubic, linear)
+        linear = (3*F - 2*cls._delta) * cls._delta2
+        cubic = F * F * F
+        return np.where(F > cls._delta, cubic, linear)
 
 
 class XYZ_Color(LinearColor):
