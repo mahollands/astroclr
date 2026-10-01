@@ -32,10 +32,11 @@ RGBs.values -= RGBs.values.min()
 RGBs /= RGBs.values.max()
 IRGBs = RGBs.to_IRGB()
 
-rect_x = np.array([-0.5, 0.5, 0.5, -0.5])
-rect_y = np.array([0, 0, 1, 1])
-for lam, IRGB in zip(wavelengths, IRGBs):
-    plt.fill(rect_x + lam, rect_y, c=IRGB.to_string())
+plt.imshow(
+    IRGBs.values_image,
+    extent=[wavelengths[0]-0.5, wavelengths[-1]+0.5, 0, 1],
+    aspect='auto'
+)
 plt.xlim(380, 720)
 plt.ylim(0, 1)
 plt.xlabel("Wavelength [nm]")
