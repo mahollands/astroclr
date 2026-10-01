@@ -15,12 +15,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 from astroclr.spectral import CMFs, XYZ_from_wavelength
 from astroclr.colormodels import RGB_Color, IRGB_Color
-from astroclr.RGB_color_spaces import sRGB
+from astroclr.RGB_color_spaces import sRGB, Rec2020
 from astroclr.plots import chromaticity_diagram
 
 
 WRITE = False
 CSPACE = sRGB
+#CSPACE = Rec2020 #more vibrant but less realistic
 CMF = "1931"
 
 wavelengths = CMFs[CMF].wavelength.value
