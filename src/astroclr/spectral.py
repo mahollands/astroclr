@@ -68,18 +68,6 @@ def XYZ_from_wavelength(
     return XYZ_Color(*xyz)
 
 
-@functools.cache
-def _load_Vega():
-    """
-    Loads the alpha_lyr_stis_011 model of Vega from Calspec
-    """
-    hdulist = fits.open(f"{DATA_DIR}/alpha_lyr_stis_011.fits")
-    data = hdulist[1].data
-    wavelength = data["WAVELENGTH"] * u.AA
-    flux = data["FLUX"] * u.erg / u.s / u.cm**2 / u.AA
-    return wavelength, flux
-
-
 class Spectrum:
     """
     Simple spectrum class for calculating XYZ values. 'wavelength' and 'flux'
@@ -205,12 +193,25 @@ class Spectrum:
         flux = BB(wavelength)
         return cls(wavelength, flux)
 
+    @staticmethod
+    @functools.cache
+    def _load_Vega():
+        """
+        Loads the alpha_lyr_stis_011 model of Vega from Calspec, and caches
+        for repeated calls.
+        """
+        hdulist = fits.open(f"{DATA_DIR}/alpha_lyr_stis_011.fits")
+        data = hdulist[1].data
+        wavelength = data["WAVELENGTH"] * u.AA
+        flux = data["FLUX"] * u.erg / u.s / u.cm**2 / u.AA
+        return wavelength, flux
+
     @classmethod
     def load_Vega(cls):
         """
         Loads the alpha_lyr_stis_011 model of Vega from Calspec as a Spectrum
         """
-        wavelength, flux = _load_Vega()
+        wavelength, flux = cls._load_Vega()
         Vega = cls(wavelength, flux)
         return Vega
 
