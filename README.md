@@ -2,19 +2,19 @@
 
 Astroclr allows perceived colours of light sources to be calculated from the
 physical spectra that emit them, and conversions between various colour spaces.
-This allows spectra radiated from (for example) astrophyiscal objects to be
-converted into colours that can be replicated on a computer display.
+This allows spectra radiated from (for example) stars to be converted into
+colours that can be replicated on a computer display.
 
-Astroclr is an almost complete rewrite of
-[Colorpy](https://github.com/markkness/ColorPy) by Mark Kness, which has been
-an invaluable resource for me for calculating colours of white dwarfs. While
-Colorpy is well documented and referenced (and helped develop my own interest
-in colour science), it is no longer actively maintained, is still designed for
-python2 (can be made to work in python3 with a few tweaks), and by modern
-standards the module interface is far from pythonic.
+Astroclr is heavily inspired by [Colorpy](https://github.com/markkness/ColorPy)
+by Mark Kness, which was an invaluable resource for me when calculating colours
+of white dwarfs, and developing my own interest in colour science. While
+Colorpy is well documented and referenced, it is no longer actively maintained,
+requires several tweaks for compatibility with python3, and has an outdated
+interface compared to modern python. Astroclr was written with the express aim
+of making colour calculations from spectra as simple as possible, with
+a particular focus on observational astronomy.
 
 ## Features
-Astroclr aims to solve several issues with the original:
 * A modern interface with a variety of colour classes and methods to convert
   between them (all supporting numpy arrays for multiple objects or images)
     - XYZ_Color
@@ -23,25 +23,30 @@ Astroclr aims to solve several issues with the original:
     - UCS_Color
     - LUV_Color
     - LAB_Color
-* A bespoke Spectrum type with easy conversion to XYZ colours
+* A bespoke Spectrum class with easy conversion to XYZ colours
     - XYZ integrations are performed trapezoidally, so wavelengths can have
-      arbitraty spacing.
-    - Works with astropy units for calculating luminance/illuminance
+      arbitrary spacing.
+    - Works with astropy units for calculating luminance, illuminance, and
+      visual magnitudes
     - Easy generation of black body spectra
 * Support for a variety of RGB colour spaces
     - sRGB
     - Rec709
-    - Rec2020
-    - DCI P3 SDR/HDR
-    - and many more
-* Scripts for interesting things an astronomer might want to do
-    - Approximated rainbow plot of monochromtic colours
-    - Interactive simulation of chromatic abberation
+    - Rec2020/2100
+    - DCI P3
+* A suite of example scripts for interesting things an astronomer might want to
+  do, and demonstrations of various colour science concepts
 
 ## Installation:
 
 At the moment installation is simply cloning this module and pointing your
 PYTHONPATH environment variable at it.
+
+### Dependencies
+* numpy
+* scipy
+* matplotlib
+* astropy
 
 ## Colour Science
 If we have a spectrum $F_\lambda(\lambda)$ and want to calculate its displayable RGB colour.
