@@ -42,7 +42,7 @@ __all__ = [
 UNIT_SPEC_RADIANCE = u.W / u.m**2 / u.sr / u.nm
 UNIT_SPEC_IRRADIANCE = u.W / u.m**2 / u.nm
 VALID_FLUX_UNITS = UNIT_SPEC_RADIANCE, UNIT_SPEC_IRRADIANCE
-K_cd = 683 * u.lm/u.W #luminous efficacy constant defined at 540THz
+K_cd = 683 * u.lm/u.W # luminous efficacy constant defined at 540THz
 
 
 def XYZ_from_wavelength(
@@ -160,6 +160,24 @@ class Spectrum:
         wavelength_str = f"wavelength[{n_spec}] * {x_unit}"
         flux_str = f"flux[{n_spec}] * {y_unit}"
         return f"Spectrum({wavelength_str}, {flux_str})"
+
+    def __getitem__(self, key):
+        """
+        Return a slice from a spectrum using numpy style indexing.
+        """
+        wavelength_new, flux_new = self.wavelength[key], self.flux[key]
+        return Spectrum(wavelength_new, flux_new)
+
+    def clip(self, lam0, lam1):
+        """
+        Clip spectrum between wavelength values of lam0 and lam1
+        """
+        if not isinstance(lam0, u.Quantity):
+            lam0 *= self.wavelength.unit
+        if not isinstance(lam1, u.Quantity):
+            lam1 *= self.wavelength.unit
+        key = (self.wavelength > lam0) & (self.wavelength < lam1)
+        return self[key]
 
     @classmethod
     def BlackBody(
