@@ -146,6 +146,14 @@ class RGB_Color(LinearColor):
         xyz = np.einsum("ij,j...->i...", transform_matrix, self.values)
         return XYZ_Color(*xyz)
 
+    def in_gamut(self):
+        """
+        Check if an RGB colour (or array of colours) falls within the RGB
+        gamut. Specifically this means that none of the R, G, B values are
+        negative.
+        """
+        return np.all(self.values >= 0, axis=0)
+
     def clip_to_gamut(self, clip_method=ClipMethod.ADD_WHITE):
         """
         Clip an RGB colour to within its colour space, either by mixing with
