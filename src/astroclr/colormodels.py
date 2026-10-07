@@ -62,7 +62,7 @@ a different colour space, we would instead do something like
 from enum import StrEnum
 import numpy as np
 from astropy import units as u
-from ._colormodels_base import LinearColor, Lpq_Color, XYZ_Color
+from ._colormodels_core import LinearColor, Lpq_Color, XYZ_Color
 from .rgb_color_spaces import RGB_ColorSpace, sRGB
 
 __all__ = [

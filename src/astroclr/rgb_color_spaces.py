@@ -8,7 +8,7 @@ from typing import Callable
 from dataclasses import dataclass
 import numpy as np
 from astropy import units as u
-from ._colormodels_base import XYZ_Color
+from ._colormodels_core import XYZ_Color
 from .transfer_functions import gamma_EOTF, piecewise_EOTF, PQ_EOTF
 
 
