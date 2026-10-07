@@ -9,7 +9,6 @@ a smoother luminance scale.
 
 import numpy as np
 import matplotlib.pyplot as plt
-from astropy import units as u
 from astroclr import Spectrum, RGB_Color
 
 REF_LUM = 200 #Display peak-luminance in cd/m2

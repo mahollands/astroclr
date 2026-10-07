@@ -2,7 +2,6 @@
 Luminous calculations for the Sun, assuming a 5900 K black body.
 """
 import numpy as np
-import matplotlib.pyplot as plt
 from astropy import units as u
 from astropy.constants import sigma_sb
 from astroclr import Spectrum, CCT

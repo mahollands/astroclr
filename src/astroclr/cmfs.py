@@ -35,8 +35,8 @@ from scipy.interpolate import interp1d
 from astropy import units as u
 
 __all__ = [
-    "CMFs",
     "LMS_XYZ_MATRIX_2000",
+    "CMFs",
 ]
 
 DATA_DIR = f"{os.path.dirname(__file__)}/data"

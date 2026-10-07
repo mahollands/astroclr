@@ -54,7 +54,7 @@ def CCT(color: RealColor, return_uv_vec: bool = False) -> u.Quantity:
         return T
 
     BB = Spectrum.BlackBody(T)
-    duv = delta_uv(BB.to_XYZ(), color)
+    du, dv = duv = delta_uv(BB.to_XYZ(), color)
     return T, duv, math.hypot(du, dv)
 
 

@@ -16,7 +16,7 @@ import matplotlib.pyplot as plt
 from matplotlib.widgets import Slider
 from astroclr.spectral import XYZ_from_wavelength, CMFs
 from astroclr.colormodels import RGB_Color
-from astroclr.RGB_color_spaces import sRGB as cspace
+from astroclr.rgb_color_spaces import sRGB as cspace
 
 CMF = CMFs["1931"]
 OETF = cspace.EOTF.inv

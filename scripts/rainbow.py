@@ -14,14 +14,14 @@ projected onto an otherwise dimly illuminated white wall.
 import numpy as np
 import matplotlib.pyplot as plt
 from astroclr.spectral import CMFs, XYZ_from_wavelength
-from astroclr.colormodels import RGB_Color, IRGB_Color
-from astroclr.RGB_color_spaces import sRGB, Rec2020
+from astroclr.colormodels import RGB_Color
+from astroclr.rgb_color_spaces import sRGB, Rec2020
 from astroclr.plots import chromaticity_diagram
 
 
 WRITE = False
 CSPACE = sRGB
-#CSPACE = Rec2020 #more vibrant but less realistic
+# CSPACE = Rec2020 #more vibrant but less realistic
 CMF = "1931"
 
 wavelengths = CMFs[CMF].wavelength.value
@@ -32,8 +32,8 @@ RGBs.values -= RGBs.values.min()
 RGBs /= RGBs.values.max()
 IRGBs = RGBs.to_IRGB()
 
-extent = [wavelengths[0]-0.5, wavelengths[-1]+0.5, 0, 1]
-plt.imshow( IRGBs.values_image, extent=extent, aspect='auto')
+extent = [wavelengths[0] - 0.5, wavelengths[-1] + 0.5, 0, 1]
+plt.imshow(IRGBs.values_image, extent=extent, aspect="auto")
 plt.xlim(380, 720)
 plt.ylim(0, 1)
 plt.xlabel("Wavelength [nm]")
@@ -58,11 +58,12 @@ plt.show()
 
 chromaticity_diagram(color_space=CSPACE, draw_bb_locus=False)
 XYZs = RGBs.to_XYZ()
-plt.plot(XYZs.x, XYZs.y, 'k-')
+plt.plot(XYZs.x, XYZs.y, "k-")
 plt.show()
 
 
 if WRITE:
     with open("rainbow.dat", "w") as F:
-        for lam, IRGB in zip(wavelengths, IRGBs):
-            F.write(f"{lam} {IRGB.to_string()}\n")
+        F.writelines(
+            f"{lam} {IRGB.to_string()}\n" for lam, IRGB in zip(wavelengths, IRGBs)
+        )

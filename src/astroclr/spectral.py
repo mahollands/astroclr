@@ -29,7 +29,7 @@ from scipy.integrate import trapezoid as integrate
 from astropy import units as u
 from astropy.modeling.physical_models import BlackBody
 from astropy.io import fits
-from .CMFs import CMFs, DATA_DIR
+from .cmfs import CMFs, DATA_DIR
 from .colormodels import XYZ_Color, RGB_Color, IRGB_Color
 
 
@@ -46,7 +46,7 @@ K_cd = 683 * u.lm/u.W # luminous efficacy constant defined at 540THz
 
 
 def XYZ_from_wavelength(
-    wavelength: None | int | float | np.ndarray | u.Quantity = None,
+    wavelength: None | float | np.ndarray | u.Quantity = None,
     CMFname: str = "1931",
 ) -> XYZ_Color:
     """
@@ -170,7 +170,7 @@ class Spectrum:
     @classmethod
     def BlackBody(
         cls,
-        temperature: int | float | u.Quantity,
+        temperature: float | u.Quantity,
         wavelength: np.ndarray | u.Quantity = CMFs["1931"].wavelength,
     ):
         """

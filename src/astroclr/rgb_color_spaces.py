@@ -89,7 +89,7 @@ class RGB_ColorSpace:
         Check whether an XYZ_Color falls within the gamut of a colour space
         """
         rgb = self.rgb_from_xyz_matrix @ XYZ.values
-        return np.all(rgb >= 0)
+        return np.all(rgb >= 0, axis=0)
     
     @functools.cached_property
     def max_int(self):

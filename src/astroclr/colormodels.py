@@ -62,17 +62,17 @@ a different colour space, we would instead do something like
 from enum import StrEnum
 import numpy as np
 from astropy import units as u
-from ._colormodels_base import LinearColor, XYZ_Color, Lpq_Color
-from .RGB_color_spaces import RGB_ColorSpace, sRGB
+from ._colormodels_base import LinearColor, Lpq_Color, XYZ_Color
+from .rgb_color_spaces import RGB_ColorSpace, sRGB
 
 __all__ = [
+    "ClipMethod",
     "XYZ_Color",
     "RGB_Color",
     "IRGB_Color",
+    "UCS_Color",
     "LUV_Color",
     "LAB_Color",
-    "UCS_Color",
-    "ClipMethod",
 ]
 
 

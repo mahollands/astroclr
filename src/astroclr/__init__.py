@@ -95,7 +95,7 @@ Rering & Charnay, New Calculations of Human-eye Colors of Cloudy Brown Dwarfs an
 Research Notes of the American Astronomical Socitey, 9, 168 (2025)
 """
 
-from .spectral import *
 from .colormodels import *
-from .RGB_color_spaces import *
 from .delta_color import *
+from .rgb_color_spaces import *
+from .spectral import *

@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from astroclr import RGB_Color, IRGB_Color
+from astroclr import IRGB_Color
 
 xim, yim = np.meshgrid(
     np.linspace(-1.2, 1.2, 500),

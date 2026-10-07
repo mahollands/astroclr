@@ -26,7 +26,7 @@ class Color:
     """
 
     __slots__ = ["_values"]
-    channels = ["_1", "_2", "_3"]
+    channels = "_1", "_2", "_3"
 
     def __init__(self, _1, _2, _3, dtype):
         self.values = dtype(_1), dtype(_2), dtype(_3)
