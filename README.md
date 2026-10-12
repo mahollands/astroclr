@@ -118,9 +118,9 @@ If you have your own spectrum, calculating colours is just as simple:
 ```
 
 Note that fluxes must be in terms of spectral radiance/irradiance (per unit
-wavelength), i.e. equivalent units to W/m2/nm/sr or W/m2/nm, which is necessary
+wavelength), i.e. equivalent units to W/m²/nm/sr or W/m²/nm, which is necessary
 for calculating the luminance/illuminance using the `to_luminance()` method. If
-no units are provided, default units of nm and W/m2/nm/sr are assumed for
+no units are provided, default units of nm and W/m²/nm/sr are assumed for
 wavelengths and fluxes.
 
 ## Colour science basics
