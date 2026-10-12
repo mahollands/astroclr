@@ -37,6 +37,11 @@ a particular focus on observational astronomy.
 * A suite of example scripts for interesting things an astronomer might want to
   do, and demonstrations of various colour science concepts
 
+Note: All documentation uses the British spelling of "colour" (since I am
+British). However for code, I have opted to use "color", for consistency with
+Colorpy, and other similar software (and to save on typing). The module name
+was chosen to be neutral towards spelling.
+
 ## Installation:
 
 At the moment installation is simply cloning this module and pointing your
@@ -48,7 +53,76 @@ PYTHONPATH environment variable at it.
 * matplotlib
 * astropy
 
-## Colour Science
+
+## Example
+
+Calculating colours with astroclr has been made as easy as possible. The recipe
+for doing so looks basically like:
+* create a Spectrum object
+* convert to the CIE 1931 XYZ colour space
+* convert from XYZ to a linear RGB colour space (sRGB by default)
+* convert linear RGB to the non-linear display RGB (IRGB) space by applying a
+  transfer function
+
+Lets say we want to determine the sRGB colour of a 10,000 K black body
+(something like the A-type star Sirius A) as a hexstring. In Astroclr we can
+follow the above recipe as follows:
+
+```python
+>>> from astropy import units as u
+>>> from astroclr import Spectrum, RGB_Color
+
+>>> lam = np.arange(300, 900, 0.1) * u.nm
+>>> S = Spectrum.BlackBody(temperature=10000*u.K, wavelength=lam)
+>>> XYZ = S.to_XYZ()
+>>> RGB = RGB_Color.from_XYZ(XYZ, brightest=True)
+>>> IRGB = RGB.to_IRGB()
+>>> print(IRGB.to_string())
+'#CDD9FF'
+```
+
+The brightest keyword, ensures that the brightest RGB channel is scaled to 1.0,
+so observed spectra (typically faint) can be shown as bright as possible, and
+bright spectra (such as models) can be displayed without colour clipping. The
+above code can be actually be performed even more succinctly:
+
+```python
+>>> S = Spectrum.BlackBody(temperature=10000*u.K, wavelength=lam)
+>>> print(S.to_IRGB_string(brightest=True))
+'#CDD9FF'
+```
+
+You may have noticed that most conversion methods are prefixed with 'to', but
+to convert to RGB we need to use a 'from' method. This is because RGB colour
+spaces (the default is sRGB) are defined in terms of XYZ chromaticities (see
+below), and so all colour spaces are defined in terms of the more fundamental
+`XYZ_Color`. This can be seen by inspecting the sRGB colour space:
+
+```python
+>>> from astroclr import sRGB
+>>> print(sRGB)
+RGB_ColorSpace(name='sRGB', R=XYZ_Color(0.64, 0.33), G=XYZ_Color(0.3, 0.6), ...)
+```
+
+If you have your own spectrum, calculating colours is just as simple:
+
+```python
+
+>>> wavelength, flux = np.loadtxt("my_spectrum.dat", unpack=True)
+>>> wavelength *= u.AA
+>>> flux *= u.erg / u.s / u.cm**2 / u.AA
+>>> S = Spectrum(wavelength, flux)
+>>> print(S.to_IRGB_string(brightest=True))
+'#DDFFB8'
+```
+
+Note that fluxes must be in terms of spectral radiance/irradiance (per unit
+wavelength), i.e. equivalent units to W/m2/nm/sr or W/m2/nm, which is necessary
+for calculating the luminance/illuminance using the `to_luminance()` method. If
+no units are provided, default units of nm and W/m2/nm/sr are assumed for
+wavelengths and fluxes.
+
+## Colour science basics
 If we have a spectrum $F_\lambda(\lambda)$ and want to calculate its displayable RGB colour.
 Mathematically we do something akin to synthetic photometry in astronomy:
 ```math
@@ -67,7 +141,7 @@ x = \frac{X}{X+Y+Z} \qquad y = \frac{Y}{X+Y+Z} \qquad z = \frac{Z}{X+Y+Z}
 ```
 
 Having lost a degree of freedom (the intensity), $x$ and $y$ now uniquely define
-the brightness-indepedent component of colour and is called the chromaticity.
+the brightness-independent component of colour and is called the chromaticity.
 ![image](https://github.com/mahollands/astroclr/blob/main/src/astroclr/images/CIE_xy.png
 "CIE 1931 chromaticity diagram")
 
@@ -101,128 +175,3 @@ function. In some colour-spaces this is just a power-law (gamma curve), though
 in sRGB a piecewise function is used that is linear at low-brightness and a
 shifted plus scaled power-law at higher brightness, but closely resembles a
 power-law with exponent 1/2.2.
-
-
-## Usage
-
-Calculating colours with astroclr has been made as easy as possible. The recipe
-for doing so looks basically like:
-* create a Spectrum object
-* convert to the CIE 1931 XYZ colour space
-* convert from XYZ to a linear RGB colour space (sRGB by default)
-* convert linear RGB to the non-linear display RGB (IRGB) space by applying a transfer function
-
-Lets say we want to determine the sRGB colour of a 10,000 K black body (something
-like the A-type star Sirius A) as a hexstring. In Colorpy2 we can do
-
-```python
->>> from astropy import units as u
->>> from colorpy2 import Spectrum
-
->>> lam = np.arange(300, 900, 0.1) * u.nm
->>> S = Spectrum.BlackBody(temperature=10000*u.K, wavelength=lam)
->>> print(S.to_IRGB_string())
-'#CDD9FF'
-```
-
-It's that simple! You may have noticed that most of the conversion methods are
-prefixed with 'to', but to convert to RGB we need to use a 'from' method. There
-is good reason for this: By default RGB colours are in the sRGB space, but
-optionally can use another space e.g. `RGB.from_XYZ(XYZ, color_space=Rec2020)`.
-Lets inspect the sRGB object:
-
-```python
->>> from colorpy2 import sRGB
->>> print(sRGB)
-RGB_ColorSpace(name='sRGB', R=XYZ_Color(0.64, 0.33), G=XYZ_Color(0.3, 0.6), ...)
-```
-
-Crucially we can see that these colour spaces are defined in terms of RGB
-primaries and a white point, which are all of type `XYZ_Color`. This means that
-`RGB_Color` (and all other color models), are built on the more fundamental
-`XYZ_Color`. Going back to our previous example, lets print all the
-intermediate steps
-
-```python
->>> print(S)
-Spectrum(wavelength[6000] * nm, flux[6000] * W / (nm sr m2))
->>> print(XYZ)
-XYZ_Color(18899521.886203796, 19415029.182752594, 29031295.252976917)
->>> print(RGB)
-RGB_Color(16929126.8935794, 19310119.61155575, 27776415.403297085)
->>> print(IRGB)
-IRGB_Color(205, 217, 255)
-```
-
-Firstly, we can see that the spectrum wavelengths and fluxes have units. The
-XYZ and linear RGB values drop their units but the numbers are still very large
-(a 10000K black body is bright!). However when we convert to IRGB, these overly
-large values are rescaled so that the brightest channel is 255. If the RGB_values
-were all below 1.0, then no rescaling would be performed. We have a few different
-options if we want to rescale the linear colours. Going back to example
-
-```python
->>> XYZ.normalize()
-XYZ_Color(0.2806338166107294, 0.28828844306065954)
-```
-
-This method scales an `XYZ_Color` so all components add to 1. In this form the
-Z component (now written z) is redundant, and the x and y components
-define the chromaticity.
-
-```python
->>> XYZ.normalize_Y1()
-XYZ_Color(0.9734480287566731, 1.0, 1.4953001089880908)
-```
-
-This method scales the Y component (the luminance) 1.
-
-
-### Luminance
-
-If you want to convert the luminance to luminous flux / exitance /
-illuminance you must take care to account for factors π, 2, 4π etc.
-To calculate the luminance of the Sun assuming a perfect radiator
-(black body) you can do
-```python
->>> Sun = Spectrum.BlackBody(5773*u.K, wavelength)
->>> L = Sun.to_luminance()
->>> L
-<Quantity 1.8451589e+09 cd / m2> #luminance
-```
-
-But to get the luminous flux $\Phi$ in lm, you must do some integration:
-```math
-\mathrm{d}\Phi = L \cos\theta \,\mathrm{d}\Omega \,\mathrm{d}A
-```
-where $\cos\theta$ accounts for the projection of a small area element $\mathrm{d}A$.
-This is equivalent to 
-```math
-\mathrm{d}\Phi = L \cos\theta \sin\theta \,\mathrm{d}\theta \,\mathrm{d}\phi
-\,\mathrm{d}A
-```
-The integral over $\theta$ runs from $0$ to $\pi/2$, since we only care about the
-outward radiated flux. So
-```math
-\Phi = L \oiint \mathrm{d}A \int_0^{2\pi} \mathrm{d}\phi \int_0^{\pi/2} \cos\theta \sin\theta \,\mathrm{d}\theta
-  = L (4\pi R_\odot^2)(2\pi \mathrm{sr})(1/2)
-  = 4\pi^2 \mathrm{sr} R_\odot^2 L
-```
-```python
->>> A_sun = 4 * np.pi * u.Rsun**2
->>> Ω = 2 * np.pi * u.sr
->>> Φ = 0.5 * Ω * A_sun * L
->>> Φ.to(u.lm)
-<Quantity 3.52563635e+28 lm> #luminous flux
-```
-
-To calculate the illuminance at Earth, then
-```python
->>> A_au = 4*np.pi * u.au**2
->>> E = Φ / A_au
->>> E.to(u.lx)
-<Quantity 125365.15060712 lx> #illuminance
->>> M = Φ / A_sun
->>> M.to(u.lm/u.m**2)
-<Quantity 5.79673763e+09 lm / m2> #luminous exitance
-```
