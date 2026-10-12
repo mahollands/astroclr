@@ -62,7 +62,7 @@ a different colour space, we would instead do something like
 from enum import StrEnum
 import numpy as np
 from astropy import units as u
-from ._colormodels_core import LinearColor, Lpq_Color, XYZ_Color
+from ._colormodels_core import Linear_Color, Lpq_Color, XYZ_Color
 from .rgb_color_spaces import RGB_ColorSpace, sRGB
 
 __all__ = [
@@ -86,7 +86,7 @@ class ClipMethod(StrEnum):
 # a Colorspace or White Point.
 
 
-class RGB_Color(LinearColor):
+class RGB_Color(Linear_Color):
     channels = "RGB"
 
     def __init__(self, R, G, B, color_space=sRGB):
@@ -95,9 +95,9 @@ class RGB_Color(LinearColor):
             raise TypeError("color_space should be an RGB_ColorSpace")
         self.color_space = color_space
 
-    R = property(fget=LinearColor._1.fget, fset=LinearColor._1.fset)
-    G = property(fget=LinearColor._2.fget, fset=LinearColor._2.fset)
-    B = property(fget=LinearColor._3.fget, fset=LinearColor._3.fset)
+    R = property(fget=Linear_Color._1.fget, fset=Linear_Color._1.fset)
+    G = property(fget=Linear_Color._2.fget, fset=Linear_Color._2.fset)
+    B = property(fget=Linear_Color._3.fget, fset=Linear_Color._3.fset)
 
     @property
     def r(self):
@@ -186,7 +186,7 @@ class RGB_Color(LinearColor):
         return IRGB_Color(*irgb, self.color_space)
 
 
-class IRGB_Color(LinearColor):
+class IRGB_Color(Linear_Color):
     """
     Color class for display RGB values. These have the same primaries and white
     point as RGB_Color, but the values are on a non-linear scale (passed through
@@ -202,9 +202,9 @@ class IRGB_Color(LinearColor):
         super().__init__(R, G, B, dtype=np.int64)
         self.color_space = color_space
 
-    R = property(fget=LinearColor._1.fget, fset=LinearColor._1.fset)
-    G = property(fget=LinearColor._2.fget, fset=LinearColor._2.fset)
-    B = property(fget=LinearColor._3.fget, fset=LinearColor._3.fset)
+    R = property(fget=Linear_Color._1.fget, fset=Linear_Color._1.fset)
+    G = property(fget=Linear_Color._2.fget, fset=Linear_Color._2.fset)
+    B = property(fget=Linear_Color._3.fget, fset=Linear_Color._3.fset)
 
 
     @staticmethod
@@ -401,7 +401,7 @@ class LAB_Color(Lpq_Color):
         return XYZ_Color(x_p*wp.X, y_p*wp.Y, z_p*wp.Z)
 
 
-class UCS_Color(LinearColor):
+class UCS_Color(Linear_Color):
     """
     UCS 1960 Colour space with components UVW.
     """
@@ -421,9 +421,9 @@ class UCS_Color(LinearColor):
             fmt = fmt.replace('V=', 'v=')
         return fmt
 
-    U = property(fget=LinearColor._1.fget, fset=LinearColor._1.fset)
-    V = property(fget=LinearColor._2.fget, fset=LinearColor._2.fset)
-    W = property(fget=LinearColor._3.fget, fset=LinearColor._3.fset)
+    U = property(fget=Linear_Color._1.fget, fset=Linear_Color._1.fset)
+    V = property(fget=Linear_Color._2.fget, fset=Linear_Color._2.fset)
+    W = property(fget=Linear_Color._3.fget, fset=Linear_Color._3.fset)
 
     def normalize(self):
         return self / self.values.sum(axis=0)

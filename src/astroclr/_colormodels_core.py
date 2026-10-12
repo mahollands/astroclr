@@ -9,7 +9,7 @@ Linear colours of the same type can be added together, subtracted, or scaled by
 a constant.
 
 Lpq_Color - Base class for LAB and LUV color spaces which both include a
-lightness component, and dependend on a fixed white point.
+lightness component, and depend on a fixed white point.
 
 XYZ_Color - The fundamental colour model from which all other colour models and
 RGB colour spaces are defined. XYZ_Color is defined here as RGB colour spaces
@@ -121,7 +121,7 @@ class Color:
         self._values = np.array(values)
 
 
-class LinearColor(Color):
+class Linear_Color(Color):
     """
     Template class for Linear colors which can be added together or multiplied by
     a scalar
@@ -206,7 +206,7 @@ class Lpq_Color(Color):
         return np.where(F > cls._delta, cubic, linear)
 
 
-class XYZ_Color(LinearColor):
+class XYZ_Color(Linear_Color):
     """
     The fundamental color model from which all others (such as RGB) are
     defined. This typically refers to the 1931 XYZ space though is flexible
