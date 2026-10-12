@@ -85,8 +85,3 @@ CMFs = {
     "2015_2deg": load_CMF("CIE_cfb_stv_2deg.csv"),
     "2015_10deg": load_CMF("CIE_cfb_stv_10deg.csv"),
 }
-
-
-if __name__ == "__main__":
-    for name, CMF in CMFs.items():
-        CMF_plot(name, CMF)
