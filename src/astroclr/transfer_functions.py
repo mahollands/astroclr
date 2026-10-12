@@ -1,14 +1,11 @@
 """
 Gamma correction / electro-optical tranfser functions
 
-Non-gamma corrected rgb values, also called non-linear rgb values,
-correspond to palette register entries [although here they are kept
-in the range 0.0 to 1.0.]  The numerical values are not proportional
-to the amount of light energy present.
-
-Gamma corrected rgb values, also called linear rgb values,
-do not correspond to palette entries.  The numerical values are
-proportional to the amount of light energy present.
+In astroclr, RGB_Color is used to represent linear RGB on a scale of 0-1, where
+RGB_Color(1, 1, 1) represents peak white. However these do not directly correspond
+to the 8-bit display values used in most display colour spaces. Instead a transfer
+function must be applied to each component, before quantising to the 0-255 display
+scale. In other words the display scale is a non-linear encoding of intensity.
 """
 
 import numpy as np

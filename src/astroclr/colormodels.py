@@ -1,52 +1,25 @@
 """
 Defines several colour models, and conversions between them. The models are:
 
-XYZ - CIE XYZ colour space, based on the 1931 matching functions for a 2 degree
-field of view. Spectra are converted to xyz colour values by integrating with
-the matching functions in ciexyz.py.
-
-XYZ colours are often handled as absolute values, conventionally written
-with uppercase letters XYZ, or as scaled values (so that X+Y+Z = 1.0),
-conventionally written with lowercase letters xyz.
-
+XYZ_Color - CIE XYZ colour space, based on the 1931 colour matching functions
+for a 2 degree field of view. Spectra are converted to XYZ colour values by
+integrating with the matching functions within the astroclr.spectral module.
 This is the fundamental colour model around which all others are based.
 
-rgb - Colors expressed as red, green and blue values, in the nominal range 0.0
-- 1.0. These are linear colour values, meaning that doubling the number implies
-a doubling of the light intensity. rgb colour values may be out of range
-(greater than 1.0, or negative), and do not account for gamma correction.
-They should not be drawn directly.
+RGB_Color - Linear light representation of RGB colours expressed as Red, Green
+and Blue values in the range 0-1. By default the sRGB colour space is used.
 
-irgb - Displayable colour values expressed as red, green and blue values, in the
-range 0 - 255. These have been adjusted for gamma correction, and have been
-clipped into the displayable range 0 - 255. These colour values can be drawn
-directly.
+IRGB_Color - Displayable RGB colour values in the range 0-255 (for sRGB). These
+have been converted from the linear RGB_Color space to the display scale using
+an Opto-Electrical transfer function, and can be drawn to the display directly.
 
-Luv - A nearly perceptually uniform colour space.
-
-Lab - Another nearly perceptually uniform colour space.
-
-
-Color model classes:
-
-XYZ_Color(x, y, z = None) -
-    Construct an xyz colour.  If z is omitted, set it so that x+y+z = 1.0.
-
-RGB_Color(r, g, b, colour_space=sRGB) -
-    Construct a linear RGB colour from components.
-
-IRGB_Color(ir, ig, ib, colour_space=sRGB) -
-    Construct a displayable "intensity" RGB colour from components.
-
-LUV_Color(L, u, v, white_point=sRGB.W) -
-    Construct a Luv colour from components.
-
-LAB_Color(L, a, b, white_point=sRGB.W) -
-    Construct a Lab colour from components.
+Luv_Color, Lab_Color, UCS_Color - A set of nearly perceptually uniform colour
+spaces. See individual documentation.
 
 
 By design, the XYZ colour space is ignorant of the other spaces. However, the
-others (e.g. RGB), know about XYZ. So conversions from XYZ are of the form:
+others (e.g. linear RGB), know about XYZ. So conversions from XYZ are of the
+form:
 >>> RGB = RGB_Color.from_XYZ(XYZ)
 
 But conversions back are of the simpler form
@@ -54,8 +27,8 @@ But conversions back are of the simpler form
 
 This is because the various RGB colour spaces and white points are defined in
 terms of XYZ colours. While sRGB is used by default, this allows flexibility in
-working in other RGB colour spaces, or with other white points. If we were using
-a different colour space, we would instead do something like
+working in other RGB colour spaces, or with other white points. If we were
+using a different colour space, we would instead do something like
 >>> RGB = RGB_Color.from_XYZ(XYZ, color_space=Rec2020)
 """
 

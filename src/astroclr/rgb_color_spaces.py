@@ -1,6 +1,7 @@
 """
-Definitions of some standard values for colors and conversions
-Chromaticities of various standard phosphors and white points.
+Module containing various RGB colour spaces. Each RGB colour space is defined
+by a set of primary (R, G, B) and white point chromaticities, as well as a
+transfer function for conversion between linear and display RGB.
 """
 
 import functools
