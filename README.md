@@ -9,10 +9,10 @@ Astroclr is heavily inspired by [Colorpy](https://github.com/markkness/ColorPy)
 by Mark Kness, which was an invaluable resource for me when calculating colours
 of white dwarfs, and developing my own interest in colour science. While
 Colorpy is well documented and referenced, it is no longer actively maintained,
-requires several tweaks for compatibility with python3, and has an outdated
-interface compared to modern python. Astroclr was written with the express aim
-of making colour calculations from spectra as simple as possible, with
-a particular focus on observational astronomy.
+and requires several tweaks for compatibility with python3. Astroclr was
+written with the express aim of making colour calculations from spectra as
+simple as possible, usng a modern python interface, and with a particular focus
+on observational astronomy.
 
 ## Features
 * A modern interface with a variety of colour classes and methods to convert
@@ -38,14 +38,15 @@ a particular focus on observational astronomy.
   do, and demonstrations of various colour science concepts
 
 Note: All documentation uses the British spelling of "colour" (since I am
-British). However for code, I have opted to use "color", for consistency with
+British). For code, however, I have opted to use "color", for consistency with
 Colorpy, and other similar software (and to save on typing). The module name
 was chosen to be neutral towards spelling.
 
 ## Installation:
 
-At the moment installation is simply cloning this module and pointing your
-PYTHONPATH environment variable at it.
+At the moment, installation is simply cloning this module and pointing your
+PYTHONPATH environment variable at it. This module will be made available for
+installation via pip asap.
 
 ### Dependencies
 * numpy
@@ -54,10 +55,10 @@ PYTHONPATH environment variable at it.
 * astropy
 
 
-## Example
+## Examples
 
-Calculating colours with astroclr has been made as easy as possible. The recipe
-for doing so looks basically like:
+Calculating colours with astroclr has been made as easy as possible, with the
+basic recipe looking like:
 * create a Spectrum object
 * convert to the CIE 1931 XYZ colour space
 * convert from XYZ to a linear RGB colour space (sRGB by default)
@@ -81,8 +82,8 @@ follow the above recipe as follows:
 '#CDD9FF'
 ```
 
-The brightest keyword, ensures that the brightest RGB channel is scaled to 1.0,
-so observed spectra (typically faint) can be shown as bright as possible, and
+The `brightest` keyword, ensures the brightest RGB channel is scaled to 1.0, so
+observed spectra (typically faint) can be shown as bright as possible, and
 bright spectra (such as models) can be displayed without colour clipping. The
 above code can be actually be performed even more succinctly:
 
@@ -140,8 +141,13 @@ we can normalise the $X, Y, Z$ by scaling by their sum:
 x = \frac{X}{X+Y+Z} \qquad y = \frac{Y}{X+Y+Z} \qquad z = \frac{Z}{X+Y+Z}
 ```
 
-Having lost a degree of freedom (the intensity), $x$ and $y$ now uniquely define
-the brightness-independent component of colour and is called the chromaticity.
+Having lost a degree of freedom (the intensity), $x$ and $y$ now uniquely
+define the brightness-independent component of colour and is called the
+chromaticity. The CIE 1931 chromaticity diagram is shown below, where the
+shark-fin shape corresponds to monochromactic colours and bounds all perceivable
+colours, the triangle shows the sRGB gamut (colours outside the triangle are
+approximated by clipping negative values), and the black curve starting in the red
+corner is the blackbody locus (ticks from 2000K to 10000K in 1000K steps).
 ![image](https://github.com/mahollands/astroclr/blob/main/src/astroclr/images/CIE_xy.png
 "CIE 1931 chromaticity diagram")
 
@@ -171,7 +177,8 @@ These give linear intensities in the R/G/B channels in the range 0 to 1, where
 (R,G,B)=(1,1,1) represents full white. To convert these to display RGB values
 (IRGB in astroclr), we cannot simply multiply by 255 and round. As the display
 scale is non-linear. We therefore have to apply an opto-electrical transfer
-function. In some colour-spaces this is just a power-law (gamma curve), though
+function (OETF). In some colour-spaces this is just a power-law (gamma curve), though
 in sRGB a piecewise function is used that is linear at low-brightness and a
 shifted plus scaled power-law at higher brightness, but closely resembles a
-power-law with exponent 1/2.2.
+power-law with exponent 1/2.2. After applying a OETF, RGB values can be multiplied
+by 255 and rounded to determine the 8-bit per channel display values.
