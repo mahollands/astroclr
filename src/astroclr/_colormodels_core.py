@@ -4,7 +4,7 @@ Basic classes for working with colours:
 Color - This is the base class for all colour types, storing a set of three
 values.
 
-LinearColor - For colours where each component represents some linear value.
+Linear_Color - For colours where each component represents some linear value.
 Linear colours of the same type can be added together, subtracted, or scaled by
 a constant.
 
@@ -185,7 +185,7 @@ class Lpq_Color(Color):
             raise TypeError("white_point should be an XYZ_Color")
         self.white_point = white_point
 
-    L = property(fget=LinearColor._1.fget, fset=LinearColor._1.fset)
+    L = property(fget=Linear_Color._1.fget, fset=Linear_Color._1.fset)
 
     @classmethod
     def f(cls, t):
@@ -229,9 +229,9 @@ class XYZ_Color(Linear_Color):
             fmt = fmt.replace("Y=", "y=")
         return fmt
 
-    X = property(fget=LinearColor._1.fget, fset=LinearColor._1.fset)
-    Y = property(fget=LinearColor._2.fget, fset=LinearColor._2.fset)
-    Z = property(fget=LinearColor._3.fget, fset=LinearColor._3.fset)
+    X = property(fget=Linear_Color._1.fget, fset=Linear_Color._1.fset)
+    Y = property(fget=Linear_Color._2.fget, fset=Linear_Color._2.fset)
+    Z = property(fget=Linear_Color._3.fget, fset=Linear_Color._3.fset)
 
     def normalize(self):
         """
