@@ -1,0 +1,31 @@
+[project]
+name = "astroclr"
+version = "1.0.0"
+authors = [
+  { name="Mark Hollands", email="mhollands14@gmail.com" },
+]
+description = "Calculate the perceived colours of astrophysical spectra"
+readme = "README.md"
+requires-python = ">=3.9"
+classifiers = [
+    "Intended Audience :: Science/Research",
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+license = "MIT"
+license-files = ["LICEN[CS]E*"]
+
+dependencies = [
+    "astropy>=6.0.1",
+    "matplotlib>=3.8.4",
+    "numpy>=2.0",
+    "scipy>=1.13",
+]
+
+[project.urls]
+Homepage = "https://github.com/mahollands/astroclr"
+Issues = "https://github.com/mahollands/astroclr/issues"
+
+[build-system]
+requires = ["hatchling >= 1.26"]
+build-backend = "hatchling.build"

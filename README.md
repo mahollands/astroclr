@@ -44,16 +44,9 @@ was chosen to be neutral towards spelling.
 
 ## Installation:
 
-At the moment, installation is simply cloning this module and pointing your
-PYTHONPATH environment variable at it. This module will be made available for
-installation via pip asap.
-
-### Dependencies
-* numpy
-* scipy
-* matplotlib
-* astropy
-
+```bash
+pip install astroclr
+```
 
 ## Examples
 
