@@ -1,7 +1,7 @@
 """
-A collection of classes and functions for working with spectra and
-converting to directly to perceived colours. This module also imports CMFs from
-the CMFs submodule.
+A collection of classes and functions for working with spectra and converting
+to directly to perceived colours. This module also imports CMFs from the CMFs
+submodule.
 
 Basic usage:
 >>> S = Spectrum.BlackBody(6000 * u.K)
@@ -63,8 +63,6 @@ def XYZ_from_wavelength(
     else:
         wavelength <<= u.nm
     xyz = CMF.interp(wavelength)
-    if wavelength.isscalar:
-        return XYZ_Color(*xyz)
     return XYZ_Color(*xyz)
 
 
