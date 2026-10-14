@@ -100,4 +100,4 @@ from .delta_color import *
 from .rgb_color_spaces import *
 from .spectral import *
 
-__version__ = "1.0.1"
+__version__ = "1.0.2"
