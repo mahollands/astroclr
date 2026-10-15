@@ -173,5 +173,16 @@ scale is non-linear. We therefore have to apply an opto-electrical transfer
 function (OETF). In some colour-spaces this is just a power-law (gamma curve), though
 in sRGB a piecewise function is used that is linear at low-brightness and a
 shifted plus scaled power-law at higher brightness, but closely resembles a
-power-law with exponent 1/2.2. After applying a OETF, RGB values can be multiplied
-by 255 and rounded to determine the 8-bit per channel display values.
+power-law with exponent 1/2.2:
+
+```math
+    V_\mathrm{out} = \left\{
+    \begin{array}{ll}
+    12.92V_\mathrm{in} & \mathrm{if}\quad V_\mathrm{in} \leq 0.031308 \\
+    1.055V_\mathrm{in}^{1/2.4} - 0.055 & \mathrm{otherwise} \\
+    \end{array}
+    \right.
+```
+
+After applying a OETF, RGB values can be multiplied by 255 and rounded to
+determine the 8-bit per channel display values.
