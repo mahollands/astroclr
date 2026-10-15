@@ -179,7 +179,7 @@ power-law with exponent 1/2.2:
     V_\mathrm{out} = \left\{
     \begin{array}{ll}
     12.92V_\mathrm{in} & \mathrm{if}\quad V_\mathrm{in} \leq 0.031308 \\
-    1.055V_\mathrm{in}^{1/2.4} - 0.055 & \mathrm{otherwise} \\
+    1.055V_\mathrm{in}^{1/2.4} - 0.055 & \mathrm{otherwise}
     \end{array}
     \right.
 ```
