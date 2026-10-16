@@ -18,7 +18,7 @@ license-files = ["LICEN[CS]E*"]
 dependencies = [
     "astropy>=6.0.1",
     "matplotlib>=3.8.4",
-    "numpy>=2.0",
+    "numpy>=1.2",
     "scipy>=1.13",
 ]
 
