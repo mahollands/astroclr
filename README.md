@@ -126,9 +126,13 @@ Z = \int F_\lambda(\lambda) \bar{z}(\lambda) \,\mathrm{d}\lambda
 ```
 
 where $\bar{x}(\lambda)$ etc, are the CIE 1931 colour matching functions, and
-$X,Y,Z$ are the integrated fluxes in the XYZ colour space. But what if we want
-to consider the colour independent of its brightness/intensity/luminance? Then
-we can normalise the $X, Y, Z$ by scaling by their sum: 
+$X,Y,Z$ are the integrated fluxes in the XYZ colour space.
+![image](https://github.com/mahollands/astroclr/blob/main/images/xyz_curves.png
+"CIE 1931 colour matching functionsq")
+
+But what if we want to consider the colour independent of its
+brightness/intensity/luminance? Then we can normalise the $X, Y, Z$ by scaling
+by their sum: 
 
 ```math
 x = \frac{X}{X+Y+Z} \qquad y = \frac{Y}{X+Y+Z} \qquad z = \frac{Z}{X+Y+Z}
@@ -141,7 +145,7 @@ shark-fin shape corresponds to monochromactic colours and bounds all perceivable
 colours, the triangle shows the sRGB gamut (colours outside the triangle are
 approximated by clipping negative values), and the black curve starting in the red
 corner is the blackbody locus (ticks from 2000K to 10000K in 1000K steps).
-![image](https://github.com/mahollands/astroclr/blob/main/src/astroclr/images/CIE_xy.png
+![image](https://github.com/mahollands/astroclr/blob/main/images/CIE_xy.png
 "CIE 1931 chromaticity diagram")
 
 The sRGB colour space specifies the chromaticities of the red/green/blue
