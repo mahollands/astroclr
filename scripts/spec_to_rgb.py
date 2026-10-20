@@ -31,7 +31,7 @@ def spectrum_figure(fname, units=(u.AA, u.erg / u.s / u.cm**2 / u.AA)):
     RGBs -= RGB_Color.from_grey(RGBs.values.min()) 
     RGBs /= RGBs.values.max()
 
-    print(fname, S_XYZ.normalize(), S_hex)
+    print(f"{fname} {S_XYZ.normalize():.4f} {S_hex}")
 
     plt.figure(fname)
     for lam, RGB in zip(S.wavelength, RGBs):
