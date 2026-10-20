@@ -128,9 +128,9 @@ Z = \int F_\lambda(\lambda) \bar{z}(\lambda) \,\mathrm{d}\lambda
 where $\bar{x}(\lambda)$ etc, are the CIE 1931 colour matching functions
 (CMFs), and $X,Y,Z$ are the integrated fluxes in the XYZ colour space. The CMFs
 were empirically determined and do not directly represent cone sensitivites.
-All curves have the same area, and the y-curve is the photopic luminous
-efficiency function. Therefore for calculated X,Y,Z triplets, Y can be taken to
-be the perceived brightness/intensity/luminance.
+All curves have the same area, and $\bar{y}(\lambda)$ is the photopic luminous
+efficiency function. Therefore for calculated $(X,Y,Z)$ triplets, $Y$ can be
+taken to be the perceived brightness/intensity/luminance.
 ![image](https://github.com/mahollands/astroclr/blob/main/images/xyz_curves.png
 "CIE 1931 colour matching functionsq")
 
