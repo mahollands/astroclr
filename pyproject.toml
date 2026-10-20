@@ -1,6 +1,6 @@
 [project]
 name = "astroclr"
-version = "1.0.2"
+version = "1.0.3"
 authors = [
   { name="Mark Hollands", email="mhollands14@gmail.com" },
 ]
@@ -18,7 +18,7 @@ license-files = ["LICEN[CS]E*"]
 dependencies = [
     "astropy>=6.0.1",
     "matplotlib>=3.8.4",
-    "numpy>=1.2",
+    "numpy>=1.20",
     "scipy>=1.13",
 ]
 
