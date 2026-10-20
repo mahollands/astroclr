@@ -125,14 +125,17 @@ Y = \int F_\lambda(\lambda) \bar{y}(\lambda) \,\mathrm{d}\lambda \qquad
 Z = \int F_\lambda(\lambda) \bar{z}(\lambda) \,\mathrm{d}\lambda
 ```
 
-where $\bar{x}(\lambda)$ etc, are the CIE 1931 colour matching functions, and
-$X,Y,Z$ are the integrated fluxes in the XYZ colour space.
+where $\bar{x}(\lambda)$ etc, are the CIE 1931 colour matching functions
+(CMFs), and $X,Y,Z$ are the integrated fluxes in the XYZ colour space. The CMFs
+were empirically determined and do not directly represent cone sensitivites.
+All curves have the same area, and the y-curve is the photopic luminous
+efficiency function. Therefore for calculated X,Y,Z triplets, Y can be taken to
+be the perceived brightness/intensity/luminance.
 ![image](https://github.com/mahollands/astroclr/blob/main/images/xyz_curves.png
 "CIE 1931 colour matching functionsq")
 
-But what if we want to consider the colour independent of its
-brightness/intensity/luminance? Then we can normalise the $X, Y, Z$ by scaling
-by their sum: 
+But what if we want to consider the colour independent of its brightness? Then
+we can normalise the $X, Y, Z$ by scaling by their sum: 
 
 ```math
 x = \frac{X}{X+Y+Z} \qquad y = \frac{Y}{X+Y+Z} \qquad z = \frac{Z}{X+Y+Z}
