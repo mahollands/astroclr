@@ -198,8 +198,8 @@ class Spectrum:
         Loads the alpha_lyr_stis_011 model of Vega from Calspec, and caches
         for repeated calls.
         """
-        hdulist = fits.open(f"{DATA_DIR}/alpha_lyr_stis_011.fits")
-        data = hdulist[1].data
+        with fits.open(f"{DATA_DIR}/alpha_lyr_stis_011.fits") as hdulist:
+            data = hdulist[1].data
         wavelength = data["WAVELENGTH"] * u.AA
         flux = data["FLUX"] * u.erg / u.s / u.cm**2 / u.AA
         return wavelength, flux
