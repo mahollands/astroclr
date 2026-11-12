@@ -79,7 +79,11 @@ def get_illuminant_DXX(T: float) -> Spectrum:
     """
     Generate CIE Illuminant D series. The temperature, T [K], is required as an
     input. For get_illuminant_D65 a pre-caculated table from the CIE is loaded instead.
+    Valid for 4000 < T < 25000.
     """
+    if not 4000 <= T <= 25000:
+        raise ValueError
+
     T *= 1.438776877 / 1.4380  # CCT correcetion
     T_inv = 1000 / T
     wavelength, S_eig, d_polys, M_matrix = _get_illuminant_D_data()
