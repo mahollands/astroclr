@@ -35,7 +35,7 @@ using a different colour space, we would instead do something like
 from enum import StrEnum
 import numpy as np
 from astropy import units as u
-from ._colormodels_core import Linear_Color, Lpq_Color, XYZ_Color
+from ._colormodels_core import Color, Linear_Color, Lpq_Color, XYZ_Color
 from .rgb_color_spaces import RGB_ColorSpace, sRGB
 
 __all__ = [
@@ -159,7 +159,7 @@ class RGB_Color(Linear_Color):
         return IRGB_Color(*irgb, self.color_space)
 
 
-class IRGB_Color(Linear_Color):
+class IRGB_Color(Color):
     """
     Color class for display RGB values. These have the same primaries and white
     point as RGB_Color, but the values are on a non-linear scale (passed through
