@@ -67,12 +67,11 @@ def BT1886_EOTF(gamma: float = 2.4, Lb_Lw: float = 0):
     b = Lb_igamma / (1 - Lb_igamma)
 
     def EOTF(x, gamma, a, b):
-        return a * max(x + b, 0) ** gamma
+        return a * np.maximum(x + b, 0) ** gamma
 
-    # TODO check this
     def OETF(x, igamma, a, b):
         scaled = (x / a) ** igamma
-        return max(scaled - b, 0)
+        return np.maximum(scaled - b, 0)
 
     EOTF = partial(EOTF, gamma=gamma, a=a, b=b)
     EOTF.inv = partial(OETF, igamma=igamma, a=a, b=b)
