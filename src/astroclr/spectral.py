@@ -61,7 +61,7 @@ def XYZ_from_wavelength(
     elif isinstance(wavelength, u.Quantity):
         wavelength = wavelength.to(u.nm)
     else:
-        wavelength <<= u.nm
+        wavelength *= u.nm
     xyz = CMF.interp(wavelength)
     return XYZ_Color(*xyz)
 
@@ -100,7 +100,7 @@ class Spectrum:
     @wavelength.setter
     def wavelength(self, value: np.ndarray | u.Quantity):
         if not isinstance(value, u.Quantity):
-            value <<= u.nm
+            value *= u.nm
         if value.isscalar:
             raise ValueError("wavelengths must be array-like")
         if not value.unit.is_equivalent(u.nm):
@@ -114,7 +114,7 @@ class Spectrum:
     @flux.setter
     def flux(self, value: np.ndarray | u.Quantity):
         if not isinstance(value, u.Quantity):
-            value <<= UNIT_SPEC_RADIANCE
+            value *= UNIT_SPEC_RADIANCE
         if value.isscalar:
             value = value * np.ones(self.wavelength.size)
         elif len(value) != len(self.wavelength):
@@ -178,11 +178,11 @@ class Spectrum:
         """
 
         if not isinstance(temperature, u.Quantity):
-            temperature <<= u.K
+            temperature *= u.K
         if not temperature.isscalar:
             raise ValueError("temperature should be a scalar")
         if not isinstance(wavelength, u.Quantity):
-            wavelength <<= u.nm
+            wavelength *= u.nm
         if wavelength.isscalar:
             raise ValueError("wavelengths must be array-like")
         if not wavelength.unit.is_equivalent(u.nm):
@@ -220,8 +220,8 @@ class Spectrum:
         """
         wavelength, flux = np.loadtxt(fname, unpack=True, usecols=(0, 1), **kwargs)
         wavelength_unit, flux_unit = units
-        wavelength <<= wavelength_unit
-        flux <<= flux_unit
+        wavelength *= wavelength_unit
+        flux *= flux_unit
         return cls(wavelength, flux)
 
     def XYZ_integrals(self, CMFname: str = "1931") -> u.Quantity:
