@@ -3,7 +3,8 @@ Sub-module for calculating color differences such as ΔE and
 the correlated color temperature.
 """
 
-import math
+from typing import List
+import numpy as np
 from scipy.optimize import leastsq
 from astropy import units as u
 from .spectral import Spectrum
@@ -17,7 +18,7 @@ __all__ = [
 type RealColor = XYZ_Color | RGB_Color | UCS_Color | LUV_Color | LAB_Color
 
 
-def delta_uv(XYZ1: XYZ_Color, XYZ2: XYZ_Color) -> float:
+def delta_uv(XYZ1: XYZ_Color, XYZ2: XYZ_Color) -> List[float, float]:
     """
     vector difference in UCS 1960 uv terms between a pair of XYZ colors
     """
@@ -55,7 +56,7 @@ def CCT(color: RealColor, return_uv_vec: bool = False) -> u.Quantity:
 
     BB = Spectrum.BlackBody(T)
     du, dv = duv = delta_uv(BB.to_XYZ(), color)
-    return T, duv, math.hypot(du, dv)
+    return T, duv, np.hypot(du, dv)
 
 
 def delta_E(color1: RealColor, color2: RealColor) -> float:
@@ -75,4 +76,4 @@ def delta_E(color1: RealColor, color2: RealColor) -> float:
     dL = color1.L - color2.L
     da = color1.a - color2.a
     db = color1.b - color2.b
-    return math.sqrt(dL**2 + da**2 + db**2)
+    return np.sqrt(dL**2 + da**2 + db**2)
