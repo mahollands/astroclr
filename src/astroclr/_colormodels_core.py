@@ -93,7 +93,6 @@ class Color:
 
     @_1.setter
     def _1(self, value):
-        self._validate_values(value, self._2, self._3)
         self._values[0] = value
 
     @property
@@ -102,7 +101,6 @@ class Color:
 
     @_2.setter
     def _2(self, value):
-        self._validate_values(self._1, value, self._3)
         self._values[1] = value
 
     @property
@@ -111,7 +109,6 @@ class Color:
 
     @_3.setter
     def _3(self, value):
-        self._validate_values(self._1, self._2, value)
         self._values[2] = value
 
     @property
