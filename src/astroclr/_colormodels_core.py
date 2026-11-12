@@ -43,8 +43,11 @@ class Color:
                 raise TypeError("Values must be a list of colours of this type")
             if isinstance(value._1, np.ndarray):
                 raise TypeError("Colours must be scalars")
+        for value in values[1:]:
+            if value._kwargs != value[0]._kwargs:
+                raise ValueError("All colours in list must have identical kwargs")
         values = np.array([value.values for value in values]).T
-        return cls(*values)
+        return cls(*values, **values[0]._kwargs)
 
     def __format__(self, format_spec):
         values_formatted = (
@@ -70,7 +73,12 @@ class Color:
             raise ValueError("Length isn't defined for colour arrays with ndim > 1")
 
     def __getitem__(self, key):
-        return type(self)(*[val[key] for val in self.values])
+        abc = [val[key] for val in self.values]
+        return type(self)(*abc, **self._kwargs)
+
+    @property
+    def _kwargs(self):
+        return {}
 
     @staticmethod
     def _validate_values(_1, _2, _3):
@@ -130,16 +138,14 @@ class Linear_Color(Color):
     def __init__(self, _1, _2, _3, dtype=np.float64):
         super().__init__(_1, _2, _3, dtype=dtype)
 
-    @property
-    def _kwargs(self):
-        return {}
-
     def __add__(self, other):
         """
         Add two colours of the same type.
         """
         if not isinstance(other, type(self)):
             raise TypeError
+        if self._kwargs != other._kwargs:
+            raise ValueError("colour kwargs are not the same")
         new = [x + y for x, y in zip(self.values, other.values)]
         return self.__class__(*new, **self._kwargs)
 
@@ -149,6 +155,8 @@ class Linear_Color(Color):
         """
         if not isinstance(other, type(self)):
             raise TypeError
+        if self._kwargs != other._kwargs:
+            raise ValueError("colour kwargs are not the same")
         new = [x - y for x, y in zip(self.values, other.values)]
         return self.__class__(*new, **self._kwargs)
 
@@ -204,6 +212,10 @@ class Lpq_Color(Color):
         linear = (3*F - 2*cls._delta) * cls._delta2
         cubic = F * F * F
         return np.where(F > cls._delta, cubic, linear)
+
+    @property
+    def _kwargs(self):
+        return {"white_point": self.white_point}
 
 
 class XYZ_Color(Linear_Color):

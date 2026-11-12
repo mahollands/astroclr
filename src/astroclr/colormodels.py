@@ -145,7 +145,7 @@ class RGB_Color(Linear_Color):
             rgb = np.clip(rgb, 0, np.inf)
         else:
             raise ValueError(f"Invalid color clipping method {clip_method}")
-        return RGB_Color(*rgb)
+        return RGB_Color(*rgb, color_space=self.color_space)
 
     def to_IRGB(self, clip_method=ClipMethod.ADD_WHITE):
         """
@@ -179,6 +179,9 @@ class IRGB_Color(Linear_Color):
     G = property(fget=Linear_Color._2.fget, fset=Linear_Color._2.fset)
     B = property(fget=Linear_Color._3.fget, fset=Linear_Color._3.fset)
 
+    @property
+    def _kwargs(self):
+        return {"color_space": self.color_space}
 
     @staticmethod
     def _to_hex(R, G, B, fs):
