@@ -72,7 +72,6 @@ def visible_spectrum_plot(CMF="1931"):
         wavelengths.value,
         RGBs,
         "The Visible Spectrum",
-        tight=True,
         xlabel=r"Wavelength (nm)",
         ylabel=r"RGB Color",
     )
