@@ -350,9 +350,9 @@ class LAB_Color(Lpq_Color):
     def from_XYZ(cls, XYZ, white_point=sRGB.W):
         """
         Create an LAB color from an XYZ color and white point (D65 by default).
-        LUV colour space assumes luminance on scale 0--100.
+        LUV colour space assumes luminance on scale 0--1.
         """
-        wp = 100 * white_point.normalize_Y1()
+        wp = white_point.normalize_Y1()
         f_x = cls.f(XYZ.X/wp.X)
         f_y = cls.f(XYZ.Y/wp.Y)
         f_z = cls.f(XYZ.Z/wp.Z)
@@ -370,7 +370,7 @@ class LAB_Color(Lpq_Color):
         f_x = f_y + self.a / 500
         f_z = f_y - self.b / 200
         x_p, y_p, z_p = map(self.f_inverse, (f_x, f_y, f_z))
-        wp = 100 * self.white_point.normalize_Y1()
+        wp = self.white_point.normalize_Y1()
         return XYZ_Color(x_p*wp.X, y_p*wp.Y, z_p*wp.Z)
 
 
