@@ -75,10 +75,10 @@ def _get_illuminant_D_data() -> tuple:
 
 
 @scale_illuminant
-def get_illuminant_DXX(T: float | u.Quantity) -> Spectrum:
+def get_illuminant_DXX(T: float) -> Spectrum:
     """
     Generate CIE Illuminant D series. The temperature, T [K], is required as an
-    input. For D65 a pre-caculated table from the CIE is loaded instead.
+    input. For get_illuminant_D65 a pre-caculated table from the CIE is loaded instead.
     """
     T *= 1.438776877 / 1.4380  # CCT correcetion
     T_inv = 1000 / T
