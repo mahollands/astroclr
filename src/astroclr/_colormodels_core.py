@@ -141,7 +141,7 @@ class Linear_Color(Color):
         Add two colours of the same type.
         """
         if not isinstance(other, type(self)):
-            raise TypeError
+            raise TypeError("Both colours should be of the same type")
         if self._kwargs != other._kwargs:
             raise ValueError("colour kwargs are not the same")
         new = [x + y for x, y in zip(self.values, other.values)]
@@ -152,7 +152,7 @@ class Linear_Color(Color):
         Subtract two colours of the same type.
         """
         if not isinstance(other, type(self)):
-            raise TypeError
+            raise TypeError("Both colours should be of the same type")
         if self._kwargs != other._kwargs:
             raise ValueError("colour kwargs are not the same")
         new = [x - y for x, y in zip(self.values, other.values)]
