@@ -176,11 +176,12 @@ transformation between XYZ and sRGB.
 These give linear intensities in the R/G/B channels in the range 0 to 1, where
 (R,G,B)=(1,1,1) represents full white. To convert these to display RGB values
 (IRGB in astroclr), we cannot simply multiply by 255 and round. As the display
-scale is non-linear. We therefore have to apply an opto-electrical transfer
-function (OETF). In some colour-spaces this is just a power-law (gamma curve), though
-in sRGB a piecewise function is used that is linear at low-brightness and a
-shifted plus scaled power-law at higher brightness, but closely resembles a
-power-law with exponent 1/2.2:
+scale is non-linear. We therefore have to encode these intensities to the
+display scale using an electro-optical transfer function (EOTF), or more
+specifically its inverse. In some colour-spaces this is just a power-law (gamma
+curve), though in sRGB a piecewise function is used that is linear at
+low-brightness and a shifted plus scaled power-law at higher brightness, but
+closely resembles a power-law with exponent 1/2.2:
 
 ```math
     V_\mathrm{out} = \left\{
