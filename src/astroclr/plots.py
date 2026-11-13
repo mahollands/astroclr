@@ -77,9 +77,9 @@ def visible_spectrum_plot(CMF="1931"):
     )
 
 
-def cie_matching_functions_plot(CMF="1931"):
+def color_matching_functions_plot(CMF="1931"):
     """
-    Plot the CIE XYZ matching functions, as three spectral subplots.
+    Plot the XYZ colour matching functions, as three spectral subplots.
     """
     wavelengths, xyz_table, _ = CMFs[CMF]
     cie_x, cie_y, cie_z = xyz_table
@@ -87,7 +87,7 @@ def cie_matching_functions_plot(CMF="1931"):
     plt.figure()
     # X
     plt.subplot(3, 1, 1)
-    plt.title("1931 CIE XYZ Matching Functions")
+    plt.title(f"CIE {CMF} XYZ Matching Functions")
     plt.ylabel("CIE $X$")
     plt.plot(wavelengths, cie_x, 'r-')
     plt.xlim(wavelengths.value[(0, -1),])
@@ -223,15 +223,6 @@ def chromaticity_diagram(
     plt.xlabel("$x$")
     plt.ylabel("$y$")
     plt.tight_layout()
-
-
-def CMF_plot(name, CMF):
-    wavelength, (x, y, z), *_ = CMF
-    plt.figure(name)
-    plt.plot(wavelength, x, "r")
-    plt.plot(wavelength, y, "g")
-    plt.plot(wavelength, z, "b")
-    plt.show()
 
 
 def figures(CMF="1931"):
