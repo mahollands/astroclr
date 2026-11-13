@@ -225,6 +225,15 @@ def chromaticity_diagram(
     plt.tight_layout()
 
 
+def CMF_plot(name, CMF):
+    wavelength, (x, y, z), *_ = CMF
+    plt.figure(name)
+    plt.plot(wavelength, x, "r")
+    plt.plot(wavelength, y, "g")
+    plt.plot(wavelength, z, "b")
+    plt.show()
+
+
 def figures(CMF="1931"):
     """Draw specific figures not used anywhere else."""
     #cie_matching_functions_plot(CMF=CMF)

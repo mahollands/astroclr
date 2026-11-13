@@ -30,7 +30,6 @@ LMS_XYZ_MATRIX_2000 -
 import os.path
 from collections import namedtuple
 import numpy as np
-import matplotlib.pyplot as plt
 from scipy.interpolate import interp1d
 from astropy import units as u
 
@@ -66,15 +65,6 @@ def load_CMF(fname: str) -> CIE_CMF:
     xyz_table[np.isnan(xyz_table)] = 0.0
     xyz_interpolator = interp1d(wavelength, xyz_table, bounds_error=False, fill_value=0)
     return CIE_CMF(wavelength, xyz_table, xyz_interpolator)
-
-
-def CMF_plot(name, CMF):
-    wavelength, (x, y, z), *_ = CMF
-    plt.figure(name)
-    plt.plot(wavelength, x, "r")
-    plt.plot(wavelength, y, "g")
-    plt.plot(wavelength, z, "b")
-    plt.show()
 
 
 CMFs = {
