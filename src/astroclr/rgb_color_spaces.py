@@ -10,7 +10,7 @@ from dataclasses import dataclass
 import numpy as np
 from astropy import units as u
 from ._colormodels_core import XYZ_Color
-from .transfer_functions import gamma_EOTF, piecewise_EOTF, PQ_EOTF, BT1886_EOTF
+from .transfer_functions import TransferFunction, gamma_EOTF, piecewise_EOTF, PQ_EOTF, BT1886_EOTF
 
 
 __all__ = [
@@ -56,7 +56,7 @@ class RGB_ColorSpace:
     G: XYZ_Color
     B: XYZ_Color
     W: XYZ_Color
-    EOTF: Callable
+    EOTF: TransferFunction
     bit_depth: int = 8
     peak_luminance: u.Quantity = 80 * u.cd / u.m**2
 
