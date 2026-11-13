@@ -5,12 +5,12 @@ different colour spaces, and provides a few useful scripts for things you might
 want to do with this module.
 
 AstroClr is designed primarily for astronomers who may want to determine the
-visual appearance of stars (or other astrophyisical objects) from astrophysical
+visual appearance of stars (or other astrophysical objects) from astrophysical
 spectra, though will work more generally for all kinds of optical spectra.
 
 Astroclr is heavily inspired by ColorPy by Mark Kness, but has been rewritten
 from the ground up, providing a modern pythonic interface. For example, a
-Spectrum class is provided which is compatable with astropy units, and provides
+Spectrum class is provided which is compatible with astropy units, and provides
 methods for various colour transformations. Furthermore, colour classes can
 accept arrays of colours, allowing efficient calculations when working with
 lists of objects, or images.
@@ -19,31 +19,31 @@ lists of objects, or images.
 References for colour science
 =============================
 
-CIE, Technical Note: Brussels Session of the International Commision on
+CIE, Technical Note: Brussels Session of the International Commission on
 Illumination, J. Opt. Soc. Am. (50), 89 (1960)
 
 Foley et al., Computer Graphics Principles and Practice, Addison Wesley, Boston
 (1982)
 
-Hall, Illuminaiton and Color in Computer Generated Imagery, Springer, New York
+Hall, Illumination and Color in Computer Generated Imagery, Springer, New York
 (1988)
 
-IEC, Multimedia systema dn equipment - color measurement and management -
+IEC, Multimedia systems and equipment - color measurement and management -
 part2-1: Colour management - default rgb colour space - srgb, International
-Electrotechnical Comission, 61966-2-1 (1999)
+Electrotechnical Commission, 61966-2-1 (1999)
 
 Judd & Wyszecki, Color in Business, Science, and Industry, Wiley, New York
 (1975)
 
-Judd, Repost of U.S. secretariat committee on colorimetry and artificial
+Judd, Report of U.S. secretariat committee on colorimetry and artificial
 daylight, Proceedings of the Twelfth Session of the CIE, Stockholm, Bureau
 Central de la CIE (1951)
 
-MacAdam, Projective Transormations of I. C. I. Color Specifications, J. Opt.
+MacAdam, Projective Transformations of I. C. I. Color Specifications, J. Opt.
 Soc. Am., 27, 294 (1937)
 
-MacLeod et al., Funadamental chromaticity diagram with physiological axes -
-part 1, Tech Rep. 170-1, International Comission on Illumination (2006)
+MacLeod et al., Fundamental chromaticity diagram with physiological axes -
+part 1, Tech Rep. 170-1, International Commission on Illumination (2006)
 
 Smith & Guild, The CIE colorimetric standards and their use, Transactions of
 the Optical Society 33, 73 (1931)
@@ -54,9 +54,9 @@ Vision Res. 40, 1711 (2000)
 
 Viénot et al., Fundamental chromacticity diagram with physiological axes - part
 2: Spectral luminous efficiency functions and chromaticity diagrams, Tech Rep.
-170-2, International Comission on Illumination (2015)
+170-2, International Commission on Illumination (2015)
 
-Vos, Colorimetric and photometric properties of a 2° fundamanetalobserver,
+Vos, Colorimetric and photometric properties of a 2° fundamental observer,
 Color Research and Application 3, 125 (1978)
 
 Weszecki & Stiles, Color science: concepts and methods, quantitative data and
@@ -66,7 +66,7 @@ formulae, Wiley, New York, Chichester (1982)
 Astronomy in colour
 ===================
 
-Burrows, Alkali Metals and the Colour of Browind Dwarfs, Ultracool Dwarfs: New
+Burrows, Alkali Metals and the Colour of Brown Dwarfs, Ultracool Dwarfs: New
 Spectral Types L and T (2021)
 
 Burrows et al., Beyond the T Dwarfs: Theoretical Spectra, Colors, and
@@ -92,7 +92,7 @@ Kohman, Visual Star Colours from Instrumental Photometry, J. R. Astron Soc.
 Can. 99, 98 (2005)
 
 Rering & Charnay, New Calculations of Human-eye Colors of Cloudy Brown Dwarfs
-and Exoplanets, Research Notes of the American Astronomical Socitey, 9, 168
+and Exoplanets, Research Notes of the American Astronomical Society, 9, 168
 (2025)
 """
 
