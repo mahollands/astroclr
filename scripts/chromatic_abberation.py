@@ -19,7 +19,7 @@ from astroclr.colormodels import RGB_Color
 from astroclr.rgb_color_spaces import sRGB as cspace
 
 CMF = CMFs["1931"]
-OETF = cspace.EOTF.inv
+EOTF = cspace.EOTF
 
 N_PX = 200
 SPOT_EXPONENT = 20
@@ -45,7 +45,7 @@ def mk_img(spotlight, disp, RGBs, lams):
         img_RGB += spot_shifted[:, :, None] * RGBarr[None, None, :]
     img_RGB -= img_RGB.min()
     img_RGB /= img_RGB.max()
-    img_IRGB = OETF(img_RGB)
+    img_IRGB = EOTF.inv(img_RGB)
     return img_IRGB
 
 
