@@ -17,6 +17,7 @@ like sRGB are defined in terms of XYZ chromaticities, and RGB colour objects
 are defined in terms of RGB colour spaces.
 """
 
+import numbers
 import numpy as np
 
 
@@ -162,8 +163,8 @@ class Linear_Color(Color):
         """
         Multiply colours by a constant or array of constants.
         """
-        if not isinstance(other, (int, float, np.ndarray)):
-            raise TypeError
+        if not isinstance(other, numbers.Real):
+            raise TypeError("multiplication must be with numeric types")
         new = [x * other for x in self.values]
         return self.__class__(*new, **self._kwargs)
 
@@ -171,8 +172,8 @@ class Linear_Color(Color):
         """
         Divide colours by a constant or array of constants.
         """
-        if not isinstance(other, (int, float, np.ndarray)):
-            raise TypeError
+        if not isinstance(other, numbers.Real):
+            raise TypeError("division must be with numeric types")
         new = [x / other for x in self.values]
         return self.__class__(*new, **self._kwargs)
 
