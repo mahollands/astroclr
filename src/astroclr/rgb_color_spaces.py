@@ -154,6 +154,7 @@ DCI_P3_D65 = RGB_ColorSpace(
     G=XYZ_Color(0.265, 0.690),
     B=XYZ_Color(0.150, 0.060),
     W=Whites["D65"],
+    bit_depth=12,
     EOTF=gamma_EOTF(gamma=2.6),
     peak_luminance= 48 *u.cd / u.m**2
 )
@@ -165,6 +166,7 @@ DCI_P3_DCI = RGB_ColorSpace(
     G=XYZ_Color(0.265, 0.690),
     B=XYZ_Color(0.150, 0.060),
     W=XYZ_Color(0.314, 0.351),
+    bit_depth=12,
     EOTF=gamma_EOTF(gamma=2.6),
     peak_luminance= 48 *u.cd / u.m**2
 )
