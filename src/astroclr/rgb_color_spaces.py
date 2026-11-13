@@ -5,7 +5,6 @@ transfer function for conversion between linear and display RGB.
 """
 
 import functools
-from typing import Callable
 from dataclasses import dataclass
 import numpy as np
 from astropy import units as u
