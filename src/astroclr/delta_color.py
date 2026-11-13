@@ -3,7 +3,6 @@ Sub-module for calculating color differences such as ΔE and
 the correlated color temperature.
 """
 
-from typing import List
 import numpy as np
 from scipy.optimize import leastsq
 from astropy import units as u
@@ -18,7 +17,7 @@ __all__ = [
 type RealColor = XYZ_Color | RGB_Color | UCS_Color | LUV_Color | LAB_Color
 
 
-def delta_uv(XYZ1: XYZ_Color, XYZ2: XYZ_Color) -> List[float, float]:
+def delta_uv(XYZ1: XYZ_Color, XYZ2: XYZ_Color):
     """
     vector difference in UCS 1960 uv terms between a pair of XYZ colors
     """
