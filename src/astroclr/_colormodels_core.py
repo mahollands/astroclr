@@ -45,10 +45,10 @@ class Color:
             if isinstance(value._1, np.ndarray):
                 raise TypeError("Colours must be scalars")
         for value in values[1:]:
-            if value._kwargs != value[0]._kwargs:
+            if value._kwargs != values[0]._kwargs:
                 raise ValueError("All colours in list must have identical kwargs")
-        values = np.array([value.values for value in values]).T
-        return cls(*values, **values[0]._kwargs)
+        new_values = np.array([value.values for value in values]).T
+        return cls(*new_values, **values[0]._kwargs)
 
     def __format__(self, format_spec):
         values_formatted = (
