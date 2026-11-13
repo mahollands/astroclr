@@ -20,19 +20,19 @@ def gamma_EOTF(gamma: float):
     def EOTF(x, gamma):
         return x**gamma
 
-    def OETF(x, gamma):
+    def inv(x, gamma):
         return x ** (1 / gamma)
 
     EOTF = partial(EOTF, gamma=gamma)
-    EOTF.inv = partial(OETF, gamma=gamma)
+    EOTF.inv = partial(inv, gamma=gamma)
     return EOTF
 
 
 def piecewise_EOTF(break_point: float, gamma: float, slope: float, offset: float):
     """
-    Colour spaces such as sRGB use a piecewise EOTF/OETF, which approximates a
+    Colour spaces such as sRGB use a piecewise EOTF and inverse, which approximates a
     gamma shifted curve curve over most of the range, but features a small
-    linear section near zero. This avoids a vertical slope in the OETF at zero,
+    linear section near zero. This avoids a vertical slope in the inverse EOTF at zero,
     allowing higher precision gamma correction for near-black values.
     """
 
@@ -41,7 +41,7 @@ def piecewise_EOTF(break_point: float, gamma: float, slope: float, offset: float
         gamma_section = ((x + offset) / (1 + offset)) ** gamma
         return np.where(x <= break_point * slope, linear_section, gamma_section)
 
-    def OETF(x, break_point, gamma, slope, offset):
+    def inv(x, break_point, gamma, slope, offset):
         linear_section = slope * x
         gamma_section = (1 + offset) * x ** (1 / gamma) - offset
         return np.where(x <= break_point, linear_section, gamma_section)
@@ -50,7 +50,7 @@ def piecewise_EOTF(break_point: float, gamma: float, slope: float, offset: float
         EOTF, break_point=break_point, gamma=gamma, slope=slope, offset=offset
     )
     EOTF.inv = partial(
-        OETF, break_point=break_point, gamma=gamma, slope=slope, offset=offset
+        inv, break_point=break_point, gamma=gamma, slope=slope, offset=offset
     )
     return EOTF
 
@@ -69,12 +69,12 @@ def BT1886_EOTF(gamma: float = 2.4, Lb_Lw: float = 0):
     def EOTF(x, gamma, a, b):
         return a * np.maximum(x + b, 0) ** gamma
 
-    def OETF(x, igamma, a, b):
+    def inv(x, igamma, a, b):
         scaled = (x / a) ** igamma
         return np.maximum(scaled - b, 0)
 
     EOTF = partial(EOTF, gamma=gamma, a=a, b=b)
-    EOTF.inv = partial(OETF, igamma=igamma, a=a, b=b)
+    EOTF.inv = partial(inv, igamma=igamma, a=a, b=b)
     return EOTF
 
 
@@ -94,7 +94,7 @@ def PQ_EOTF():
         denominator = c2 - c3 * Em2
         return (numerator / denominator) ** (1 / m1)
 
-    def OETF(x, ms, cs):
+    def inv(x, ms, cs):
         (m1, m2), (c1, c2, c3) = ms, cs
         Ym1 = x**m1
         numerator = c1 + c2 * Ym1
@@ -105,5 +105,5 @@ def PQ_EOTF():
     cs = 107 / 128, 2413 / 128, 2392 / 128
 
     EOTF = partial(EOTF, ms=ms, cs=cs)
-    EOTF.inv = partial(OETF, ms=ms, cs=cs)
+    EOTF.inv = partial(inv, ms=ms, cs=cs)
     return EOTF

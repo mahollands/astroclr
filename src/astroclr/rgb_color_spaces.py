@@ -10,7 +10,7 @@ from dataclasses import dataclass
 import numpy as np
 from astropy import units as u
 from ._colormodels_core import XYZ_Color
-from .transfer_functions import gamma_EOTF, piecewise_EOTF, PQ_EOTF
+from .transfer_functions import gamma_EOTF, piecewise_EOTF, PQ_EOTF, BT1886_EOTF
 
 
 __all__ = [
@@ -99,10 +99,6 @@ class RGB_ColorSpace:
         """
         return 2**self.bit_depth - 1
     
-    @property
-    def OETF(self):
-        return self.EOTF.inv
-
 
 # https://registry.color.org/rgb-registry/srgb
 sRGB = RGB_ColorSpace(
@@ -123,7 +119,7 @@ Rec709 = RGB_ColorSpace(
     G=XYZ_Color(0.300, 0.600),
     B=XYZ_Color(0.150, 0.060),
     W=Whites["D65"],
-    EOTF=piecewise_EOTF(break_point=0.018, gamma=1/0.45, slope=4.5, offset=0.099),
+    EOTF=BT1886_EOTF(gamma=2.4),
     peak_luminance=100 *u.cd/u.m**2
 )
 
@@ -135,7 +131,7 @@ Rec2020 = RGB_ColorSpace(
     G=XYZ_Color(0.170, 0.797),
     B=XYZ_Color(0.131, 0.046),
     W=Whites["D65"],
-    EOTF=gamma_EOTF(gamma=2.4),
+    EOTF=BT1885_EOTF(gamma=2.4),
     peak_luminance= 100 *u.cd / u.m**2
 )
 
@@ -180,6 +176,6 @@ Display_P3 = RGB_ColorSpace(
     G=XYZ_Color(0.265, 0.690),
     B=XYZ_Color(0.150, 0.060),
     W=Whites["D65"],
-    EOTF=piecewise_EOTF(break_point=0.0031308, gamma=2.4, slope=12.92, offset=0.055),
+    EOTF=sRGB.EOTF,
     peak_luminance= 80 *u.cd / u.m**2
 )
