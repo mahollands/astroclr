@@ -89,6 +89,11 @@ class RGB_Color(Linear_Color):
         return {"color_space": self.color_space}
 
     def normalize_brightest(self):
+        """
+        Scales the components by the brightest value. For arrays of colours
+        the maximum is determined over the whole arrays, and not on a colour
+        by colour basis.
+        """
         return self / self.values.max()
 
     @classmethod
@@ -96,7 +101,8 @@ class RGB_Color(Linear_Color):
         """
         Create an RGB color from an XYZ color and color space (sRGB by
         default). 'brightest' keyword argument scales this so the brightest RGB
-        channel is at 1.0.
+        channel is at 1.0 (across the whole array in case of arrays of XYZ
+        colours.
         """
         transform_matrix = color_space.rgb_from_xyz_matrix
         rgb = np.einsum("ij,j...->i...", transform_matrix, XYZ.values)
