@@ -227,7 +227,7 @@ def chromaticity_diagram(
 
 def figures(CMF="1931"):
     """Draw specific figures not used anywhere else."""
-    #cie_matching_functions_plot(CMF=CMF)
+    #color_matching_functions_plot(CMF=CMF)
     #plt.show()
 
     chromaticity_diagram(CMF=CMF, color_space=sRGB, brightest=True)
