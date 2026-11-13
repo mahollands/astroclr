@@ -12,7 +12,7 @@ Basic usage:
 '#FFF3F1'
 
 Even faster usage:
->>> S = Spectrum.from_file("my_spec.dat")
+>>> S = Spectrum.from_file("my_spec.dat", units=(u.AA, u.erg/u.s/u.cm**2/u.AA))
 >>> print(S.to_IRGB_string())
 '#DDFFB8'
 
@@ -226,7 +226,7 @@ class Spectrum:
 
     def XYZ_integrals(self, CMFname: str = "1931") -> u.Quantity:
         """
-        Integrate spectrum over CIE1931 X/Y/Z color-matching functions.
+        Integrate spectrum over X/Y/Z color-matching functions (default 1931).
         The result is a 3-valued astropy quantity with units of W/m^2
         or W/m^2/sr.
         """

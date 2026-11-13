@@ -67,7 +67,7 @@ class RGB_ColorSpace:
     @functools.cached_property
     def xyz_from_rgb_matrix(self) -> np.ndarray:
         """
-        Determine the transformation from XYZ to RGB. This requires the
+        Determine the transformation from RGB to XYZ. This requires the
         chromaticities of the RGB primaries and white point, and the constraint
         (R,G,B)=(1,1,1) corresponds to Y=1.
         """
