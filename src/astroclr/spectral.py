@@ -90,8 +90,8 @@ class Spectrum:
         wavelength: np.ndarray | u.Quantity,
         flux: np.ndarray | u.Quantity,
     ):
-        self.wavelength = wavelength
-        self.flux = flux
+        self.wavelength = wavelength.copy()
+        self.flux = flux.copy()
 
     @property
     def wavelength(self) -> u.Quantity:
@@ -105,6 +105,8 @@ class Spectrum:
             raise ValueError("wavelengths must be array-like")
         if not value.unit.is_equivalent(u.nm):
             raise ValueError("wavelengths must be a kind of length")
+        if np.any(np.diff(wavelength) <= 0):
+            raise ValueError("wavelengths must be sorted and unique")
         self._x = value
 
     @property
