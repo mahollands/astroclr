@@ -25,7 +25,8 @@ def spectrum_subplot(S):
     XYZs = XYZ_from_wavelength(S.wavelength)
     RGBs = RGB_Color.from_XYZ(XYZs)
     RGBs.values -= RGBs.values.min()
-    RGBs /= RGBs.values.max()
+    if (max_val := RGBs.values.max()) > 0:
+        RGBs /= max_val
     # draw color patches (thin vertical lines matching the spectrum curve) in color
     iterables = (
         pairwise(S.wavelength.value),
