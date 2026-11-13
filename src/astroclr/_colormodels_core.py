@@ -26,7 +26,6 @@ class Color:
     Tristimulus color space
     """
 
-    __slots__ = ["_values"]
     channels = "_1", "_2", "_3"
     __array_ufunc__ = None
 
