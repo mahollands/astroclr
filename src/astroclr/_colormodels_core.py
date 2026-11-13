@@ -162,7 +162,7 @@ class Linear_Color(Color):
         """
         Multiply colours by a constant or array of constants.
         """
-        if not isinstance(other, numbers.Real):
+        if not isinstance(other, (numbers.Real, np.ndarray)):
             raise TypeError("multiplication must be with numeric types")
         new = [x * other for x in self.values]
         return self.__class__(*new, **self._kwargs)
@@ -171,7 +171,7 @@ class Linear_Color(Color):
         """
         Divide colours by a constant or array of constants.
         """
-        if not isinstance(other, numbers.Real):
+        if not isinstance(other, (numbers.Real, np.ndarray)):
             raise TypeError("division must be with numeric types")
         new = [x / other for x in self.values]
         return self.__class__(*new, **self._kwargs)
