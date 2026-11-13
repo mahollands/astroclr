@@ -226,9 +226,15 @@ class IRGB_Color(Color):
         """
         if not isinstance(irgb_string, str):
             raise TypeError
-        if len(irgb_string) != 7 or not irgb_string.startswith("#"):
-            raise ValueError("Expecting 7 character string like #AB13D2")
-        parts = irgb_string[1:3], irgb_string[3:5], irgb_string[5:7]
+        n_hex = (color_space.bit_depth + 3) // 4
+        n_str = 3*n_hex + 1
+        if len(irgb_string) != n_str or not irgb_string.startswith("#"):
+            raise ValueError(f"Expecting {n_str} character string like #{3*n_hex*'F'}")
+        parts = (
+            irgb_string[1:n_hex+1],
+            irgb_string[n_hex+1:2*n_hex+1],
+            irgb_string[2*n_hex+1:]
+        )
         ir, ig, ib = [int(part, 16) for part in parts]
         return cls(ir, ig, ib, color_space)
 
