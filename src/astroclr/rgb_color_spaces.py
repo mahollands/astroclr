@@ -85,7 +85,7 @@ class RGB_ColorSpace:
         """
         return np.linalg.inv(self.xyz_from_rgb_matrix)
 
-    def in_gamut(self, XYZ: XYZ_Color) -> np.array:
+    def in_gamut(self, XYZ: XYZ_Color) -> np.ndarray:
         """
         Check whether an XYZ_Color falls within the gamut of a colour space
         """
