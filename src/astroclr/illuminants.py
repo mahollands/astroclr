@@ -10,7 +10,6 @@ import functools
 import numpy as np
 from astropy import units as u
 from .spectral import Spectrum, CMFs
-from . import plots
 
 __all__ = [
     "get_blackbody_illuminant",
@@ -78,13 +77,15 @@ def _get_illuminant_D_data() -> tuple:
 def get_illuminant_DXX(T: float) -> Spectrum:
     """
     Generate CIE Illuminant D series. The temperature, T [K], is required as an
-    input. For get_illuminant_D65 a pre-caculated table from the CIE is loaded instead.
+    input. For get_illuminant_D65 a pre-calculated table from the CIE is loaded instead.
     Valid for 4000 < T < 25000.
     """
+    T = u.Quantity(T, u.K).value
+
     if not 4000 <= T <= 25000:
         raise ValueError("Temperature out of range (4000--25000K)")
 
-    T *= 1.438776877 / 1.4380  # CCT correcetion
+    T *= 1.438776877 / 1.4380  # CCT correction
     T_inv = 1000 / T
     wavelength, S_eig, d_polys, M_matrix = _get_illuminant_D_data()
     xd_cool, xd_hot, yd_poly = d_polys
@@ -134,6 +135,7 @@ def figures():
     Plot spectra for several illuminants.
     """
     import matplotlib.pyplot as plt
+    from . import plots
 
     data = [
         (get_illuminant_A(), "CIE Illuminant A"),
