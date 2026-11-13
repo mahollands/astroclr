@@ -73,6 +73,13 @@ class Color:
         else:
             raise ValueError("Length isn't defined for colour arrays with ndim > 1")
 
+    def __eq__(self, other):
+        if not isinstance(self, type(other)):
+            return False
+        if self._kwargs != other._kwargs:
+            return False
+        return np.array_equal(self.values, other.values)
+
     def __getitem__(self, key):
         abc = [val[key] for val in self.values]
         return type(self)(*abc, **self._kwargs)
