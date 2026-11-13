@@ -1,6 +1,6 @@
 [project]
 name = "astroclr"
-version = "1.0.3"
+dynamic = ["version"]
 authors = [
   { name="Mark Hollands", email="mhollands14@gmail.com" },
 ]
@@ -29,3 +29,6 @@ Issues = "https://github.com/mahollands/astroclr/issues"
 [build-system]
 requires = ["hatchling >= 1.26"]
 build-backend = "hatchling.build"
+
+[tool.hatch.version]
+path = "src/astroclr/__init__.py"
