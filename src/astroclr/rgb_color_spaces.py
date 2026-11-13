@@ -63,6 +63,14 @@ class RGB_ColorSpace:
     def primaries(self) -> tuple:
         return self.R, self.G, self.B
 
+    @property
+    def primaries_and_wp(self) -> tuple:
+        return self.R, self.G, self.B, self.W
+
+    def __hash__(self):
+        rgbw = (tuple(c.values) for c in self.primaries_and_wp)
+        return hash((self.name, *rgbw, self.EOTF, self.bit_depth))
+
     @functools.cached_property
     def xyz_from_rgb_matrix(self) -> np.ndarray:
         """
@@ -97,6 +105,7 @@ class RGB_ColorSpace:
         The maximium integer for a given bit depth
         """
         return 2**self.bit_depth - 1
+
     
 
 # https://registry.color.org/rgb-registry/srgb

@@ -73,10 +73,13 @@ class Color:
         else:
             raise ValueError("Length isn't defined for colour arrays with ndim > 1")
 
+    #Colours are mutable so not hashable
+    __hash__ = None
+
     def __eq__(self, other):
-        if not isinstance(self, type(other)):
-            return False
-        if self._kwargs != other._kwargs:
+        if not isinstance(other, Color):
+            return NotImplemented
+        if type(self) is not type(other) or self._kwargs != other._kwargs:
             return False
         return np.array_equal(self.values, other.values)
 
