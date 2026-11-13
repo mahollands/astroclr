@@ -90,8 +90,8 @@ class Spectrum:
         wavelength: np.ndarray | u.Quantity,
         flux: np.ndarray | u.Quantity,
     ):
-        self.wavelength = wavelength.copy()
-        self.flux = flux.copy()
+        self.wavelength = wavelength
+        self.flux = flux
 
     @property
     def wavelength(self) -> u.Quantity:
@@ -99,8 +99,10 @@ class Spectrum:
 
     @wavelength.setter
     def wavelength(self, value: np.ndarray | u.Quantity):
-        if not isinstance(value, u.Quantity):
-            value *= u.nm
+        if isinstance(value, u.Quantity):
+            value = value.copy()
+        else:
+            value = u.Quantity(value, u.nm)
         if value.isscalar:
             raise ValueError("wavelengths must be array-like")
         if not value.unit.is_equivalent(u.nm):
@@ -115,8 +117,10 @@ class Spectrum:
 
     @flux.setter
     def flux(self, value: np.ndarray | u.Quantity):
-        if not isinstance(value, u.Quantity):
-            value *= UNIT_SPEC_RADIANCE
+        if isinstance(value, u.Quantity):
+            value = value.copy()
+        else:
+            value = u.Quantity(value, UNIT_SPEC_RADIANCE)
         if value.isscalar:
             value = value * np.ones(self.wavelength.size)
         elif len(value) != len(self.wavelength):
