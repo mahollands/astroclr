@@ -8,27 +8,41 @@ function must be applied to each component, before quantising to the 0-255 displ
 scale. In other words the display scale is a non-linear encoding of intensity.
 """
 
+from abc import ABC, abstractmethod
+from dataclasses import dataclass
+from typing import ClassVar
 import numpy as np
-from functools import partial
 
 
-def gamma_EOTF(gamma: float):
+class TransferFunction(ABC):
+    """
+    Base class: __call__() is the EOTF, inv() is its inverse.
+    """
+
+    @abstractmethod
+    def __call__(self, V): ...
+
+    @abstractmethod
+    def inv(self, L): ...
+
+
+@dataclass(frozen=True)
+class gamma_EOTF(TransferFunction):
     """
     Simple power law for gamma correction.
     """
 
-    def EOTF(x, gamma):
-        return x**gamma
+    gamma: float
 
-    def inv(x, gamma):
-        return x ** (1 / gamma)
+    def __call__(self, V):
+        return np.asarray(V) ** self.gamma
 
-    EOTF = partial(EOTF, gamma=gamma)
-    EOTF.inv = partial(inv, gamma=gamma)
-    return EOTF
+    def inv(self, L):
+        return np.asarray(L) ** (1 / self.gamma)
 
 
-def piecewise_EOTF(break_point: float, gamma: float, slope: float, offset: float):
+@dataclass(frozen=True)
+class piecewise_EOTF(TransferFunction):
     """
     Colour spaces such as sRGB use a piecewise EOTF and inverse, which approximates a
     gamma shifted curve curve over most of the range, but features a small
@@ -36,49 +50,54 @@ def piecewise_EOTF(break_point: float, gamma: float, slope: float, offset: float
     allowing higher precision gamma correction for near-black values.
     """
 
-    def EOTF(x, break_point, gamma, slope, offset):
-        linear_section = x / slope
-        gamma_section = ((x + offset) / (1 + offset)) ** gamma
-        return np.where(x <= break_point * slope, linear_section, gamma_section)
+    break_point: float
+    gamma: float
+    slope: float
+    offset: float
 
-    def inv(x, break_point, gamma, slope, offset):
-        linear_section = slope * x
-        gamma_section = (1 + offset) * x ** (1 / gamma) - offset
-        return np.where(x <= break_point, linear_section, gamma_section)
+    def __call__(self, V):
+        V = np.asarray(V)
+        linear = V / self.slope
+        power = ((V + self.offset) / (1 + self.offset)) ** self.gamma
+        return np.where(V <= self.break_point * self.slope, linear, power)
 
-    EOTF = partial(
-        EOTF, break_point=break_point, gamma=gamma, slope=slope, offset=offset
-    )
-    EOTF.inv = partial(
-        inv, break_point=break_point, gamma=gamma, slope=slope, offset=offset
-    )
-    return EOTF
+    def inv(self, L):
+        L = np.asarray(L)
+        linear = self.slope * L
+        power = (1 + self.offset) * L ** (1 / self.gamma) - self.offset
+        return np.where(L <= self.break_point, linear, power)
 
 
-def BT1886_EOTF(gamma: float = 2.4, Lb_Lw: float = 0):
+@dataclass(frozen=True)
+class BT1886_EOTF(TransferFunction):
     """
     BTU 1886 is a essentially a gamma function, with specificed black luminance
     relative to white. This EOTF is done on a scale of 0-1 rather than in
     physical luminance.
     """
-    igamma = 1 / gamma
-    Lb_igamma = Lb_Lw**igamma
-    a = (1 - Lb_igamma) ** gamma
-    b = Lb_igamma / (1 - Lb_igamma)
 
-    def EOTF(x, gamma, a, b):
-        return a * np.maximum(x + b, 0) ** gamma
+    gamma: float = 2.4
+    Lb_Lw: float = 0
 
-    def inv(x, igamma, a, b):
-        scaled = (x / a) ** igamma
-        return np.maximum(scaled - b, 0)
+    @property
+    def _a(self):
+        return (1 - self.Lb_Lw ** (1 / self.gamma)) ** self.gamma
 
-    EOTF = partial(EOTF, gamma=gamma, a=a, b=b)
-    EOTF.inv = partial(inv, igamma=igamma, a=a, b=b)
-    return EOTF
+    @property
+    def _b(self):
+        Lb = self.Lb_Lw ** (1 / self.gamma)
+        return Lb / (1 - Lb)
+
+    def __call__(self, V):
+        return self._a * np.maximum(np.asarray(V) + self._b, 0) ** self.gamma
+
+    def inv(self, L):
+        scaled = (np.asarray(L) / self._a) ** (1 / self.gamma)
+        return np.maximum(scaled - self._b, 0)
 
 
-def PQ_EOTF():
+@dataclass(frozen=True)
+class PQ_EOTF(TransferFunction):
     """
     Perceptual Quantizer transfer function. Unlike the SDR EOTFs which map to
     an arbitrary luminance range, the unit PQ output scale (input scale to the
@@ -87,23 +106,20 @@ def PQ_EOTF():
     https://www.color.org/chardata/rgb/BT2100.xalter
     """
 
-    def EOTF(x, ms, cs):
-        (m1, m2), (c1, c2, c3) = ms, cs
-        Em2 = x ** (1 / m2)
-        numerator = np.clip(Em2 - c1, 0, np.inf)
-        denominator = c2 - c3 * Em2
-        return (numerator / denominator) ** (1 / m1)
+    m1: ClassVar[float] = 1305 / 8192
+    m2: ClassVar[float] = 2523 / 32
+    c1: ClassVar[float] = 107 / 128
+    c2: ClassVar[float] = 2413 / 128
+    c3: ClassVar[float] = 2392 / 128
 
-    def inv(x, ms, cs):
-        (m1, m2), (c1, c2, c3) = ms, cs
-        Ym1 = x**m1
-        numerator = c1 + c2 * Ym1
-        denominator = 1 + c3 * Ym1
-        return (numerator / denominator) ** m2
+    def __call__(self, V):
+        Vm2 = np.asarray(V) ** (1 / self.m2)
+        numerator = np.maximum(Vm2 - self.c1, 0)
+        denominator = self.c2 - self.c3 * Vm2
+        return (numerator / denominator) ** (1 / self.m1)
 
-    ms = 1305 / 8192, 2523 / 32
-    cs = 107 / 128, 2413 / 128, 2392 / 128
-
-    EOTF = partial(EOTF, ms=ms, cs=cs)
-    EOTF.inv = partial(inv, ms=ms, cs=cs)
-    return EOTF
+    def inv(self, L):
+        Lm1 = np.asarray(L) ** self.m1
+        numerator = self.c1 + self.c2 * Lm1
+        denominator = 1 + self.c3 * Lm1
+        return (numerator / denominator) ** self.m2
