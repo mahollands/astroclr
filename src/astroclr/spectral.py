@@ -105,7 +105,7 @@ class Spectrum:
             raise ValueError("wavelengths must be array-like")
         if not value.unit.is_equivalent(u.nm):
             raise ValueError("wavelengths must be a kind of length")
-        if np.any(np.diff(wavelength) <= 0):
+        if np.any(np.diff(value) <= 0):
             raise ValueError("wavelengths must be sorted and unique")
         self._x = value
 
@@ -131,7 +131,7 @@ class Spectrum:
         self.interp_flux = interp1d(
             self.wavelength,
             self.flux,
-            kind="cubic",
+            kind="linear",
             copy=False,
             bounds_error=False,
             fill_value=0,
