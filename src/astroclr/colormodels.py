@@ -212,7 +212,7 @@ class IRGB_Color(Color):
         return cls(R=grey, G=grey, B=grey)
 
     @classmethod
-    def from_hex_string(cls, irgb_string, colorspace=sRGB):
+    def from_hex_string(cls, irgb_string, color_space=sRGB):
         """
         Create a IRGB value (typical range 0 - 255) from a corresponding hex_string
         """
@@ -222,10 +222,10 @@ class IRGB_Color(Color):
             raise ValueError("Expecting 7 character string like #AB13D2")
         parts = irgb_string[1:3], irgb_string[3:5], irgb_string[5:7]
         ir, ig, ib = [int(part, 16) for part in parts]
-        return cls(ir, ig, ib, colorspace)
+        return cls(ir, ig, ib, color_space)
 
     @classmethod
-    def from_numpy_image(cls, img, colorspace=sRGB):
+    def from_numpy_image(cls, img, color_space=sRGB):
         """
         Create an IRGB_Color object from a numpy image. For an image with
         spatial dimensions NxM, img should have shape NxMx3, with data values
@@ -237,10 +237,10 @@ class IRGB_Color(Color):
             raise ValueError("img should be have dimensions NxMx3")
         if not np.issubdtype(img.dtype, np.integer):
             raise ValueError("img should be integer type")
-        if not np.all((img >= 0) & (img < 2**colorspace.bit_depth)):
+        if not np.all((img >= 0) & (img < 2**color_space.bit_depth)):
             raise ValueError("img values should be in the range 0--255")
         R, G, B = np.moveaxis(img, 2, 0)
-        return cls(R, G, B, colorspace)
+        return cls(R, G, B, color_space)
 
     def to_RGB(self, to_luminance=False):
         """
