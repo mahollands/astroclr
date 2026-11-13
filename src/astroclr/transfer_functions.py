@@ -1,5 +1,5 @@
 """
-Gamma correction / electro-optical tranfser functions
+Gamma correction / electro-optical transfer functions
 
 In astroclr, RGB_Color is used to represent linear RGB on a scale of 0-1, where
 RGB_Color(1, 1, 1) represents peak white. However these do not directly correspond
@@ -71,7 +71,7 @@ class piecewise_EOTF(TransferFunction):
 @dataclass(frozen=True)
 class BT1886_EOTF(TransferFunction):
     """
-    BTU 1886 is a essentially a gamma function, with specificed black luminance
+    BTU 1886 is essentially a gamma function, with specified black luminance
     relative to white. This EOTF is done on a scale of 0-1 rather than in
     physical luminance.
     """
