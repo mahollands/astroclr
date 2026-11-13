@@ -176,6 +176,8 @@ class IRGB_Color(Color):
     def __init__(self, R, G, B, color_space=sRGB):
         if not isinstance(color_space, RGB_ColorSpace):
             raise TypeError("color_space should be an RGB_ColorSpace")
+        if not np.all(np.array([R, G, B]) >= 0):
+            raise ValueError("RGB integral values out of range")
         if not np.all(np.array([R, G, B]) < 2**color_space.bit_depth):
             raise ValueError("RGB integral values out of range")
         super().__init__(R, G, B, dtype=np.int64)
