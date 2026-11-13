@@ -137,7 +137,7 @@ def figures():
     import matplotlib.pyplot as plt
     from . import plots
 
-    data = [
+    illuminants = [
         (get_illuminant_A(), "CIE Illuminant A"),
         (get_illuminant_D65(), "CIE Illuminant D65"),
         (get_illuminant_DXX(5500), "CIE Illuminant D55"),
@@ -145,7 +145,7 @@ def figures():
         (get_illuminant_E(), "CIE Illuminant E"),
         (get_blackbody_illuminant(10000.0), "10000 K Illuminant"),
     ]
-    for illum, title in data:
+    for illuminant, title in illuminants:
         plt.figure()
-        plots.spectrum_plot(illum, title, ylabel='Flux [nm$^{-1}$]')
+        plots.spectrum_plot(illuminant, title, ylabel='Flux [nm$^{-1}$]')
         plt.show()

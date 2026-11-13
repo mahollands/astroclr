@@ -12,6 +12,69 @@ from .spectral import CMFs, Spectrum, XYZ_from_wavelength
 from .rgb_color_spaces import sRGB
 
 
+def spectrum_subplot(S):
+    """
+    Plot a spectrum, with x-axis the wavelength, and y-axis the intensity. The
+    curve is colored at that wavelength by the (approximate) color of a pure
+    spectral color at that wavelength, with intensity constant over wavelength.
+    (This means that dark looking colors here mean that wavelength is poorly
+    viewed by the eye.
+    This is not a complete plotting function, e.g. no file is saved, etc.
+    It is assumed that this function is being called by one that handles those things.
+    """
+    XYZs = XYZ_from_wavelength(S.wavelength)
+    RGBs = RGB_Color.from_XYZ(XYZs)
+    RGBs.values -= RGBs.values.min()
+    RGBs /= RGBs.values.max()
+    # draw color patches (thin vertical lines matching the spectrum curve) in color
+    iterables = (
+        pairwise(S.wavelength.value),
+        pairwise(S.flux.value),
+        RGBs,
+    )
+    for (x0, x1), (y0, y1), RGB in zip(*iterables):
+        color_string = RGB.to_IRGB().to_string()
+        poly_x = [x0, x1, x1, x0]
+        poly_y = [0.0, 0.0, y1, y0]
+        plt.fill(poly_x, poly_y, color_string, edgecolor=color_string)
+    plt.plot(S.wavelength, S.flux, color="k", linewidth=2.0)
+
+
+def spectrum_plot(S, title, xlabel="Wavelength [nm]", ylabel="Intensity [W/m$^2$]"):
+    """
+    Plot for a single spectrum -
+    In a two part graph, plot:
+    top: color of the spectrum, as a large patch.
+    low: graph of spectrum intensity vs wavelength (x axis).
+    The graph is colored by the (approximated) color of each wavelength.
+    Each wavelength has equal physical intensity, so the variation in
+    apparent intensity (e.g. 400, 800 nm are very dark, 550 nm is bright),
+    is due to perceptual factors in the eye.  This helps show how much
+    each wavelength contributes to the percieved color.
+    spectrum - spectrum to plot
+    title    - title for plot
+    xlabel   - label for x axis
+    ylabel   - label for y axis
+    """
+    # upper plot - solid patch of color that matches the spectrum color
+    plt.figure()
+    plt.subplot(2, 1, 1)
+    plt.title(title)
+    color_string = S.to_IRGB().to_string()
+    poly_x = [0.0, 1.0, 1.0, 0.0, 0.0]
+    poly_y = [0.0, 0.0, 1.0, 1.0, 0.0]
+    plt.fill(poly_x, poly_y, color_string)
+    # draw a solid line around the patch to look nicer
+    plt.plot(poly_x, poly_y, color="k", linewidth=2.0)
+    plt.axis("off")
+    # lower plot - spectrum vs wavelength, with colors of the associated spectral lines below
+    plt.subplot(2, 1, 2)
+    spectrum_subplot(S)
+    plt.xlim(S.wavelength.value[(0, -1),])
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
+
+
 def color_vs_param_plot(
     param_list,
     RGBs,
@@ -89,18 +152,18 @@ def color_matching_functions_plot(CMF="1931"):
     plt.subplot(3, 1, 1)
     plt.title(f"CIE {CMF} XYZ Matching Functions")
     plt.ylabel("CIE $X$")
-    plt.plot(wavelengths, cie_x, 'r-')
+    plt.plot(wavelengths, cie_x, "r-")
     plt.xlim(wavelengths.value[(0, -1),])
     # Y
     plt.subplot(3, 1, 2)
     plt.ylabel("CIE $Y$")
-    plt.plot(wavelengths, cie_y, 'g-')
+    plt.plot(wavelengths, cie_y, "g-")
     plt.xlim(wavelengths.value[(0, -1),])
     # Z
     plt.subplot(3, 1, 3)
     plt.xlabel("Wavelength [nm]")
     plt.ylabel("CIE $Z$")
-    plt.plot(wavelengths, cie_z, 'b-')
+    plt.plot(wavelengths, cie_z, "b-")
     plt.xlim(wavelengths.value[(0, -1),])
 
 
@@ -115,7 +178,7 @@ def fill_cie_space(
     """
     Fill the CIE chromaticity diagram
     """
-    grid_px = np.linspace(0, 1, N_AA*N_pixels)
+    grid_px = np.linspace(0, 1, N_AA * N_pixels)
     x_grid, y_grid = np.meshgrid(grid_px, grid_px)
 
     p = path.Path(np.array([xy_mono.X, xy_mono.Y]).T)
@@ -128,13 +191,15 @@ def fill_cie_space(
         rgb_grid /= rgb_grid.values.max(axis=0)
     else:
         rgb_grid /= rgb_grid.values.sum(axis=0) / 1.5
-    rgb_grid.values = [np.where(inside, rgb_grid_i, 1) for rgb_grid_i in rgb_grid.values]
+    rgb_grid.values = [
+        np.where(inside, rgb_grid_i, 1) for rgb_grid_i in rgb_grid.values
+    ]
     rgb_grid.values = np.reshape(
-        rgb_grid.values, (3, N_pixels, N_AA, N_pixels, N_AA)).mean(axis=(2, 4)
-    )
+        rgb_grid.values, (3, N_pixels, N_AA, N_pixels, N_AA)
+    ).mean(axis=(2, 4))
     irgb_grid = rgb_grid.to_IRGB(clip_method=clip_method)
 
-    plt.imshow(irgb_grid.values_image, origin='lower', extent=(0, 1, 0, 1))
+    plt.imshow(irgb_grid.values_image, origin="lower", extent=(0, 1, 0, 1))
 
 
 def RGB_triangle(color_space):
@@ -205,8 +270,8 @@ def chromaticity_diagram(
     draw_rgb_triangle=True,
     clip_method=ClipMethod.ADD_WHITE,
     brightest=True,
-    N_pixels = 500,
-    N_AA = 2
+    N_pixels=500,
+    N_AA=2,
 ):
     plt.figure(figsize=(5, 4.71))
     xy_mono = XYZ_from_wavelength(CMFname=CMF).normalize()
@@ -227,8 +292,8 @@ def chromaticity_diagram(
 
 def figures(CMF="1931"):
     """Draw specific figures not used anywhere else."""
-    #color_matching_functions_plot(CMF=CMF)
-    #plt.show()
+    # color_matching_functions_plot(CMF=CMF)
+    # plt.show()
 
     chromaticity_diagram(CMF=CMF, color_space=sRGB, brightest=True)
     plt.show()
