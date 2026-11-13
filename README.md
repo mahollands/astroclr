@@ -192,5 +192,5 @@ closely resembles a power-law with exponent 1/2.2:
     \right.
 ```
 
-After applying a OETF, RGB values can be multiplied by 255 and rounded to
-determine the 8-bit per channel display values.
+After applying the sRGB transfer function, RGB values can be multiplied by 255
+and rounded to determine the 8-bit per channel display values.
