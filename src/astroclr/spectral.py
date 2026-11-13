@@ -81,6 +81,10 @@ class Spectrum:
         flux array/Quantity. If an array is given W/m^2/sr/nm is assumed for
         the units. If a Quanitity is given, it must have dimensions of flux per
         unit wavelength or flux per unit wavelength per solid_angle.
+
+    For spectra that do not fully cover the CMFs, the fluxes outside the
+    wavelength range of the CMFs are assumed to be zero during interpolation or
+    integration.
     """
 
     __slots__ = ["_x", "_y", "_y_unit_option", "interp_flux"]
